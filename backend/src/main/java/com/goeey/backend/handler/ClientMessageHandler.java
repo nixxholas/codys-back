@@ -1,9 +1,7 @@
 package com.goeey.backend.handler;
 
 import com.goeey.backend.model.entity.Player;
-import com.goeey.backend.model.entity.Room;
 import com.goeey.backend.model.entity.socket.ClientSocketMessage;
-import com.goeey.backend.model.entity.socket.ClientSocketMessageType;
 import com.goeey.backend.service.PlayerService;
 import com.goeey.backend.service.RoomService;
 import com.goeey.backend.util.SerializationUtil;
@@ -41,8 +39,12 @@ public class ClientMessageHandler {
                 return "Disconnected!";
             case JOIN:
                 if (roomService.getPlayerRoomByPlayerId(message.getClientId()) == null) {
+                    int seatNumber = 1;
                     String roomId = message.getMessage();
-//                    roomService.addPlayerToRoom(roomId, message.getClientId());
+                    roomService.getRoom(roomId)
+                            .addPlayer(
+                                    playerService.getPlayerById(message.getClientId()),
+                                    seatNumber);
                 }
 
                 break;

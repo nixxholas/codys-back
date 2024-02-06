@@ -5,6 +5,8 @@ import com.goeey.backend.service.PlayerService;
 import com.goeey.backend.service.RoomService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
@@ -15,8 +17,17 @@ import java.util.Map;
 @Configuration
 public class WebSocketConfig {
     @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(5); // Adjust pool size as necessary
+        scheduler.setThreadNamePrefix("scheduled-task-");
+        scheduler.initialize();
+        return scheduler;
+    }
+
+    @Bean
     public RoomService roomService() {
-        return new RoomService();
+        return new RoomService(taskScheduler());
     }
 
     @Bean
