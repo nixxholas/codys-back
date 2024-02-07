@@ -3,10 +3,10 @@ package com.goeey.backend.config;
 import com.goeey.backend.handler.SocketHandler;
 import com.goeey.backend.service.PlayerService;
 import com.goeey.backend.service.RoomService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.reactive.HandlerMapping;
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAdapter;
@@ -16,18 +16,12 @@ import java.util.Map;
 
 @Configuration
 public class WebSocketConfig {
-    @Bean
-    public TaskScheduler taskScheduler() {
-        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(5); // Adjust pool size as necessary
-        scheduler.setThreadNamePrefix("scheduled-task-");
-        scheduler.initialize();
-        return scheduler;
-    }
+    @Autowired
+    private TaskScheduler taskScheduler;
 
     @Bean
     public RoomService roomService() {
-        return new RoomService(taskScheduler());
+        return new RoomService(taskScheduler);
     }
 
     @Bean

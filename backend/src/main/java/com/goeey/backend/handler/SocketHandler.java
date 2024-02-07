@@ -6,6 +6,7 @@ import com.goeey.backend.model.entity.socket.ServerSocketMessageType;
 import com.goeey.backend.service.PlayerService;
 import com.goeey.backend.service.RoomService;
 import com.goeey.backend.util.SerializationUtil;
+import com.google.gson.JsonIOException;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
@@ -36,8 +37,8 @@ public class SocketHandler implements WebSocketHandler {
                         ServerSocketMessage<String> message = new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Error: " + sce.getMessage());
 
                         try {
-                            return session.textMessage(Arrays.toString(SerializationUtil.serialize(message)));
-                        } catch (IOException e) {
+                            return session.textMessage(SerializationUtil.serializeString(message));
+                        } catch (JsonIOException e) {
                             return session.textMessage("Error: " + e.getMessage());
                         }
                     }
