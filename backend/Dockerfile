@@ -1,4 +1,4 @@
-FROM openjdk:21.04-jdk-slim
+FROM openjdk:21-jdk-oracle
 RUN apt-get update && apt-get install bash
 RUN mkdir -p /usr/app/
 ENV PROJECT_HOME /usr/app/
