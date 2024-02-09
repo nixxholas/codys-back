@@ -167,6 +167,11 @@ public class Room {
         int dealerValue = dealer.calculateHandValue();
         for (Player player : players.values()) {
             int playerValue = player.calculateHandValue();
+            /* Check for blackjack (The initially dealt cards total 21).
+            If player has blackjack and dealer has no blackjack, player wins.
+            If player has blackjack and dealer has blackjack, it is a tie.
+            If player has no blackjack and dealer has blackjack, player loses.
+            If no blackjack, proceed as normal. */
             if (playerValue > 21) {
                 System.out.println(player.getId() + " busts and loses.");
                 player.loseBet();
