@@ -170,7 +170,7 @@ public class Room {
             if (playerValue > 21) {
                 System.out.println(player.getId() + " busts and loses.");
                 player.loseBet();
-            } else if ((playerValue > dealerValue && playerValue <= 21) || dealerValue > 21) {
+            } else if (playerValue > dealerValue || dealerValue > 21) {
                 System.out.println(player.getId() + " wins!");
                 player.winBet();
             } else if (playerValue == dealerValue) {
