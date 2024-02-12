@@ -8,9 +8,9 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setTitle("black-jack-game");
-		config.setWindowedMode(1200, 980);
+		config.setWindowedMode(1920, 1800);
 		config.useVsync(true);
 		config.setForegroundFPS(60);
-		new Lwjgl3Application(new BlackJack(), config);
+		new Lwjgl3Application(new Boot(), config);
 	}
 }
