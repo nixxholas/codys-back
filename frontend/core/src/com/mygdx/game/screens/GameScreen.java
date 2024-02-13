@@ -41,6 +41,15 @@ public class GameScreen extends ScreenAdapter {
         this.camera = game.camera;
     }
 
+    public void dealCard(float delay, int xPos, int yPos, int offset, int rotation){
+        Card newC = new Card(backImage);
+        newC.setPosition(900, 900);
+        stage.addActor(newC);
+        SequenceAction sa = newC.cardAnimation(delay, xPos, yPos + offset, rotation, 0.5f, frontImage);
+        newC.addAction(sa);
+
+    }
+
     @Override
     public void show() {
         backImage = new Texture("back_card_150.png");
@@ -60,46 +69,51 @@ public class GameScreen extends ScreenAdapter {
 
         // PLAYER 1
 
-        Card card1 = new Card(backImage);
-        card1.setPosition(900, 900);
-        stage.addActor(card1);
-        SequenceAction sa = card1.cardAnimation(0, 1900, 1100 - (cWidth * 2), 90, 0.5f, frontImage);
-        card1.addAction(sa);
+        //deal a card, with 0 delay, coord of 1900,1100 offset by cdwidth*2 and rotated 90 degrees
+        for(int i=0; i<=6; i++){
+            dealCard(2.0f * i, 1900, 1100 - (cWidth*2), (cWidth * 1 / 5) * i, 90);
+        }
+        
+        // Card card1 = new Card(backImage);
+        // card1.setPosition(900, 900);
+        // stage.addActor(card1);
+        // SequenceAction sa = card1.cardAnimation(0, 1900, 1100 - (cWidth * 2), 90, 0.5f, frontImage);
+        // card1.addAction(sa);
 
-        Card card2 = new Card(backImage);
-        card2.setPosition(900, 900);
-        stage.addActor(card2);
-        SequenceAction sa2 = card2.cardAnimation(2.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 1 / 5), 90, 0.5f,
-                frontImage);
-        card2.addAction(sa2);
+        // Card card2 = new Card(backImage);
+        // card2.setPosition(900, 900);
+        // stage.addActor(card2);
+        // SequenceAction sa2 = card2.cardAnimation(2.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 1 / 5), 90, 0.5f,
+        //         frontImage);
+        // card2.addAction(sa2);
 
-        Card card3 = new Card(backImage);
-        card3.setPosition(900, 900);
-        stage.addActor(card3);
-        SequenceAction sa3 = card3.cardAnimation(4.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 2 / 5), 90, 0.5f,
-                frontImage);
-        card3.addAction(sa3);
+        // Card card3 = new Card(backImage);
+        // card3.setPosition(900, 900);
+        // stage.addActor(card3);
+        // SequenceAction sa3 = card3.cardAnimation(4.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 2 / 5), 90, 0.5f,
+        //         frontImage);
+        // card3.addAction(sa3);
 
-        Card card4 = new Card(backImage);
-        card4.setPosition(900, 900);
-        stage.addActor(card4);
-        SequenceAction sa4 = card4.cardAnimation(6.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 3 / 5), 90, 0.5f,
-                frontImage);
-        card4.addAction(sa4);
+        // Card card4 = new Card(backImage);
+        // card4.setPosition(900, 900);
+        // stage.addActor(card4);
+        // SequenceAction sa4 = card4.cardAnimation(6.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 3 / 5), 90, 0.5f,
+        //         frontImage);
+        // card4.addAction(sa4);
 
-        Card card5 = new Card(backImage);
-        card5.setPosition(900, 900);
-        stage.addActor(card5);
-        SequenceAction sa5 = card5.cardAnimation(8.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 4 / 5), 90, 0.5f,
-                frontImage);
-        card5.addAction(sa5);
+        // Card card5 = new Card(backImage);
+        // card5.setPosition(900, 900);
+        // stage.addActor(card5);
+        // SequenceAction sa5 = card5.cardAnimation(8.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 4 / 5), 90, 0.5f,
+        //         frontImage);
+        // card5.addAction(sa5);
 
-        Card card6 = new Card(backImage);
-        card6.setPosition(900, 900);
-        stage.addActor(card6);
-        SequenceAction sa6 = card6.cardAnimation(10.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 5 / 5), 90, 0.5f,
-                frontImage);
-        card6.addAction(sa6);
+        // Card card6 = new Card(backImage);
+        // card6.setPosition(900, 900);
+        // stage.addActor(card6);
+        // SequenceAction sa6 = card6.cardAnimation(10.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 5 / 5), 90, 0.5f,
+        //         frontImage);
+        // card6.addAction(sa6);
 
         // PLAYER 1 END
 
