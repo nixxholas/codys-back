@@ -65,6 +65,9 @@ public class Player {
     }
 
     public void winBet() {
+
+        /* Blackjack scenarios. */
+        /* Variable numPlayerCards has yet to be declared. */
         if (this.calculateHandValue() == 21 && numPlayerCards == 2) {
             this.balance += (currentBet * 2.5); // Blackjack pays 3 to 2
             this.currentBet = 0;
