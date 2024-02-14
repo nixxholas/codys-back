@@ -23,7 +23,17 @@ public class Player {
     }
 
     public void addCard(Card card) {
+        int num = getNumCards();
         hand.add(card);
+        setNumCards(num + 1); // Increases number of cards by 1
+    }
+
+    public void getNumCards() {
+        return this.value;
+    }
+    
+    public void setNumCards(int value) {
+        this.value = value;
     }
 
     public List<Card> getHand() {
@@ -67,8 +77,7 @@ public class Player {
     public void winBet() {
 
         /* Blackjack scenarios. */
-        /* Variable numPlayerCards has yet to be declared. */
-        if (this.calculateHandValue() == 21 && numPlayerCards == 2) {
+        if (this.calculateHandValue() == 21 && this.getNumCards() == 2) {
             this.balance += (currentBet * 2.5); // Blackjack pays 3 to 2
             this.currentBet = 0;
         } else {
