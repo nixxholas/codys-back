@@ -170,13 +170,13 @@ public class Room {
             
             /* Blackjack scenarios. */
             /* Variables numPlayerCards and numDealerCards have yet to be declared. */
-            if ((playerValue == 21 && numPlayerCards == 2) && (dealerValue != 21 || dealerValue == 21 && numDealerCards != 2)) {
+            if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue != 21 || dealerValue == 21 && dealer.getNumCards() != 2)) {
                 System.out.println(player.getId() + " wins!");
                 player.winBet();
-            } else if ((playerValue == 21 && numPlayerCards == 2) && (dealerValue == 21 && numDealerCards == 2)) {
+            } else if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue == 21 && dealer.getNumCards() == 2)) {
                 System.out.println(player.getId() + " pushes (ties).");
                 player.push();
-            } else if ((playerValue != 21 || playerValue == 21 && numPlayerCards != 2) && (dealerValue == 21 && numDealerCards == 2)) {
+            } else if ((playerValue != 21 || playerValue == 21 && player.getNumCards() != 2) && (dealerValue == 21 && dealer.getNumCards() == 2)) {
                 System.out.println(player.getId() + " loses.");
                 player.loseBet();
             }
