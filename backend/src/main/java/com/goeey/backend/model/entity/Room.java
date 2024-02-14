@@ -169,7 +169,7 @@ public class Room {
             int playerValue = player.calculateHandValue();
             
             /* Blackjack scenarios. */
-            /* Variables numPlayerCards and numDealers have yet to be declared. */
+            /* Variables numPlayerCards and numDealerCards have yet to be declared. */
             if ((playerValue == 21 && numPlayerCards == 2) && (dealerValue != 21 || dealerValue == 21 && numDealerCards != 2)) {
                 System.out.println(player.getId() + " wins!");
                 player.winBet();
