@@ -9,6 +9,7 @@ public class Player {
     private boolean standing = false;
     private int balance;
     private int currentBet;
+    private int num_cards;
 
     public Player(String id) {
         this.id = id;
@@ -23,11 +24,11 @@ public class Player {
     }
 
     public int getNumCards() {
-        return this.value;
+        return this.num_cards;
     }
     
-    public void setNumCards(int value) {
-        this.value = value;
+    public void setNumCards(int num_cards) {
+        this.num_cards = num_cards;
     }
 
     public void addCard(Card card) {
