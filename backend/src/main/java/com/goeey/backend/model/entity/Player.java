@@ -22,18 +22,18 @@ public class Player {
         return balance;
     }
 
-    public void addCard(Card card) {
-        int num = getNumCards();
-        hand.add(card);
-        setNumCards(num + 1); // Increases number of cards by 1
-    }
-
-    public void getNumCards() {
+    public int getNumCards() {
         return this.value;
     }
     
     public void setNumCards(int value) {
         this.value = value;
+    }
+
+    public void addCard(Card card) {
+        int num = getNumCards();
+        hand.add(card);
+        setNumCards(num + 1); // Increases number of cards by 1
     }
 
     public List<Card> getHand() {
