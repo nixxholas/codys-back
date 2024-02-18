@@ -26,6 +26,10 @@ public class Player {
         return balance;
     }
 
+    public int getCurrentBet() {
+        return currentBet;
+    }
+
     public int getNumCards() {
         return this.num_cards;
     }
