@@ -11,12 +11,13 @@ import java.util.concurrent.ScheduledFuture;
 
 public class Room {
     private String id;
-    private Map<Integer, Player> players = new ConcurrentHashMap<>();
+    private final Map<Integer, Player> players = new ConcurrentHashMap<>(6);
     private List<Card> deck = new ArrayList<>();
     private Player dealer = new Player("Dealer");
     private boolean gameStarted = false;
 
     private enum GameState {
+        WAITING_FOR_PLAYERS,
         WAITING_FOR_BETS,
         DEALING,
         PLAYER_TURN,
@@ -33,6 +34,15 @@ public class Room {
         this.id = id;
         this.taskScheduler = taskScheduler;
         initializeDeck();
+    }
+
+    public int getNextAvailableSeat() {
+        for (int i = 1; i <= 6; i++) {
+            if (!players.containsKey(i)) {
+                return i;
+            }
+        }
+        return -1; // No available seats
     }
 
     public String getId() {
@@ -53,6 +63,10 @@ public class Room {
     }
 
     public void addPlayer(Player player, int seatNumber) {
+        if (seatNumber < 1 || seatNumber > 6) {
+            throw new IllegalArgumentException("Invalid seat number.");
+        }
+
         players.put(seatNumber, player);
     }
 

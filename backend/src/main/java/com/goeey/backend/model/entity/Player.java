@@ -2,17 +2,20 @@ package com.goeey.backend.model.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Player {
     private String id;
+    private String name;
     private List<Card> hand = new ArrayList<>();
     private boolean standing = false;
     private int balance;
     private int currentBet;
     private int num_cards;
 
-    public Player(String id) {
-        this.id = id;
+    public Player(String name) {
+        this.name = name;
+        this.id = UUID.randomUUID().toString();
     }
 
     public String getId() {

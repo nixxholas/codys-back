@@ -41,6 +41,16 @@ public class RoomService {
     public void addPlayerToRoom(String roomId, Player player) {
         // Add player to the specified room
         // You might need to send updates to other players in the room
+        Room room = getRoom(roomId);
+
+        if (room != null) {
+            try {
+                room.addPlayer(player, room.getNextAvailableSeat());
+            } catch (IllegalArgumentException e) {
+                // Handle exception
+                System.out.println("Player could not be added to room: " + e.getMessage());
+            }
+        }
     }
 
     // Methods to remove players from rooms, delete rooms, etc.
