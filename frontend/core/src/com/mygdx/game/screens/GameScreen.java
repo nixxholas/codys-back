@@ -38,7 +38,9 @@ public class GameScreen extends ScreenAdapter {
     private int cHeight;
 
     /*
-    *   ExtendViewport is used for GameScreen because we want to:
+    *   ExtendViewPort behaviour: The world is first scaled to fit within the viewport, then the shorter dimension is lengthened to fill the viewport.
+    *
+    *   It is used for GameScreen because we want to:
     *   1. Maintain the aspect ratio of everything (cards, players, ...)
     *   2. Allow larger screens to display larger cards, and smaller screens to display smaller cards
     *   3. Display the entire table at ALL TIMES (Do not cut off parts of the table when resizing)
@@ -52,6 +54,9 @@ public class GameScreen extends ScreenAdapter {
     public GameScreen(Boot game) {
         this.game = game;
         this.camera = game.camera;
+        /*
+        *   gameViewport has a min
+        */
         gameViewport = new ExtendViewport(1920, 1800);
     }
 
