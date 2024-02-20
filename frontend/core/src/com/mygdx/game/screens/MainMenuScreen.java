@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.*;
 import com.mygdx.game.objects.*;
 import com.badlogic.gdx.ScreenAdapter;
@@ -22,21 +23,30 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 
 
 public class MainMenuScreen extends ScreenAdapter{
-
     final Boot game;
     private OrthographicCamera camera;
-
 	private Stage stage;
-
     private int proceed = 0;
+
+    /*
+     *  Viewports are used to change how the screen behaves when the window is resized.
+     *  Main Menu should be using ScreenViewport because we want the blackjack image, start button and Exit button
+     *  to always be centered in the middle of the screen.
+     *
+     *  The screenViewport is instantiated in the constructor.
+     *  The screenViewport is passed into stage as a parameter when constructing it.
+     *  The screenViewport.update() resizes the viewport whenever resize() is called (aka a window resize happens).
+     */
+    private final ScreenViewport mainMenuViewport;
 
     public MainMenuScreen(Boot boot){
         this.game = boot;
         this.camera = boot.camera;
+        mainMenuViewport = new ScreenViewport(camera);
     }
 
 	public void show() {
-        stage = new Stage();
+        stage = new Stage(mainMenuViewport);
         Gdx.input.setInputProcessor(stage);
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json")); // You can use a different skin
@@ -58,10 +68,16 @@ public class MainMenuScreen extends ScreenAdapter{
             }
         });
 
+        // BlackJack logo
+        Texture bjLogo = new Texture("images/decor/blackjacklogo.png");
+        Logo bj = new Logo(bjLogo);
 
         // Add text field to a table
         Table table = new Table();
+table.debug();
         table.setFillParent(true);
+        table.add(bj);
+        table.row();
         table.add(btnStart).width(250).height(50);
         table.row();
         table.add(btnLeave).width(250).height(50).pad(50);
@@ -71,24 +87,12 @@ public class MainMenuScreen extends ScreenAdapter{
         // shift the table 50 pixels down
         table.setPosition (x, y - 100);
         stage.addActor(table);
-
-        // BlackJack logo
-        Texture bjLogo = new Texture("images/decor/blackjacklogo.png");
-        Logo bj = new Logo(bjLogo);
-        //Not working, need to relook
-        //bj.setOrigin((float) bjLogo.getWidth()/2, (float) bjLogo.getHeight()/2);
-        //temporary fix
-        bj.setPosition((float) game.getscreenWidth()/2 - (float) bjLogo.getWidth() /2
-                , (float) game.getscreenHeight()/2 +50);
-        stage.addActor(bj);
-
     }
 
     @Override
 	public void render(float delta) {
 		ScreenUtils.clear(0.28f, 0.31f, 0.60f, 1);
 		camera.update();
-
 		game.batch.setProjectionMatrix(camera.combined);
 
 		game.batch.begin();
@@ -104,9 +108,7 @@ public class MainMenuScreen extends ScreenAdapter{
                 Gdx.app.exit();
                 System.exit(-1);
         }
-
 	}
-
 	@Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);

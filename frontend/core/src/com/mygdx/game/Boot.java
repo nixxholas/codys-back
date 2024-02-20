@@ -1,5 +1,9 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.screens.*;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -13,6 +17,7 @@ public class Boot extends Game{
     private int screenWidth, screenHeight;
     public SpriteBatch batch;
     public OrthographicCamera camera;
+
 
     public Boot(){
         INSTANCE = this;
