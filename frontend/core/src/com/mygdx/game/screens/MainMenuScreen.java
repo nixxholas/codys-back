@@ -5,7 +5,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.mygdx.game.*;
+import com.mygdx.game.objects.*;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -61,11 +68,21 @@ public class MainMenuScreen extends ScreenAdapter{
         table.add(btnLeave).width(250).height(50);
         stage.addActor(table);
 
+        // BlackJack logo
+        Texture bjLogo = new Texture("images/decor/blackjacklogo.png");
+        Logo bj = new Logo(bjLogo);
+        //Not working, need to relook
+        //bj.setOrigin((float) bjLogo.getWidth()/2, (float) bjLogo.getHeight()/2);
+        //temporary fix
+        bj.setPosition((float) game.getscreenWidth()/2 - (float) bjLogo.getWidth() /2
+                , (float) game.getscreenHeight()/2 +100);
+        stage.addActor(bj);
+
     }
 
     @Override
 	public void render(float delta) {
-		ScreenUtils.clear(0, 0, 0.2f, 1);
+		ScreenUtils.clear(0.28f, 0.31f, 0.60f, 1);
 		camera.update();
 
 		game.batch.setProjectionMatrix(camera.combined);
