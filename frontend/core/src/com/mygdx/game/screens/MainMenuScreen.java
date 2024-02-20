@@ -21,7 +21,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
-
 public class MainMenuScreen extends ScreenAdapter{
     final Boot game;
     private OrthographicCamera camera;
@@ -52,25 +51,24 @@ public class MainMenuScreen extends ScreenAdapter{
         Skin skin = new Skin(Gdx.files.internal("uiskin.json")); // You can use a different skin
         
         //TextButton
-        TextButton btnStart = new TextButton("Start Game", skin);
-        TextButton btnLeave = new TextButton("Exit to Desktop", skin);
-        //btnStart.setSize(200, 100);
-        btnStart.addListener(new ClickListener() {
+        TextButton startButton = new TextButton("Start Game", skin);
+        TextButton exitButton = new TextButton("Exit to Desktop", skin);
+        startButton.addListener(new ClickListener() {
             public void touchUp(InputEvent event, float x, float y, int point, int button) {
                 // Handle slider value change
                 proceed = 1;
             }
         });
-        btnLeave.addListener(new ClickListener() {
+        exitButton.addListener(new ClickListener() {
             public void touchUp(InputEvent event, float x, float y, int point, int button) {
                 // Handle slider value change
                 proceed = -1;
             }
         });
 
-        // BlackJack logo
-        Texture bjLogo = new Texture("images/decor/blackjacklogo.png");
-        Logo bj = new Logo(bjLogo);
+        // Create the bjImage as a scene2d.ui Image because table.add() only accepts Actors as input,
+        // and Image is a subtype of Actors.
+        Image bjImage = new Image(new Texture("images/decor/blackjacklogo.png"));
 
         /*
         *   Table is used to control layout of UI elements and widgets in a scene2d.ui
@@ -81,11 +79,11 @@ public class MainMenuScreen extends ScreenAdapter{
         */
         Table table = new Table();
         table.setFillParent(true);
-        table.add(bj);
+        table.add(bjImage);
         table.row();
-        table.add(btnStart).width(500).height(100).padTop(50);
+        table.add(startButton).width(500).height(100).padTop(50);
         table.row();
-        table.add(btnLeave).width(500).height(100).padTop(50);
+        table.add(exitButton).width(500).height(100).padTop(50);
 
         /*
          *   Uncomment the following line to enable lines of the tables for debugging.
