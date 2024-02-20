@@ -38,7 +38,8 @@ public class GameScreen extends ScreenAdapter {
     private int cHeight;
 
     /*
-    *   ExtendViewPort behaviour: The world is first scaled to fit within the viewport, then the shorter dimension is lengthened to fill the viewport.
+    *   ExtendViewPort behaviour: The world is first scaled to fit within the viewport,
+    *   then the shorter dimension is lengthened to fill the viewport.
     *
     *   It is used for GameScreen because we want to:
     *   1. Maintain the aspect ratio of everything (cards, players, ...)
