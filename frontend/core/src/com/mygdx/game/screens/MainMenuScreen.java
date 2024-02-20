@@ -1,24 +1,17 @@
 package com.mygdx.game.screens;
 
+import com.badlogic.gdx.graphics.g2d.freetype.*;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.*;
-import com.mygdx.game.objects.*;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class MainMenuScreen extends ScreenAdapter{
@@ -28,13 +21,26 @@ public class MainMenuScreen extends ScreenAdapter{
     private int proceed = 0;
 
     /*
+    *   Testing code for loading custom fonts
+    *
+    *   FreeTypeFontGenerator generator;
+    *   FreeTypeFontGenerator.FreeTypeFontParameter parameter;
+    *   BitmapFont font;
+    */
+
+    /*
      *  Viewports are used to change how the screen behaves when the window is resized.
      *  Main Menu should be using ScreenViewport because we want the blackjack image, start button and Exit button
      *  to always be centered in the middle of the screen.
      *
-     *  The screenViewport is instantiated in the constructor.
-     *  The screenViewport is passed into stage as a parameter when constructing it.
-     *  The screenViewport.update() resizes the viewport whenever resize() is called (aka a window resize happens).
+     *  mainMenuViewport is instantiated in the constructor of MainMenuScreen
+     *  mainMenuViewport is passed into stage as a parameter
+     *
+     *  stage.getViewport().update resizes the viewport whenever resize() is called (aka a window resize happens).
+     *  stage.getViewport().update() also ensures the UI stays in the center of the screen by setting centerCamera = true.
+     *
+     *   Check out how different viewports work in libGDX here:
+     *   https://raeleus.github.io/viewports-sample-project/
      */
     private final ScreenViewport mainMenuViewport;
 
@@ -42,6 +48,10 @@ public class MainMenuScreen extends ScreenAdapter{
         this.game = boot;
         this.camera = boot.camera;
         mainMenuViewport = new ScreenViewport(camera);
+//        generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto.ttf"));
+//        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+//        parameter.size = 48;
+//        font = generator.generateFont(parameter); // font size 12 pixels
     }
 
 	public void show() {
@@ -72,7 +82,7 @@ public class MainMenuScreen extends ScreenAdapter{
 
         /*
         *   Table is used to control layout of UI elements and widgets in a scene2d.ui
-        *   The code below has 3 rows:
+        *   The code below will generate 3 rows:
         *       1. First row contains the blackjack image
         *       2. Second row contains the "Start Game" button
         *       3. Third row contains the "Exit" button
@@ -86,7 +96,7 @@ public class MainMenuScreen extends ScreenAdapter{
         table.add(exitButton).width(500).height(100).padTop(50);
 
         /*
-         *   Uncomment the following line to enable lines of the tables for debugging.
+         *   Uncomment the following line to enable outline of the tables for debugging.
          */
         // table.setDebug(true);
 
@@ -121,5 +131,6 @@ public class MainMenuScreen extends ScreenAdapter{
 	@Override
     public void dispose() {
         stage.dispose();
+//        generator.dispose();
     }
 }

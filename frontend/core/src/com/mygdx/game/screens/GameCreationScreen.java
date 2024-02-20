@@ -106,7 +106,7 @@ public class GameCreationScreen extends ScreenAdapter{
         game.batch.end();
 
 		if (proceed) {
-			game.setScreen(new GameScreen(game));
+			game.setScreen(new KHGameScreen(game));
 			dispose();
 		}
 	}

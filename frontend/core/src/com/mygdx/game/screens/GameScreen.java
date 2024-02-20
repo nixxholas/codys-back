@@ -56,9 +56,9 @@ public class GameScreen extends ScreenAdapter {
         this.game = game;
         this.camera = game.camera;
         /*
-        *   gameViewport has a min
+        *   gameViewport has a minimum width and height of 1920x1080 and no maximum
         */
-        gameViewport = new ExtendViewport(1920, 1800);
+        gameViewport = new ExtendViewport(1920, 1080);
     }
 
     public void dealVertCards(float delay, int xPos, int yPos, int offset, int rotation){

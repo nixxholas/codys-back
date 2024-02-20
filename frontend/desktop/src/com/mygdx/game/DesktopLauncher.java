@@ -7,7 +7,7 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setTitle("black-jack-game");
-		config.setWindowedMode(1920, 1800);
+		config.setWindowedMode(1920, 1080);
 		config.useVsync(true);
 		config.setForegroundFPS(60);
 		config.setWindowSizeLimits(800, 800, 9999, 9999);
