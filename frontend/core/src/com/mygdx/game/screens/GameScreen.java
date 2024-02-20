@@ -57,18 +57,33 @@ public class GameScreen extends ScreenAdapter {
         newC.addAction(sa);
     }
 
-    public void createLabel(){
-        
-    }
+    public void createButtonLabel(Skin skin, int posX , int posY , int rot, int playerNum){
+        //Button
+        Table buttonContainer = new Table(skin);
+        buttonContainer.setTransform(true);
+        TextButton tb = new TextButton("Hit", skin);
+        tb.setDisabled(true);
+        Table rotatingActor = buttonContainer;
 
-    public void createButton(){
+        //Label
+        String lbString = "Player "+ playerNum;
+        Label lb = new Label(lbString, skin);
+        lb.setFontScale(1);
 
+        //Order
+        buttonContainer.add(lb);
+        buttonContainer.row().pad(10);
+        buttonContainer.add(tb).size(100, 50);
+
+        rotatingActor.setRotation(rot);
+        rotatingActor.setPosition(posX, posY);
+        stage.addActor(rotatingActor);
     }
 
     public void createPlayerSet(){
         dealVertCards(cHeight, cHeight, cHeight, cWidth, cHeight);
-        createLabel();
-        createButton();
+        //createButtonLabel();
+
     }
 
     @Override
@@ -140,8 +155,9 @@ public class GameScreen extends ScreenAdapter {
 
         // PLAYER 1 Labels & TextButton
 
+        createButtonLabel(skin, 1600, 1000 -cWidth, 90, 1);
 
-        Table buttonContainer = new Table(skin);
+        /*Table buttonContainer = new Table(skin);
         buttonContainer.setTransform(true);
         Label lb = new Label("Player 1", skin);
         lb.setFontScale(1);
@@ -153,112 +169,52 @@ public class GameScreen extends ScreenAdapter {
         Table rotatingActor = buttonContainer;
         rotatingActor.setRotation(90);
         rotatingActor.setPosition(1600, 1000 - cWidth);
-        stage.addActor(rotatingActor);
+        stage.addActor(rotatingActor);*/
 
         // PLAYER 2
         //deal 6 cards, with starting 12.0f delay, coord of 1900,1100 offset by cdwidth*1/5 and rotated 90 degrees
         for(int i=0; i<=5; i++){
             dealVertCards(12.0f + 2.0f * i, 1900, 1100 - (cWidth*5), (cWidth * 1 / 5) * i, 90);
         }
-
         // PLAYER 2 Labels & TextButton
-        Table buttonContainer2 = new Table(skin);
-        buttonContainer2.setTransform(true);
-        Label lb2 = new Label("Player 2", skin);
-        lb2.setFontScale(1);
-        buttonContainer2.add(lb2);
-        buttonContainer2.row().pad(10);
-        TextButton tb2 = new TextButton("Hit", skin);
-        tb2.setDisabled(true);
-        buttonContainer2.add(tb2).size(100, 50);
-        Table rotatingActor2 = buttonContainer2;
-        rotatingActor2.setRotation(90);
-        rotatingActor2.setPosition(1600, 1100 - (cWidth * 4));
-        stage.addActor(rotatingActor2);
+        createButtonLabel(skin, 1600, 1100 -cWidth*4, 90, 2);
+
 
         // PLAYER 3
         //deal 6 cards, with starting 24.0f delay, coord of 1100,50 offset horizontally by cdwidth*1/5 and rotated 0 degrees
         for(int i=0; i<=5; i++){
             dealHorizCards(24.0f + 2.0f * i, 1100, 50, (cWidth * 1 / 5) * i, 0);
         }
-
         // PLAYER 3 Labels & TextButton
-        Table buttonContainer3 = new Table(skin);
-        buttonContainer3.setTransform(true);
-        Label lb3 = new Label("Player 3", skin);
-        lb3.setFontScale(1);
-        buttonContainer3.add(lb3);
-        buttonContainer3.row().pad(10);
-        TextButton tb3 = new TextButton("Hit", skin);
-        tb3.setDisabled(true);
-        buttonContainer3.add(tb3).size(100, 50);
-        Table rotatingActor3 = buttonContainer3;
-        rotatingActor3.setRotation(0);
-        rotatingActor3.setPosition(1250, 310);
-        stage.addActor(rotatingActor3);
+        createButtonLabel(skin, 1250, 310, 0, 3);
+
 
         // Player 4
         //deal 6 cards, with starting 36.0f delay, coord of 500,50 offset horizontally by cdwidth*1/5 and rotated 0 degrees
         for(int i=0; i<=5; i++){
             dealHorizCards(36.0f + 2.0f * i, 500, 50, (cWidth * 1 / 5) * i, 0);
         }
-
         // PLAYER 4 Labels & TextButton
-        Table buttonContainer4 = new Table(skin);
-        buttonContainer4.setTransform(true);
-        Label lb4 = new Label("Player 4", skin);
-        lb4.setFontScale(1);
-        buttonContainer4.add(lb4);
-        buttonContainer4.row().pad(10);
-        TextButton tb4 = new TextButton("Hit", skin);
-        tb4.setDisabled(true);
-        buttonContainer4.add(tb4).size(100, 50);
-        Table rotatingActor4 = buttonContainer4;
-        rotatingActor4.setRotation(0);
-        rotatingActor4.setPosition(650, 310);
-        stage.addActor(rotatingActor4);
+        createButtonLabel(skin, 650, 310, 0, 4);
+
 
         // Player 5
         //deal 6 cards, with starting 48.0f delay, coord of 50,600 offset by -cdwidth*1/5 and rotated -90 degrees
         for(int i=0; i<=5; i++){
             dealVertCards(48.0f + 2.0f * i, 50, 600, -(cWidth * 1 / 5) * i, -90);
         }
-
         // PLAYER 5 Labels & TextButton
-        Table buttonContainer5 = new Table(skin);
-        buttonContainer5.setTransform(true);
-        Label lb5 = new Label("Player 5", skin);
-        lb5.setFontScale(1);
-        buttonContainer5.add(lb5);
-        buttonContainer5.row().pad(10);
-        TextButton tb5 = new TextButton("Hit", skin);
-        tb5.setDisabled(true);
-        buttonContainer5.add(tb5).size(100, 50);
-        Table rotatingActor5 = buttonContainer5;
-        rotatingActor5.setRotation(-90);
-        rotatingActor5.setPosition(330, 1100 - (cWidth * 4));
-        stage.addActor(rotatingActor5);
+        createButtonLabel(skin, 330, 1100 -cWidth*4, -90, 5);
+
 
         // Player 6
         //deal 6 cards, with starting 48.0f delay, coord of 50,600 offset by -cdwidth*1/5 and rotated -90 degrees
         for(int i=0; i<=5; i++){
             dealVertCards(60.0f + 2.0f * i, 50, 1000, -(cWidth * 1 / 5) * i, -90);
         }
-
         // PLAYER 6 Labels & TextButton
-        Table buttonContainer6 = new Table(skin);
-        buttonContainer6.setTransform(true);
-        Label lb6 = new Label("Player 6", skin);
-        lb6.setFontScale(1);
-        buttonContainer6.add(lb6);
-        buttonContainer6.row().pad(10);
-        TextButton tb6 = new TextButton("Hit", skin);
-        tb6.setDisabled(true);
-        buttonContainer6.add(tb6).size(100, 50);
-        Table rotatingActor6 = buttonContainer6;
-        rotatingActor6.setRotation(-90);
-        rotatingActor6.setPosition(330, 1000 - cWidth);
-        stage.addActor(rotatingActor6);
+        createButtonLabel(skin, 330, 1000 -cWidth, -90, 6);
+
     }
 
     @Override
