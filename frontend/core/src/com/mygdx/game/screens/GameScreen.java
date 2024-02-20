@@ -19,6 +19,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FillViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.Boot;
 import com.mygdx.game.objects.*;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
@@ -30,15 +34,25 @@ public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Stage stage;
-
     private int cWidth;
     private int cHeight;
 
+    /*
+    *   ExtendViewport is used for GameScreen because we want to:
+    *   1. Maintain the aspect ratio of everything (cards, players, ...)
+    *   2. Allow larger screens to display larger cards, and smaller screens to display smaller cards
+    *   3. Display the entire table at ALL TIMES (Do not cut off parts of the table when resizing)
+    *
+    *   Check out how different viewports work in libGDX here:
+    *   https://raeleus.github.io/viewports-sample-project/
+    */
+    private final ExtendViewport gameViewport;
     private BitmapFont font;
 
     public GameScreen(Boot game) {
         this.game = game;
         this.camera = game.camera;
+        gameViewport = new ExtendViewport(1920, 1800);
     }
 
     public void dealVertCards(float delay, int xPos, int yPos, int offset, int rotation){
@@ -94,7 +108,7 @@ public class GameScreen extends ScreenAdapter {
         cWidth = frontImage.getWidth() + 5;
         cHeight = frontImage.getHeight() + 5;
 
-        stage = new Stage();
+        stage = new Stage(gameViewport);
         Gdx.input.setInputProcessor(stage);
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));

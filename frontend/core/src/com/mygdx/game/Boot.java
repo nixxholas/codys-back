@@ -18,7 +18,6 @@ public class Boot extends Game{
     public SpriteBatch batch;
     public OrthographicCamera camera;
 
-
     public Boot(){
         INSTANCE = this;
     }
