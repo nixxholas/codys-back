@@ -63,9 +63,13 @@ public class MainMenuScreen extends ScreenAdapter{
         Table table = new Table();
         table.setFillParent(true);
         table.add(btnStart).width(250).height(50);
-        table.add().padTop(20);
         table.row();
-        table.add(btnLeave).width(250).height(50);
+        table.add(btnLeave).width(250).height(50).pad(50);
+        // get the current position of the table
+        float x = table.getX ();
+        float y = table.getY ();
+        // shift the table 50 pixels down
+        table.setPosition (x, y - 100);
         stage.addActor(table);
 
         // BlackJack logo
@@ -75,7 +79,7 @@ public class MainMenuScreen extends ScreenAdapter{
         //bj.setOrigin((float) bjLogo.getWidth()/2, (float) bjLogo.getHeight()/2);
         //temporary fix
         bj.setPosition((float) game.getscreenWidth()/2 - (float) bjLogo.getWidth() /2
-                , (float) game.getscreenHeight()/2 +100);
+                , (float) game.getscreenHeight()/2 +50);
         stage.addActor(bj);
 
     }
