@@ -72,20 +72,26 @@ public class MainMenuScreen extends ScreenAdapter{
         Texture bjLogo = new Texture("images/decor/blackjacklogo.png");
         Logo bj = new Logo(bjLogo);
 
-        // Add text field to a table
+        /*
+        *   Table is used to control layout of UI elements and widgets in a scene2d.ui
+        *   The code below has 3 rows:
+        *       1. First row contains the blackjack image
+        *       2. Second row contains the "Start Game" button
+        *       3. Third row contains the "Exit" button
+        */
         Table table = new Table();
-table.debug();
         table.setFillParent(true);
         table.add(bj);
         table.row();
-        table.add(btnStart).width(250).height(50);
+        table.add(btnStart).width(500).height(100).padTop(50);
         table.row();
-        table.add(btnLeave).width(250).height(50).pad(50);
-        // get the current position of the table
-        float x = table.getX ();
-        float y = table.getY ();
-        // shift the table 50 pixels down
-        table.setPosition (x, y - 100);
+        table.add(btnLeave).width(500).height(100).padTop(50);
+
+        /*
+         *   Uncomment the following line to enable lines of the tables for debugging.
+         */
+        // table.setDebug(true);
+
         stage.addActor(table);
     }
 
