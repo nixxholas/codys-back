@@ -2,17 +2,13 @@ package com.mygdx.game.screens;
 
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -77,8 +73,7 @@ public class GameScreen extends ScreenAdapter {
         Card newC = new Card(backImage);
         newC.setPosition(900, 900);
         stage.addActor(newC);
-        SequenceAction sa = newC.cardAnimation(delay, (int) (xPos + MathUtils.cosDeg(rotation)* offset)
-                , (int) (yPos+ MathUtils.sinDeg(rotation)*offset), rotation, 0.5f, frontImage);
+        SequenceAction sa = newC.cardAnimation(delay, xPos+ offset, yPos , rotation, 0.5f, frontImage);
         newC.addAction(sa);
     }
 
@@ -99,7 +94,7 @@ public class GameScreen extends ScreenAdapter {
         buttonContainer.add(lb);
         buttonContainer.row().pad(10);
         buttonContainer.add(tb).size(100, 50);
-        rotatingActor.setOrigin(100, 50);
+
         rotatingActor.setRotation(rot);
         rotatingActor.setPosition(posX, posY);
         stage.addActor(rotatingActor);
@@ -128,43 +123,12 @@ public class GameScreen extends ScreenAdapter {
         cardBACK.setPosition(900, 900);
         stage.addActor(cardBACK);
 
-        // Creating an arc and designating points
-        // create a shape renderer
-        ShapeRenderer shapeRenderer = new ShapeRenderer ();
-
-        System.out.println(game.getscreenWidth());
-        System.out.println(game.getscreenHeight());
-        // Set the arc parameters
-        
-        float centerX = game.getscreenWidth() / 2.4f; // The x coordinate of the arc's center
-        float centerY = game.getscreenHeight() / 1.4f; // The y coordinate of the arc's center
-        float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.5f; // The radius of the arc
-        float startAngle = -30; // The start angle of the arc in degrees
-        float sweepAngle = 240; // The sweep angle of the arc in degrees
-        float numPlayers = 5; // The number of sprites to generate along the arc
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.CLEAR);
-        shapeRenderer.arc(centerX, centerY, radius, startAngle, sweepAngle);
-        shapeRenderer.end();
-
-        for (int i = 0; i < numPlayers; i++) {
-            // Calculate the angle and position of the sprite
-            float angle = MathUtils.lerpAngleDeg(startAngle, startAngle + sweepAngle, i / (float) (numPlayers - 1));
-            float x = centerX + MathUtils.cosDeg(angle) * radius;
-            float y = centerY + MathUtils.sinDeg(angle) * radius;
-            createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, 0, i+1);
-            for(int z = 1; z <= 5 + 1; z++){
-                dealHorizCards(2.0f * z + 12.0f * i, (int)x, (int)y, (cWidth / 5) * z, 0);
-            }
-        }
-
         // PLAYER 1
 
         //deal 6 cards, with starting 0 delay, coord of 1900,1100 offset by cdwidth*2 and rotated 90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(2.0f * i, 1900, 1000 - (cWidth*2), (cWidth / 5) * i, 90);
-        //}
+        for(int i=0; i<=5; i++){
+            dealVertCards(2.0f * i, 1900, 1000 - (cWidth*2), (cWidth * 1 / 5) * i, 90);
+        }
         
         // Card card1 = new Card(backImage);
         // card1.setPosition(900, 900);
@@ -211,7 +175,7 @@ public class GameScreen extends ScreenAdapter {
 
         // PLAYER 1 Labels & TextButton
 
-        //createButtonLabel(skin, 1600, 1000 -cWidth, 90, 1);
+        createButtonLabel(skin, 1600, 1000 -cWidth, 90, 1);
 
         /*Table buttonContainer = new Table(skin);
         buttonContainer.setTransform(true);
@@ -229,47 +193,47 @@ public class GameScreen extends ScreenAdapter {
 
         // PLAYER 2
         //deal 6 cards, with starting 12.0f delay, coord of 1900,1100 offset by cdwidth*1/5 and rotated 90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(12.0f + 2.0f * i, 1900, 1100 - (cWidth*5), (cWidth * 1 / 5) * i, 90);
-        //}
+        for(int i=0; i<=5; i++){
+            dealVertCards(12.0f + 2.0f * i, 1900, 1100 - (cWidth*5), (cWidth * 1 / 5) * i, 90);
+        }
         // PLAYER 2 Labels & TextButton
-        //createButtonLabel(skin, 1600, 1100 -cWidth*4, 90, 2);
+        createButtonLabel(skin, 1600, 1100 -cWidth*4, 90, 2);
 
 
         // PLAYER 3
         //deal 6 cards, with starting 24.0f delay, coord of 1100,50 offset horizontally by cdwidth*1/5 and rotated 0 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealHorizCards(24.0f + 2.0f * i, 1100, 50, (cWidth * 1 / 5) * i, 0);
-        //}
+        for(int i=0; i<=5; i++){
+            dealHorizCards(24.0f + 2.0f * i, 1100, 50, (cWidth * 1 / 5) * i, 0);
+        }
         // PLAYER 3 Labels & TextButton
-        //createButtonLabel(skin, 1250, 310, 0, 3);
+        createButtonLabel(skin, 1250, 310, 0, 3);
 
 
         // Player 4
         //deal 6 cards, with starting 36.0f delay, coord of 500,50 offset horizontally by cdwidth*1/5 and rotated 0 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealHorizCards(36.0f + 2.0f * i, 500, 50, (cWidth * 1 / 5) * i, 0);
-        //}
+        for(int i=0; i<=5; i++){
+            dealHorizCards(36.0f + 2.0f * i, 500, 50, (cWidth * 1 / 5) * i, 0);
+        }
         // PLAYER 4 Labels & TextButton
-        //createButtonLabel(skin, 650, 310, 0, 4);
+        createButtonLabel(skin, 650, 310, 0, 4);
 
 
         // Player 5
         //deal 6 cards, with starting 48.0f delay, coord of 50,600 offset by -cdwidth*1/5 and rotated -90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(48.0f + 2.0f * i, 50, 600, -(cWidth * 1 / 5) * i, -90);
-        //}
+        for(int i=0; i<=5; i++){
+            dealVertCards(48.0f + 2.0f * i, 50, 600, -(cWidth * 1 / 5) * i, -90);
+        }
         // PLAYER 5 Labels & TextButton
-        //createButtonLabel(skin, 330, 1100 -cWidth*4, -90, 5);
+        createButtonLabel(skin, 330, 1100 -cWidth*4, -90, 5);
 
 
         // Player 6
         //deal 6 cards, with starting 48.0f delay, coord of 50,600 offset by -cdwidth*1/5 and rotated -90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(60.0f + 2.0f * i, 50, 1000, -(cWidth * 1 / 5) * i, -90);
-        //}
+        for(int i=0; i<=5; i++){
+            dealVertCards(60.0f + 2.0f * i, 50, 1000, -(cWidth * 1 / 5) * i, -90);
+        }
         // PLAYER 6 Labels & TextButton
-        //createButtonLabel(skin, 330, 1000 -cWidth, -90, 6);
+        createButtonLabel(skin, 330, 1000 -cWidth, -90, 6);
 
     }
 
