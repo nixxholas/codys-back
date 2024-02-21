@@ -112,7 +112,7 @@ public class GameScreen extends ScreenAdapter {
         // Set the arc parameters
         
         float centerX = game.getscreenWidth() / 2.4f; // The x coordinate of the arc's center
-        float centerY = game.getscreenHeight() / 1.4f; // The y coordinate of the arc's center
+        float centerY = game.getscreenHeight() / 1.1f; // The y coordinate of the arc's center
         float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.5f; // The radius of the arc
         float startAngle = -30; // The start angle of the arc in degrees
         float sweepAngle = 240; // The sweep angle of the arc in degrees
