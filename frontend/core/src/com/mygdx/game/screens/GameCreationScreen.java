@@ -18,26 +18,20 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 public class GameCreationScreen extends ScreenAdapter{
 
     final Boot game;
-    private OrthographicCamera camera;
 	private Stage stage;
     private TextField textField;
     private Label valueLabel, nameLabel;
     private Slider slider;
     private boolean proceed = false;
 
-    /*
-    *   For more information on the choice of ScreenViewport, see MainMenuScreen.java
-    */
-    private final ScreenViewport gameScreenViewport;
-
     public GameCreationScreen(Boot boot){
         this.game = boot;
-        this.camera = boot.camera;
-        gameScreenViewport = new ScreenViewport(camera);
     }
 
 	public void show() {
-        stage = new Stage(gameScreenViewport);
+        stage = new Stage();
+        stage.setViewport(game.uiViewport);
+
         Gdx.input.setInputProcessor(stage);
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json")); // You can use a different skin
@@ -96,9 +90,8 @@ public class GameCreationScreen extends ScreenAdapter{
     @Override
 	public void render(float delta) {
         ScreenUtils.clear(0.28f, 0.31f, 0.60f, 1);
-		camera.update();
 
-		game.batch.setProjectionMatrix(camera.combined);
+		game.batch.setProjectionMatrix(stage.getCamera().combined);
 
 		game.batch.begin();
         stage.act(delta);
@@ -106,7 +99,7 @@ public class GameCreationScreen extends ScreenAdapter{
         game.batch.end();
 
 		if (proceed) {
-			game.setScreen(new KHGameScreen(game));
+			game.setScreen(new GameScreen(game));
 			dispose();
 		}
 	}

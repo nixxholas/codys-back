@@ -22,33 +22,14 @@ public class KHGameScreen extends ScreenAdapter {
     private Texture backImage;
     private Texture frontImage;
     private SpriteBatch batch;
-//    private OrthographicCamera camera;
     private Stage stage;
     private int cWidth;
     private int cHeight;
 
-    /*
-     *   ExtendViewPort behaviour: The world is first scaled to fit within the viewport,
-     *   then the shorter dimension is lengthened to fill the viewport.
-     *
-     *   It is used for GameScreen because we want to:
-     *   1. Maintain the aspect ratio of everything (cards, players, ...)
-     *   2. Allow larger screens to display larger cards, and smaller screens to display smaller cards
-     *   3. Display the entire table at ALL TIMES (Do not cut off parts of the table when resizing)
-     *
-     *   Check out how different viewports work in libGDX here:
-     *   https://raeleus.github.io/viewports-sample-project/
-     */
-    private final ExtendViewport gameViewport;
     private BitmapFont font;
 
     public KHGameScreen(Boot game) {
         this.game = game;
-//        this.camera = game.camera;
-        /*
-         *   gameViewport has a minimum width and height of 1920x1080 and no maximum
-         */
-        gameViewport = new ExtendViewport(1920, 1080);
     }
 
     public void dealVertCards(float delay, int xPos, int yPos, int offset, int rotation){
@@ -85,7 +66,8 @@ public class KHGameScreen extends ScreenAdapter {
     @Override
     public void show() {
         // Instantiate the stage with gameViewport
-        stage = new Stage(gameViewport);
+        stage = new Stage();
+        stage.setViewport(game.gameViewport);
 
         backImage = new Texture("back_card_150.png");
         frontImage = new Texture("2_of_clubs.png");
@@ -123,8 +105,7 @@ public class KHGameScreen extends ScreenAdapter {
     public void render(float delta) {
         ScreenUtils.clear(0, 0.3f, 0, 1);
 
-//        camera.update();
-//        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.setProjectionMatrix(stage.getCamera().combined);
 
         stage.act(delta);
         stage.draw();

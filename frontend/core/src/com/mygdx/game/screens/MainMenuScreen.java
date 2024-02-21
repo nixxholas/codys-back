@@ -16,7 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class MainMenuScreen extends ScreenAdapter{
     final Boot game;
-    private OrthographicCamera camera;
 	private Stage stage;
     private int proceed = 0;
 
@@ -28,26 +27,9 @@ public class MainMenuScreen extends ScreenAdapter{
     *   BitmapFont font;
     */
 
-    /*
-     *  Viewports are used to change how the screen behaves when the window is resized.
-     *  Main Menu should be using ScreenViewport because we want the blackjack image, start button and Exit button
-     *  to always be centered in the middle of the screen.
-     *
-     *  mainMenuViewport is instantiated in the constructor of MainMenuScreen
-     *  mainMenuViewport is passed into stage as a parameter
-     *
-     *  stage.getViewport().update resizes the viewport whenever resize() is called (aka a window resize happens).
-     *  stage.getViewport().update() also ensures the UI stays in the center of the screen by setting centerCamera = true.
-     *
-     *   Check out how different viewports work in libGDX here:
-     *   https://raeleus.github.io/viewports-sample-project/
-     */
-    private final ScreenViewport mainMenuViewport;
 
     public MainMenuScreen(Boot boot){
         this.game = boot;
-        this.camera = boot.camera;
-        mainMenuViewport = new ScreenViewport(camera);
 //        generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto.ttf"));
 //        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 //        parameter.size = 48;
@@ -55,7 +37,9 @@ public class MainMenuScreen extends ScreenAdapter{
     }
 
 	public void show() {
-        stage = new Stage(mainMenuViewport);
+        stage = new Stage();
+        stage.setViewport(game.uiViewport);
+
         Gdx.input.setInputProcessor(stage);
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json")); // You can use a different skin
@@ -106,8 +90,7 @@ public class MainMenuScreen extends ScreenAdapter{
     @Override
 	public void render(float delta) {
 		ScreenUtils.clear(0.28f, 0.31f, 0.60f, 1);
-		camera.update();
-		game.batch.setProjectionMatrix(camera.combined);
+		game.batch.setProjectionMatrix(stage.getCamera().combined);
 
 		game.batch.begin();
         stage.act(delta);
