@@ -9,9 +9,10 @@ public class Player {
     private String name;
     private List<Card> hand = new ArrayList<>();
     private boolean standing = false;
+    private boolean doubleDown = false;
     private int balance;
     private int currentBet;
-    private int num_cards;
+    private int numCards;
 
     public Player(String name) {
         this.name = name;
@@ -31,11 +32,11 @@ public class Player {
     }
 
     public int getNumCards() {
-        return this.num_cards;
+        return this.numCards;
     }
     
     public void setNumCards(int num_cards) {
-        this.num_cards = num_cards;
+        this.numCards = numCards;
     }
 
     public void addCard(Card card) {
@@ -74,17 +75,29 @@ public class Player {
         return standing;
     }
 
+    public void setDoubleDown(boolean doubleDown) {
+        this.doubleDown = doubleDown;
+    }
+
+        public boolean isDoubleDown() {
+        return doubleDown;
+    }
+
     public void placeBet(int amount) {
         if (amount > balance) {
             throw new IllegalArgumentException("Bet amount exceeds balance.");
         }
+        if (isdoubleDown()) {
+            this.currentBet += amount;
+        } else {
         this.currentBet = amount;
+        }
         this.balance -= amount;
     }
 
     public void winBet() {
 
-        /* Blackjack scenarios. */
+        // Blackjack scenarios
         if (this.calculateHandValue() == 21 && this.getNumCards() == 2) {
             this.balance += (currentBet * 2.5); // Blackjack pays 3 to 2
             this.currentBet = 0;

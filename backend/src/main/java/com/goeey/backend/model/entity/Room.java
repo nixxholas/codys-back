@@ -175,6 +175,28 @@ public class Room extends Thread {
         }
     }
 
+    // Double down method
+    public void doubleDown(int seatNumber) {
+        if (gameState != GameState.PLAYER_TURN) {
+            throw new IllegalStateException("Not the right time to double down.");
+        }
+        if (!gameStarted) {
+            throw new IllegalStateException("Game not started.");
+        }
+        Player player = players.get(seatNumber);
+            if (player != null && !player.isStanding()) {
+                player.setDoubleDown(true);
+                player.placeBet(player.getCurrentBet()); // Additional bet
+                player.addCard(deck.remove(0));
+            }
+            if (player.calculateHandValue() > 21) {
+                player.setStanding(false); // Player busts
+            } else {
+                player.setStanding(true); // Player is forced to stand as he can only take one additional card
+            }
+        }
+    }
+
     private void checkGameOver() {
         for (Player player : players.values()) {
             if (!player.isStanding()) {
@@ -209,7 +231,7 @@ public class Room extends Thread {
         for (Player player : players.values()) {
             int playerValue = player.calculateHandValue();
             
-            /* Blackjack scenarios. */
+            // Blackjack scenarios
             if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue != 21 || dealerValue == 21 && dealer.getNumCards() != 2)) {
                 System.out.println(player.getId() + " wins!");
                 player.winBet();
