@@ -21,9 +21,9 @@ public class Card extends Actor {
         this.texture = t;
     }
 
-    public SequenceAction cardAnimation(float afterDelay, int x, int y, int roatate, float delay, Texture t){
+    public SequenceAction cardAnimation(float afterDelay, int x, int y, int rotate, float delay, Texture t){
         MoveToAction moveToAction = Actions.moveTo(x, y, delay);
-        RotateByAction rotateAction = Actions.rotateBy(roatate,delay);
+        RotateByAction rotateAction = Actions.rotateBy(rotate,delay);
         SequenceAction sequence = Actions.sequence(moveToAction, rotateAction); // Move first, then Rotate
 
         SequenceAction finalSequence = Actions.sequence(Actions.delay(afterDelay), sequence, Actions.delay(0.5f), Actions.run(new Runnable() {
