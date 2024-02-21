@@ -45,17 +45,10 @@ public class GameScreen extends ScreenAdapter {
         this.game = game;
     }
 
-    public void dealVertCards(float delay, int xPos, int yPos, int offset, int rotation){
-        Card newC = new Card(backImage);
-        newC.setPosition(900, 900);
-        stage.addActor(newC);
-        SequenceAction sa = newC.cardAnimation(delay, xPos, yPos + offset, rotation, 0.5f, frontImage);
-        newC.addAction(sa);
-    }
 
     public void dealHorizCards(float delay, int xPos, int yPos, int offset, int rotation){
         Card newC = new Card(backImage);
-        newC.setPosition(900, 900);
+        newC.setPosition(900, 800);
         stage.addActor(newC);
         SequenceAction sa = newC.cardAnimation(delay, (int) (xPos + MathUtils.cosDeg(rotation)* offset)
                 , (int) (yPos+ MathUtils.sinDeg(rotation)*offset), rotation, 0.5f, frontImage);
@@ -86,7 +79,7 @@ public class GameScreen extends ScreenAdapter {
     }
 
     public void createPlayerSet(){
-        dealVertCards(cHeight, cHeight, cHeight, cWidth, cHeight);
+        dealHorizCards(cHeight, cHeight, cHeight, cWidth, cHeight);
         //createButtonLabel();
 
     }
@@ -107,7 +100,7 @@ public class GameScreen extends ScreenAdapter {
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
         final Card cardBACK = new Card(backImage);
-        cardBACK.setPosition(900, 900);
+        cardBACK.setPosition(900, 800);
         stage.addActor(cardBACK);
 
         // Creating an arc and designating points
