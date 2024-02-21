@@ -25,6 +25,7 @@ public class KHGameScreen extends ScreenAdapter {
     private Stage stage;
     private int cWidth;
     private int cHeight;
+//    private int balance = 0;
 
     private BitmapFont font;
 
@@ -68,6 +69,11 @@ public class KHGameScreen extends ScreenAdapter {
         // Instantiate the stage with gameViewport
         stage = new Stage();
         stage.setViewport(game.gameViewport);
+
+//        Label balanceLabel = new Label(Integer.toString(balance));
+        Table hud = new Table();
+        hud.setFillParent(true);
+//        hud.add()
 
         backImage = new Texture("back_card_150.png");
         frontImage = new Texture("2_of_clubs.png");

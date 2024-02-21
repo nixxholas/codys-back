@@ -17,11 +17,10 @@ public class Boot extends Game{
     public static Boot INSTANCE;
     private int screenWidth, screenHeight;
     public SpriteBatch batch;
-    public OrthographicCamera camera;
 
     /*
      *  Viewports are used to change how the screen behaves when the window is resized.
-     *  UI should be seen through ScreenViewport because we want the blackjack image, start button and Exit button
+     *  UI should use ScreenViewport because we want the blackjack image, start button and Exit button
      *  to always be centered in the middle of the screen.
      *
      *  uiViewport is instantiated in the constructor of Boot
@@ -57,8 +56,6 @@ public class Boot extends Game{
         this.batch = new SpriteBatch();
         this.screenWidth = Gdx.graphics.getWidth();
         this.screenHeight = Gdx.graphics.getHeight();
-        this.camera = new OrthographicCamera();
-        this.camera.setToOrtho(false, screenWidth, screenHeight);
         uiViewport = new ScreenViewport();
         gameViewport = new ExtendViewport(1920, 1080, 9999, 9999);
         // Sets screen to MainMenuScreen.java
