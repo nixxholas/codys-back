@@ -103,14 +103,12 @@ public class GameScreen extends ScreenAdapter {
         cardBACK.setPosition(900, 800);
         stage.addActor(cardBACK);
 
-        // Creating an arc and designating points
-        // create a shape renderer
-        ShapeRenderer shapeRenderer = new ShapeRenderer ();
 
         System.out.println(game.getscreenWidth());
         System.out.println(game.getscreenHeight());
-        // Set the arc parameters
-        
+
+
+        // Creating an arc and designating points by setting the arc parameters
         float centerX = game.getscreenWidth() / 2.4f; // The x coordinate of the arc's center
         float centerY = game.getscreenHeight() / 1.1f; // The y coordinate of the arc's center
         float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.5f; // The radius of the arc
@@ -118,6 +116,8 @@ public class GameScreen extends ScreenAdapter {
         float sweepAngle = 240; // The sweep angle of the arc in degrees
         float numPlayers = 5; // The number of sprites to generate along the arc
 
+        // create a shape renderer
+        ShapeRenderer shapeRenderer = new ShapeRenderer ();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.CLEAR);
         shapeRenderer.arc(centerX, centerY, radius, startAngle, sweepAngle);
