@@ -112,12 +112,15 @@ public class GameScreen extends ScreenAdapter {
         // create a shape renderer
         ShapeRenderer shapeRenderer = new ShapeRenderer ();
 
+        System.out.println(game.getscreenWidth());
+        System.out.println(game.getscreenHeight());
         // Set the arc parameters
-        float centerX = game.getscreenWidth() / 2f; // The x coordinate of the arc's center
-        float centerY = game.getscreenHeight() / 2f + 500; // The y coordinate of the arc's center
-        float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.1f; // The radius of the arc
+        
+        float centerX = game.getscreenWidth() / 2.4f; // The x coordinate of the arc's center
+        float centerY = game.getscreenHeight() / 1.4f; // The y coordinate of the arc's center
+        float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.5f; // The radius of the arc
         float startAngle = -30; // The start angle of the arc in degrees
-        float sweepAngle = 225; // The sweep angle of the arc in degrees
+        float sweepAngle = 240; // The sweep angle of the arc in degrees
         float numPlayers = 5; // The number of sprites to generate along the arc
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
@@ -130,12 +133,12 @@ public class GameScreen extends ScreenAdapter {
             float angle = MathUtils.lerpAngleDeg(startAngle, startAngle + sweepAngle, i / (float) (numPlayers - 1));
             float x = centerX + MathUtils.cosDeg(angle) * radius;
             float y = centerY + MathUtils.sinDeg(angle) * radius;
-            createButtonLabel(skin, (int) (x - MathUtils.cosDeg(angle)*(cWidth))
-                    , (int) (y - MathUtils.sinDeg(angle)*(cWidth*2)), (int) angle- 262, i+1);
-            for(int z = 1; z<=numPlayers+1; z++){
-                dealHorizCards(2.0f * z + 12.0f *i, (int) x, (int) y, (cWidth / 5) * z, (int) angle - 262);
+            createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, 0, i+1);
+            for(int z = 1; z <= 5 + 1; z++){
+                dealHorizCards(2.0f * z + 12.0f * i, (int)x, (int)y, (cWidth / 5) * z, 0);
             }
         }
+
         // PLAYER 1
 
         //deal 6 cards, with starting 0 delay, coord of 1900,1100 offset by cdwidth*2 and rotated 90 degrees
