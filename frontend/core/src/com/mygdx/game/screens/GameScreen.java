@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.Boot;
 import com.mygdx.game.objects.Card;
@@ -36,10 +37,11 @@ public class GameScreen extends ScreenAdapter {
     }
 
 
-    public void dealHorizCards(float delay, int xPos, int yPos, int offset, int rotation){
+    public void dealHorizCards(float delay, int xPos, int yPos, int offset, int rotation, String imagePath){
         Card newC = new Card(backImage);
         newC.setPosition(900, 800);
         stage.addActor(newC);
+        frontImage = new Texture(imagePath);
         SequenceAction sa = newC.cardAnimation(delay, (int) (xPos + MathUtils.cosDeg(rotation)* offset)
                 , (int) (yPos+ MathUtils.sinDeg(rotation)*offset), rotation, 0.5f, frontImage);
         newC.addAction(sa);
@@ -68,15 +70,10 @@ public class GameScreen extends ScreenAdapter {
         stage.addActor(rotatingActor);
     }
 
-    public void createPlayerSet(){
-        dealHorizCards(cHeight, cHeight, cHeight, cWidth, cHeight);
-        //createButtonLabel();
-    }
-
     @Override
     public void show() {
         backImage = new Texture("back_card_150.png");
-        frontImage = new Texture("2_Clubs.png");
+        frontImage = new Texture("TWO_CLUBS.png");
 
         cWidth = frontImage.getWidth() + 5;
         cHeight = frontImage.getHeight() + 5;
@@ -110,17 +107,6 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.arc(centerX, centerY, radius, startAngle, sweepAngle);
         shapeRenderer.end();
 
-        for (int i = 0; i < numPlayers; i++) {
-            // Calculate the angle and position of the sprite
-            float angle = MathUtils.lerpAngleDeg(startAngle, startAngle + sweepAngle, i / (float) (numPlayers - 1));
-            // Use cosine and sine to calculate diagonal offset from center of circle
-            float x = centerX + MathUtils.cosDeg(angle) * radius;
-            float y = centerY + MathUtils.sinDeg(angle) * radius;
-            createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, 0, i+1);
-            for(int z = 1; z <= 5 + 1; z++){
-                dealHorizCards(2.0f * z + 12.0f * i, (int)x, (int)y, (cWidth / 5) * z, 0);
-            }
-        }
 
         // Situation, server passes client a JSON file.
         // Client parses it into a list
@@ -135,15 +121,36 @@ public class GameScreen extends ScreenAdapter {
         hand.add("KING_CLUBS");
         hand.add("ACE_DIAMONDS");
         List<String> hand2 = new ArrayList<String>();
-        hand.add("TWO_DIAMONDS");
-        hand.add("THREE_SPADES");
-        hand.add("FOUR_HEARTS");
-        hand.add("KING_CLUBS");
-        hand.add("ACE_DIAMONDS");
+        hand2.add("THRE_DIAMONDS");
+        hand2.add("TEN_SPADES");
+        hand2.add("ACE_HEARTS");
+        hand2.add("QUEEN_CLUBS");
+        hand2.add("ACE_DIAMONDS");
+        List<String> hand3 = new ArrayList<String>();
+        List<String> hand4 = new ArrayList<String>();
+        List<String> hand5 = new ArrayList<String>();
         List<List<String>> playerHands = new ArrayList<>(5);
         playerHands.add(hand);
         playerHands.add(hand2);
+        playerHands.add(hand3);
+        playerHands.add(hand4);
+        playerHands.add(hand5);
 
+        //looping through i players
+        for (int i = 0; i < numPlayers; i++) {
+            // Calculate the angle and position of each player
+            float angle = MathUtils.lerpAngleDeg(startAngle, startAngle + sweepAngle, i / (float) (numPlayers - 1));
+            // Use cosine and sine to calculate diagonal offset from center of circle
+            float x = centerX + MathUtils.cosDeg(angle) * radius;
+            float y = centerY + MathUtils.sinDeg(angle) * radius;
+            createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, 0, i+1);
+            List<String> currentHand = playerHands.get(i);
+            for(int z = 0; z < currentHand.size(); z++){
+                // looping through each i player's z position card
+                String cardImagePath = (playerHands.get(i)).get(z) + ".png";
+                dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x, (int)y, (cWidth / 5) * (z+1), 0, cardImagePath);
+            }
+        }
 
     }
 
