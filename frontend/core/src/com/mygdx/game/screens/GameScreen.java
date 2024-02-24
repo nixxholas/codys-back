@@ -24,16 +24,18 @@ import java.util.List;
 
 public class GameScreen extends ScreenAdapter {
     final Boot game;
+    private final Hud hud;
     private Texture backImage;
     private Texture frontImage;
     private SpriteBatch batch;
     private Stage stage;
     private int cWidth;
     private int cHeight;
-    private BitmapFont font;
+
 
     public GameScreen(Boot game) {
         this.game = game;
+        hud = new Hud(game.batch, 65000, 10, game.getPlayerName());
     }
 
 
@@ -88,9 +90,6 @@ public class GameScreen extends ScreenAdapter {
         final Card cardBACK = new Card(backImage);
         cardBACK.setPosition(900, 800);
         stage.addActor(cardBACK);
-
-        System.out.println(game.getscreenWidth());
-        System.out.println(game.getscreenHeight());
 
         // Creating an arc and designating points by setting the arc parameters
         float centerX = game.getscreenWidth() / 2.4f; // The x coordinate of the arc's center
@@ -153,7 +152,6 @@ public class GameScreen extends ScreenAdapter {
         }
 
     }
-
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0.3f, 0, 1);
@@ -161,6 +159,9 @@ public class GameScreen extends ScreenAdapter {
 
         stage.act(delta);
         stage.draw();
+
+        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
+        hud.stage.draw();
     }
 
     @Override
@@ -174,5 +175,6 @@ public class GameScreen extends ScreenAdapter {
         backImage.dispose();
         frontImage.dispose();
         stage.dispose();
+        hud.dispose();
     }
 }

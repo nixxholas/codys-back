@@ -18,20 +18,8 @@ public class MainMenuScreen extends ScreenAdapter{
 	private Stage stage;
     private int proceed = 0;
 
-    /*
-    *   Testing code for loading custom fonts
-    *
-    *   FreeTypeFontGenerator generator;
-    *   FreeTypeFontGenerator.FreeTypeFontParameter parameter;
-    *   BitmapFont font;
-    */
-
     public MainMenuScreen(Boot boot){
         this.game = boot;
-//        generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto.ttf"));
-//        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-//        parameter.size = 48;
-//        font = generator.generateFont(parameter); // font size 12 pixels
     }
 
 	public void show() {
@@ -112,6 +100,5 @@ public class MainMenuScreen extends ScreenAdapter{
 	@Override
     public void dispose() {
         stage.dispose();
-//        generator.dispose();
     }
 }
