@@ -13,7 +13,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.Boot;
 
 public class GameCreationScreen extends ScreenAdapter{
-
     final Boot game;
 	private Stage stage;
     private TextField textField;
@@ -35,7 +34,6 @@ public class GameCreationScreen extends ScreenAdapter{
         // Create a text field
         TextFieldStyle textFieldStyle = skin.get(TextFieldStyle.class);
         textField = new TextField("", skin);
-
 
         // Label
         nameLabel = new Label("Username", skin);
@@ -96,6 +94,7 @@ public class GameCreationScreen extends ScreenAdapter{
         game.batch.end();
 
 		if (proceed) {
+            game.setPlayerName(textField.getText());
 			game.setScreen(new GameScreen(game));
 			dispose();
 		}

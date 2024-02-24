@@ -9,23 +9,9 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.screens.MainMenuScreen;
 
 public class Boot extends Game{
-
+    private String playerName;
     private int screenWidth, screenHeight;
     public SpriteBatch batch;
-
-    /*
-     *  Viewports are used to change how the screen behaves when the window is resized.
-     *  UI should use ScreenViewport because we want the blackjack image, start button and Exit button
-     *  to always be centered in the middle of the screen.
-     *
-
-     *
-
-     *
-     *  Check out how different viewports work in libGDX here:
-     *  https://raeleus.github.io/viewports-sample-project/
-     */
-    public ScreenViewport uiViewport;
 
     /*
      *   FitViewport behaviour: The world is first scaled to fit within the viewport
@@ -59,13 +45,11 @@ public class Boot extends Game{
         /*
          *  Sets screen to MainMenuScreen.java
          *  The screen will be displayed when render() is called
-         *
-         * */
+         */
         setScreen(new MainMenuScreen(this));
     }
 
     public void render() {
-
         /*
         *   super.render() is IMPORTANT because see below.
         *
@@ -85,5 +69,8 @@ public class Boot extends Game{
     public int getscreenHeight(){
         return screenHeight;
     }
+
+    public void setPlayerName(String playerName) {this.playerName = playerName;}
+    public String getPlayerName() {return playerName;}
 
 }
