@@ -26,7 +26,6 @@ public class MainMenuScreen extends ScreenAdapter{
     *   BitmapFont font;
     */
 
-
     public MainMenuScreen(Boot boot){
         this.game = boot;
 //        generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Roboto.ttf"));
