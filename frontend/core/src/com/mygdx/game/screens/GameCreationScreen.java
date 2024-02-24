@@ -27,7 +27,7 @@ public class GameCreationScreen extends ScreenAdapter{
 
 	public void show() {
         stage = new Stage();
-        stage.setViewport(game.uiViewport);
+        stage.setViewport(game.gameViewport);
 
         Gdx.input.setInputProcessor(stage);
 
