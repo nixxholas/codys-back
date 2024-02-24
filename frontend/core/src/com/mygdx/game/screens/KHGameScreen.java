@@ -31,15 +31,8 @@ public class KHGameScreen extends ScreenAdapter {
         this.game = game;
     }
 
-    public void dealVertCards(float delay, int xPos, int yPos, int offset, int rotation){
-        Card newC = new Card(backImage);
-        newC.setPosition(900, 600);
-        stage.addActor(newC);
-        SequenceAction sa = newC.cardAnimation(delay, xPos, yPos + offset, rotation, 0.5f, frontImage);
-        newC.addAction(sa);
-    }
 
-    public void createButtonLabel(Skin skin, int posX , int posY , int rot, int playerNum){
+    public void createButtonLabel(Skin skin, int posX , int posY , int playerNum){
         //Button
         Table buttonContainer = new Table(skin);
         buttonContainer.setTransform(true);
@@ -57,7 +50,6 @@ public class KHGameScreen extends ScreenAdapter {
         buttonContainer.row().pad(10);
         buttonContainer.add(tb).size(100, 50);
 
-        rotatingActor.setRotation(rot);
         rotatingActor.setPosition(posX, posY);
         stage.addActor(rotatingActor);
     }

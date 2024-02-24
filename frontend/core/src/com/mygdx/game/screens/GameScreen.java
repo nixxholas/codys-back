@@ -39,17 +39,17 @@ public class GameScreen extends ScreenAdapter {
     }
 
 
-    public void dealHorizCards(float delay, int xPos, int yPos, int offset, int rotation, String imagePath){
+    public void dealHorizCards(float delay, int xPos, int yPos, int offset, String imagePath){
         Card newC = new Card(backImage);
         newC.setPosition(900, 800);
         stage.addActor(newC);
         frontImage = new Texture(imagePath);
-        SequenceAction sa = newC.cardAnimation(delay, (int) (xPos + MathUtils.cosDeg(rotation)* offset)
-                , (int) (yPos+ MathUtils.sinDeg(rotation)*offset), rotation, 0.5f, frontImage);
+        SequenceAction sa = newC.cardAnimation(delay, xPos +offset
+                ,yPos, 0.5f, frontImage);
         newC.addAction(sa);
     }
 
-    public void createButtonLabel(Skin skin, int posX , int posY , int rot, int playerNum){
+    public void createButtonLabel(Skin skin, int posX , int posY , int playerNum){
         //Button
         Table buttonContainer = new Table(skin);
         buttonContainer.setTransform(true);
@@ -67,7 +67,6 @@ public class GameScreen extends ScreenAdapter {
         buttonContainer.row().pad(10);
         buttonContainer.add(tb).size(100, 50);
         rotatingActor.setOrigin(100, 50);
-        rotatingActor.setRotation(rot);
         rotatingActor.setPosition(posX, posY);
         stage.addActor(rotatingActor);
     }
@@ -142,13 +141,13 @@ public class GameScreen extends ScreenAdapter {
             // Use cosine and sine to calculate diagonal offset from center of circle
             float x = centerX + MathUtils.cosDeg(angle) * radius;
             float y = centerY + MathUtils.sinDeg(angle) * radius;
-            createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, 0, i+1);
+            createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, i+1);
             //get hand of current player
             List<String> currentHand = playerHands.get(i);
             for(int z = 0; z < currentHand.size(); z++){
                 // looping through each i player's z position card
                 String cardImagePath = (playerHands.get(i)).get(z) + ".png";
-                dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x, (int)y, (cWidth / 5) * (z+1), 0, cardImagePath);
+                dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x, (int)y, (cWidth / 5) * (z+1), cardImagePath);
             }
         }
 
