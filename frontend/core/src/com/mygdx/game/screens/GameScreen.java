@@ -107,7 +107,7 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.end();
 
 
-        // Situation, server passes client a JSON file.
+        // Situation: server passes client a JSON file.
         // Client parses it into a list
         // Add code for that here
         // *here*
@@ -120,7 +120,7 @@ public class GameScreen extends ScreenAdapter {
         hand.add("KING_CLUBS");
         hand.add("ACE_DIAMONDS");
         List<String> hand2 = new ArrayList<String>();
-        hand2.add("THRE_DIAMONDS");
+        hand2.add("THREE_DIAMONDS");
         hand2.add("TEN_SPADES");
         hand2.add("ACE_HEARTS");
         hand2.add("QUEEN_CLUBS");
@@ -143,6 +143,7 @@ public class GameScreen extends ScreenAdapter {
             float x = centerX + MathUtils.cosDeg(angle) * radius;
             float y = centerY + MathUtils.sinDeg(angle) * radius;
             createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, 0, i+1);
+            //get hand of current player
             List<String> currentHand = playerHands.get(i);
             for(int z = 0; z < currentHand.size(); z++){
                 // looping through each i player's z position card
