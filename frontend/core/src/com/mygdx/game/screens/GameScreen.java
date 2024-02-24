@@ -77,7 +77,7 @@ public class GameScreen extends ScreenAdapter {
     @Override
     public void show() {
         backImage = new Texture("back_card_150.png");
-        frontImage = new Texture("2_Clubs.png");
+        frontImage = new Texture("TWO_CLUBS.png");
 
         cWidth = frontImage.getWidth() + 5;
         cHeight = frontImage.getHeight() + 5;
@@ -167,5 +167,6 @@ public class GameScreen extends ScreenAdapter {
         backImage.dispose();
         frontImage.dispose();
         stage.dispose();
+        hud.dispose();
     }
 }

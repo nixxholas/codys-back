@@ -11,18 +11,40 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+/*
+*   The Hud class is responsible for displaying:
+*   1. Player name
+*   2. Available balance
+*   3. you tell me what else ...
+*
+* */
 public class Hud {
     public Stage stage;
     private final ScreenViewport hudViewport;
     private int balance;
     private static String playerName;
 
+    /*
+    *   Set locale to Singapore and language to English.
+    *   Prepare a number formatter to format balance to SG currency format.
+    *   e.g. sgCurrencyFormat(2000) will return a String "$2,000.00"
+    *
+    * */
     Locale locale = new Locale.Builder().setLanguage("en").setRegion("SG").build();
     NumberFormat sgCurrencyFormat = NumberFormat.getCurrencyInstance(locale);
 
+    /*
+    *   Labels to label the player name and balance.
+    * */
     private static final Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
     static Label playerNameTextLabel = new Label("Player Name: ", labelStyle);
     static Label balanceTextLabel = new Label("Balance: ", labelStyle);
+
+    /*
+    *
+    * */
+    private Table playerNameTable;
+    private Table balanceTable;
 
     Label balanceLabel;
     Label playerNameLabel;
@@ -30,22 +52,29 @@ public class Hud {
     public Hud (SpriteBatch batch, int balance, int bet, String playerName) {
         this.balance = balance;
         this.playerName = playerName;
+        playerNameLabel = new Label(playerName, labelStyle);
+        balanceLabel = new Label(sgCurrencyFormat.format(balance), labelStyle);
 
         hudViewport = new ScreenViewport();
         stage = new Stage(hudViewport, batch);
 
-        Table hudTable = new Table();
-        hudTable.top().pad(5); // anchor the table to the top of the stage
-        hudTable.setFillParent(true); // set hudtable to fill the size of the stage
+        playerNameTable = new Table();
+        playerNameTable.top().left().pad(5); // anchor the table to the top left of the stage with 5px padding above
+        playerNameTable.setFillParent(true); // set hudtable to fill the size of the stage
 
-        balanceLabel = new Label(sgCurrencyFormat.format(balance), labelStyle);
-        playerNameLabel = new Label(playerName, labelStyle);
+        playerNameTable.add(playerNameTextLabel).padRight(10);
+        playerNameTable.add(playerNameLabel);
 
-        hudTable.add(playerNameTextLabel).padRight(10);
-        hudTable.add(playerNameLabel);
-        hudTable.add(balanceLabel).expandX().right();
 
-        stage.addActor(hudTable);
+        balanceTable = new Table();
+        balanceTable.top().right().pad(5); // anchor the table to the top right of the stage with 5px padding above
+        balanceTable.setFillParent(true); // set hudtable to fill the size of the stage
+
+        balanceTable.add(balanceTextLabel).padRight(10);
+        balanceTable.add(balanceLabel);
+
+        stage.addActor(playerNameTable);
+        stage.addActor(balanceTable);
     }
 
     public void update(int balance) {
