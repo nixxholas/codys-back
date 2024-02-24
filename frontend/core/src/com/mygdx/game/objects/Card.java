@@ -15,6 +15,7 @@ public class Card extends Actor {
     public Card(Texture texture) {
         this.texture = texture;
         setBounds(0, 0, texture.getWidth(), texture.getHeight()); // setBounds should be called here
+
     }
 
     public void setTexture(Texture t){

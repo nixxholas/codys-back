@@ -41,7 +41,7 @@ public class GameScreen extends ScreenAdapter {
 
     public void dealHorizCards(float delay, int xPos, int yPos, int offset, String imagePath){
         Card newC = new Card(backImage);
-        newC.setPosition(900, 800);
+        newC.setPosition((game.getscreenWidth()-cWidth) / 2f , game.getscreenHeight()/1.2f);
         stage.addActor(newC);
         frontImage = new Texture(imagePath);
         SequenceAction sa = newC.cardAnimation(delay, xPos +offset
@@ -55,7 +55,6 @@ public class GameScreen extends ScreenAdapter {
         buttonContainer.setTransform(true);
         TextButton tb = new TextButton("Hit", skin);
         tb.setDisabled(true);
-        Table rotatingActor = buttonContainer;
 
         //Label
         String lbString = "Player "+ playerNum;
@@ -66,9 +65,9 @@ public class GameScreen extends ScreenAdapter {
         buttonContainer.add(lb);
         buttonContainer.row().pad(10);
         buttonContainer.add(tb).size(100, 50);
-        rotatingActor.setOrigin(100, 50);
-        rotatingActor.setPosition(posX, posY);
-        stage.addActor(rotatingActor);
+        buttonContainer.setOrigin(50, 25);
+        buttonContainer.setPosition(posX, posY);
+        stage.addActor(buttonContainer);
     }
 
     @Override
@@ -76,8 +75,8 @@ public class GameScreen extends ScreenAdapter {
         backImage = new Texture("back_card_150.png");
         frontImage = new Texture("TWO_CLUBS.png");
 
-        cWidth = frontImage.getWidth() + 5;
-        cHeight = frontImage.getHeight() + 5;
+        cWidth = frontImage.getWidth();
+        cHeight = frontImage.getHeight();
 
         stage = new Stage();
         stage.setViewport(game.gameViewport);
@@ -86,16 +85,18 @@ public class GameScreen extends ScreenAdapter {
 
         Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
+        // Create dealer's card
+        // cards are dealt from here
         final Card cardBACK = new Card(backImage);
-        cardBACK.setPosition(900, 800);
+        cardBACK.setPosition((game.getscreenWidth()-cWidth) / 2f , game.getscreenHeight()/1.2f);
         stage.addActor(cardBACK);
 
         // Creating an arc and designating points by setting the arc parameters
-        float centerX = game.getscreenWidth() / 2.4f; // The x coordinate of the arc's center
+        float centerX = game.getscreenWidth() / 2f; // The x coordinate of the arc's center
         float centerY = game.getscreenHeight() / 1.1f; // The y coordinate of the arc's center
-        float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.5f; // The radius of the arc
+        float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.4f; // The radius of the arc
         float startAngle = -30; // The start angle of the arc in degrees
-        float sweepAngle = 240; // The sweep angle of the arc in degrees
+        float sweepAngle = -120; // The sweep angle of the arc in degrees
         float numPlayers = 5; // The number of sprites to generate along the arc
 
         // create a shape renderer
@@ -118,6 +119,12 @@ public class GameScreen extends ScreenAdapter {
         hand.add("FOUR_HEARTS");
         hand.add("KING_CLUBS");
         hand.add("ACE_DIAMONDS");
+        hand.add("QUEEN_DIAMONDS");
+        hand.add("TWO_DIAMONDS");
+        hand.add("THREE_SPADES");
+        hand.add("FOUR_HEARTS");
+        hand.add("KING_CLUBS");
+        hand.add("ACE_DIAMONDS");
         List<String> hand2 = new ArrayList<String>();
         hand2.add("THREE_DIAMONDS");
         hand2.add("TEN_SPADES");
@@ -130,24 +137,31 @@ public class GameScreen extends ScreenAdapter {
         List<List<String>> playerHands = new ArrayList<>(5);
         playerHands.add(hand);
         playerHands.add(hand2);
-        playerHands.add(hand3);
-        playerHands.add(hand4);
-        playerHands.add(hand5);
+        playerHands.add(hand2);
+        playerHands.add(hand2);
+        playerHands.add(hand2);
 
         //looping through i players
         for (int i = 0; i < numPlayers; i++) {
             // Calculate the angle and position of each player
-            float angle = MathUtils.lerpAngleDeg(startAngle, startAngle + sweepAngle, i / (float) (numPlayers - 1));
+            float angle = MathUtils.lerpAngleDeg(startAngle, startAngle + sweepAngle,
+                    i / (float) (numPlayers - 1));
             // Use cosine and sine to calculate diagonal offset from center of circle
             float x = centerX + MathUtils.cosDeg(angle) * radius;
             float y = centerY + MathUtils.sinDeg(angle) * radius;
-            createButtonLabel(skin, (int) x + cWidth + 10, (int) y + cHeight + 40, i+1);
+            createButtonLabel(skin, (int) x , (int) y + cHeight + 40, i+1);
             //get hand of current player
             List<String> currentHand = playerHands.get(i);
             for(int z = 0; z < currentHand.size(); z++){
                 // looping through each i player's z position card
                 String cardImagePath = (playerHands.get(i)).get(z) + ".png";
-                dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x, (int)y, (cWidth / 5) * (z+1), cardImagePath);
+                if (z<=4){
+                    dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x-cWidth, (int)y,
+                            (cWidth / 5) * (z+1), cardImagePath);
+                }else{
+                    dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x- 160,
+                            (int)y -(cHeight / 4), (cWidth / 5) * (z-4), cardImagePath);
+                }
             }
         }
 
