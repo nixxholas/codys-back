@@ -1,16 +1,11 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
-import com.mygdx.game.screens.*;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.mygdx.game.screens.MainMenuScreen;
 
 public class Boot extends Game{
     
@@ -30,8 +25,8 @@ public class Boot extends Game{
      *  stage.getViewport().update resizes the viewport whenever resize() is called (aka a window resize happens).
      *  stage.getViewport().update() also ensures the UI stays in the center of the screen by setting centerCamera = true.
      *
-     *   Check out how different viewports work in libGDX here:
-     *   https://raeleus.github.io/viewports-sample-project/
+     *  Check out how different viewports work in libGDX here:
+     *  https://raeleus.github.io/viewports-sample-project/
      */
     public ScreenViewport uiViewport;
 
@@ -58,12 +53,27 @@ public class Boot extends Game{
         this.screenHeight = Gdx.graphics.getHeight();
         uiViewport = new ScreenViewport();
         gameViewport = new ExtendViewport(1920, 1080, 9999, 9999);
-        // Sets screen to MainMenuScreen.java
+
+        /*
+         *  Sets screen to MainMenuScreen.java
+         *  The screen will be displayed when render() is called
+         *
+         * */
+
         setScreen(new MainMenuScreen(this));
     }
 
     public void render() {
-		super.render(); // important!
+        /*
+        *   super.render() is IMPORTANT because see below.
+        *
+        *   Game class source code for render():
+        *   @Override
+        *   public void render () {
+		*   if (screen != null) screen.render(Gdx.graphics.getDeltaTime());
+	    *   }
+        */
+		super.render();
 	}
 
     public int getscreenWidth(){

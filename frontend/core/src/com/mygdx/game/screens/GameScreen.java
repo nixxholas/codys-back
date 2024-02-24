@@ -1,35 +1,22 @@
 package com.mygdx.game.screens;
 
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.Boot;
-import com.mygdx.game.objects.*;
-import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
+import com.mygdx.game.objects.Card;
 
 public class GameScreen extends ScreenAdapter {
     final Boot game;
@@ -81,7 +68,6 @@ public class GameScreen extends ScreenAdapter {
     public void createPlayerSet(){
         dealHorizCards(cHeight, cHeight, cHeight, cWidth, cHeight);
         //createButtonLabel();
-
     }
 
     @Override
@@ -103,10 +89,8 @@ public class GameScreen extends ScreenAdapter {
         cardBACK.setPosition(900, 800);
         stage.addActor(cardBACK);
 
-
         System.out.println(game.getscreenWidth());
         System.out.println(game.getscreenHeight());
-
 
         // Creating an arc and designating points by setting the arc parameters
         float centerX = game.getscreenWidth() / 2.4f; // The x coordinate of the arc's center
@@ -133,119 +117,6 @@ public class GameScreen extends ScreenAdapter {
                 dealHorizCards(2.0f * z + 12.0f * i, (int)x, (int)y, (cWidth / 5) * z, 0);
             }
         }
-
-        // PLAYER 1
-
-        //deal 6 cards, with starting 0 delay, coord of 1900,1100 offset by cdwidth*2 and rotated 90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(2.0f * i, 1900, 1000 - (cWidth*2), (cWidth / 5) * i, 90);
-        //}
-        
-        // Card card1 = new Card(backImage);
-        // card1.setPosition(900, 900);
-        // stage.addActor(card1);
-        // SequenceAction sa = card1.cardAnimation(0, 1900, 1100 - (cWidth * 2), 90, 0.5f, frontImage);
-        // card1.addAction(sa);
-
-        // Card card2 = new Card(backImage);
-        // card2.setPosition(900, 900);
-        // stage.addActor(card2);
-        // SequenceAction sa2 = card2.cardAnimation(2.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 1 / 5), 90, 0.5f,
-        //         frontImage);
-        // card2.addAction(sa2);
-
-        // Card card3 = new Card(backImage);
-        // card3.setPosition(900, 900);
-        // stage.addActor(card3);
-        // SequenceAction sa3 = card3.cardAnimation(4.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 2 / 5), 90, 0.5f,
-        //         frontImage);
-        // card3.addAction(sa3);
-
-        // Card card4 = new Card(backImage);
-        // card4.setPosition(900, 900);
-        // stage.addActor(card4);
-        // SequenceAction sa4 = card4.cardAnimation(6.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 3 / 5), 90, 0.5f,
-        //         frontImage);
-        // card4.addAction(sa4);
-
-        // Card card5 = new Card(backImage);
-        // card5.setPosition(900, 900);
-        // stage.addActor(card5);
-        // SequenceAction sa5 = card5.cardAnimation(8.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 4 / 5), 90, 0.5f,
-        //         frontImage);
-        // card5.addAction(sa5);
-
-        // Card card6 = new Card(backImage);
-        // card6.setPosition(900, 900);
-        // stage.addActor(card6);
-        // SequenceAction sa6 = card6.cardAnimation(10.0f, 1900, 1100 - (cWidth * 2) + (cWidth * 5 / 5), 90, 0.5f,
-        //         frontImage);
-        // card6.addAction(sa6);
-
-        // PLAYER 1 END
-
-        // PLAYER 1 Labels & TextButton
-
-        //createButtonLabel(skin, 1600, 1000 -cWidth, 90, 1);
-
-        /*Table buttonContainer = new Table(skin);
-        buttonContainer.setTransform(true);
-        Label lb = new Label("Player 1", skin);
-        lb.setFontScale(1);
-        buttonContainer.add(lb);
-        buttonContainer.row().pad(10);
-        TextButton tb = new TextButton("Hit", skin);
-        tb.setDisabled(true);
-        buttonContainer.add(tb).size(100, 50);
-        Table rotatingActor = buttonContainer;
-        rotatingActor.setRotation(90);
-        rotatingActor.setPosition(1600, 1000 - cWidth);
-        stage.addActor(rotatingActor);*/
-
-        // PLAYER 2
-        //deal 6 cards, with starting 12.0f delay, coord of 1900,1100 offset by cdwidth*1/5 and rotated 90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(12.0f + 2.0f * i, 1900, 1100 - (cWidth*5), (cWidth * 1 / 5) * i, 90);
-        //}
-        // PLAYER 2 Labels & TextButton
-        //createButtonLabel(skin, 1600, 1100 -cWidth*4, 90, 2);
-
-
-        // PLAYER 3
-        //deal 6 cards, with starting 24.0f delay, coord of 1100,50 offset horizontally by cdwidth*1/5 and rotated 0 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealHorizCards(24.0f + 2.0f * i, 1100, 50, (cWidth * 1 / 5) * i, 0);
-        //}
-        // PLAYER 3 Labels & TextButton
-        //createButtonLabel(skin, 1250, 310, 0, 3);
-
-
-        // Player 4
-        //deal 6 cards, with starting 36.0f delay, coord of 500,50 offset horizontally by cdwidth*1/5 and rotated 0 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealHorizCards(36.0f + 2.0f * i, 500, 50, (cWidth * 1 / 5) * i, 0);
-        //}
-        // PLAYER 4 Labels & TextButton
-        //createButtonLabel(skin, 650, 310, 0, 4);
-
-
-        // Player 5
-        //deal 6 cards, with starting 48.0f delay, coord of 50,600 offset by -cdwidth*1/5 and rotated -90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(48.0f + 2.0f * i, 50, 600, -(cWidth * 1 / 5) * i, -90);
-        //}
-        // PLAYER 5 Labels & TextButton
-        //createButtonLabel(skin, 330, 1100 -cWidth*4, -90, 5);
-
-
-        // Player 6
-        //deal 6 cards, with starting 48.0f delay, coord of 50,600 offset by -cdwidth*1/5 and rotated -90 degrees
-        //for(int i=0; i<=5; i++){
-        //    dealVertCards(60.0f + 2.0f * i, 50, 1000, -(cWidth * 1 / 5) * i, -90);
-        //}
-        // PLAYER 6 Labels & TextButton
-        //createButtonLabel(skin, 330, 1000 -cWidth, -90, 6);
-
     }
 
     @Override
@@ -269,5 +140,4 @@ public class GameScreen extends ScreenAdapter {
         frontImage.dispose();
         stage.dispose();
     }
-
 }
