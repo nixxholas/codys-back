@@ -184,16 +184,15 @@ public class Room extends Thread {
             throw new IllegalStateException("Game not started.");
         }
         Player player = players.get(seatNumber);
-            if (player != null && !player.isStanding()) {
-                player.setDoubleDown(true);
-                player.placeBet(player.getCurrentBet()); // Additional bet
-                player.addCard(deck.remove(0));
-            }
-            if (player.calculateHandValue() > 21) {
-                player.setStanding(false); // Player busts
-            } else {
-                player.setStanding(true); // Player is forced to stand as he can only take one additional card
-            }
+        if (player != null && !player.isStanding()) {
+            player.setDoubleDown(true);
+            player.placeBet(player.getCurrentBet()); // Additional bet
+            player.addCard(deck.remove(0));
+        }
+        if (player.calculateHandValue() > 21) {
+            player.setStanding(false); // Player busts
+        } else {
+            player.setStanding(true); // Player is forced to stand as he can only take one additional card
         }
     }
 
