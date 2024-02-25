@@ -4,19 +4,19 @@ import com.goeey.backend.model.entity.EntityTarget;
 
 import java.io.*;
 
-public abstract class BaseSocketMessage<T, E> implements Serializable {
-    private E type;
-    private T message;
+public abstract class BaseSocketMessage<E, T> implements Serializable {
+    private T type;
+    private E message;
     private EntityTarget target;
 
     protected BaseSocketMessage() {
     }
 
-    public E getType() {
+    public T getType() {
         return type;
     }
 
-    public T getMessage() {
+    public E getMessage() {
         return message;
     }
 
@@ -24,11 +24,11 @@ public abstract class BaseSocketMessage<T, E> implements Serializable {
         return target;
     }
 
-    public void setType(E type) {
+    public void setType(T type) {
         this.type = type;
     }
 
-    public void setMessage(T message) {
+    public void setMessage(E message) {
         this.message = message;
     }
 
