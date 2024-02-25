@@ -79,7 +79,7 @@ public class Player {
         this.doubleDown = doubleDown;
     }
 
-        public boolean isDoubleDown() {
+    public boolean isDoubleDown() {
         return doubleDown;
     }
 
@@ -87,7 +87,7 @@ public class Player {
         if (amount > balance) {
             throw new IllegalArgumentException("Bet amount exceeds balance.");
         }
-        if (isdoubleDown()) {
+        if (isDoubleDown()) {
             this.currentBet += amount;
         } else {
         this.currentBet = amount;
