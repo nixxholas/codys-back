@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.Boot;
 import com.mygdx.game.objects.Card;
+import com.mygdx.game.objects.TableAssets;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,43 +30,14 @@ public class GameScreen extends ScreenAdapter {
     private Stage stage;
     private int cWidth;
     private int cHeight;
+    private int scrWidth;
+    private int scrHeight;
 
     Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
     public GameScreen(Boot game) {
         this.game = game;
         hud = new Hud(game.batch, 65000, game.getPlayerName(), skin);
-    }
-
-    public void dealHorizCards(float delay, int xPos, int yPos, int offset, String imagePath){
-        Card newC = new Card(backImage);
-        newC.setPosition((game.getscreenWidth()-cWidth) / 2f , game.getscreenHeight()/1.2f);
-        stage.addActor(newC);
-        frontImage = new Texture(imagePath);
-        SequenceAction sa = newC.cardAnimation(delay, xPos +offset
-                ,yPos, 0.5f, frontImage);
-        newC.addAction(sa);
-    }
-
-    public void createButtonLabel(Skin skin, int posX , int posY , int playerNum){
-        //Button
-        Table buttonContainer = new Table(skin);
-        buttonContainer.setTransform(true);
-        TextButton tb = new TextButton("Hit", skin);
-        tb.setDisabled(true);
-
-        //Label
-        String lbString = "Player "+ playerNum;
-        Label lb = new Label(lbString, skin);
-        lb.setFontScale(1);
-
-        //Order
-        buttonContainer.add(lb);
-        buttonContainer.row().pad(10);
-        buttonContainer.add(tb).size(100, 50);
-        buttonContainer.setOrigin(50, 25);
-        buttonContainer.setPosition(posX, posY);
-        stage.addActor(buttonContainer);
     }
 
     @Override
@@ -76,6 +48,9 @@ public class GameScreen extends ScreenAdapter {
         cWidth = frontImage.getWidth();
         cHeight = frontImage.getHeight();
 
+        scrWidth = game.getscreenWidth();
+        scrHeight = game.getscreenHeight();
+
         stage = new Stage();
         stage.setViewport(game.gameViewport);
 
@@ -84,13 +59,13 @@ public class GameScreen extends ScreenAdapter {
         // Create dealer's card
         // cards are dealt from here
         final Card cardBACK = new Card(backImage);
-        cardBACK.setPosition((game.getscreenWidth()-cWidth) / 2f , game.getscreenHeight()/1.2f);
+        cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
         stage.addActor(cardBACK);
 
         // Creating an arc and designating points by setting the arc parameters
-        float centerX = game.getscreenWidth() / 2f; // The x coordinate of the arc's center
-        float centerY = game.getscreenHeight() / 1.1f; // The y coordinate of the arc's center
-        float radius = Math.min(game.getscreenWidth(), game.getscreenHeight()) / 1.4f; // The radius of the arc
+        float centerX = scrWidth / 2f; // The x coordinate of the arc's center
+        float centerY = scrHeight / 1.1f; // The y coordinate of the arc's center
+        float radius = Math.min(scrWidth, scrHeight) / 1.4f; // The radius of the arc
         float startAngle = -30; // The start angle of the arc in degrees
         float sweepAngle = -120; // The sweep angle of the arc in degrees
         float numPlayers = 5; // The number of sprites to generate along the arc
@@ -145,18 +120,21 @@ public class GameScreen extends ScreenAdapter {
             // Use cosine and sine to calculate diagonal offset from center of circle
             float x = centerX + MathUtils.cosDeg(angle) * radius;
             float y = centerY + MathUtils.sinDeg(angle) * radius;
-            createButtonLabel(skin, (int) x , (int) y + cHeight + 40, i+1);
+            TableAssets tb = new TableAssets();
+            stage.addActor(tb.createButtonLabel(skin, (int) x , (int) y + cHeight + 40, i+1));
             //get hand of current player
             List<String> currentHand = playerHands.get(i);
             for(int z = 0; z < currentHand.size(); z++){
                 // looping through each i player's z position card
                 String cardImagePath = (playerHands.get(i)).get(z) + ".png";
                 if (z<=4){
-                    dealHorizCards(0.5f * (z+1) + 12.0f * i, (int)x-cWidth, (int)y,
-                            (cWidth / 5) * (z+1), cardImagePath);
+                    Card newC = new Card();
+                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 12.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x-cWidth, (int)y,
+                            (cWidth / 5) * (z+1), cardImagePath));
                 }else{
-                    dealHorizCards(0.5f * (z+1) + 12.0f * i, (int)x- 160,
-                            (int)y -(cHeight / 4), (cWidth / 5) * (z-4), cardImagePath);
+                    Card newC = new Card();
+                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 12.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x- 160,
+                            (int)y -(cHeight / 4), (cWidth / 5) * (z-4), cardImagePath));
                 }
             }
         }

@@ -10,12 +10,17 @@ import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 
 public class Card extends Actor {
     
+    private Texture backImage = new Texture("back_card_150.png");
+    private Texture frontImage;
     private Texture texture;
 
+    public Card() {
+        this.texture = new Texture("back_card_150.png");
+        setBounds(0, 0, texture.getWidth(), texture.getHeight()); // setBounds should be called here
+    }
     public Card(Texture texture) {
         this.texture = texture;
         setBounds(0, 0, texture.getWidth(), texture.getHeight()); // setBounds should be called here
-
     }
 
     public void setTexture(Texture t){
@@ -37,6 +42,17 @@ public class Card extends Actor {
         }));
 
         return finalSequence;
+    }
+
+    public Actor dealHorizCards(float delay, int startXPos, int startYPos, int endXPos, int endYPos, int offset, String imagePath){
+        Card newC = new Card(backImage);
+        frontImage = new Texture(imagePath);
+        newC.setPosition(startXPos, startYPos);
+        
+        SequenceAction sa = newC.cardAnimation(delay, endXPos +offset
+                ,endYPos, 0.5f, frontImage);
+        newC.addAction(sa);
+        return newC;
     }
 
     @Override
