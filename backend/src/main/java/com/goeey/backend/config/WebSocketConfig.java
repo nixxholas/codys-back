@@ -1,5 +1,6 @@
 package com.goeey.backend.config;
 
+import com.goeey.backend.handler.ClientMessageHandler;
 import com.goeey.backend.handler.SocketHandler;
 import com.goeey.backend.service.PlayerService;
 import com.goeey.backend.service.RoomService;
@@ -20,6 +21,11 @@ public class WebSocketConfig {
     private TaskScheduler taskScheduler;
 
     @Bean
+    public ClientMessageHandler clientMessageHandler() {
+        return new ClientMessageHandler(roomService(), playerService());
+    }
+
+    @Bean
     public RoomService roomService() {
         return new RoomService(taskScheduler);
     }
@@ -32,7 +38,7 @@ public class WebSocketConfig {
     @Bean
     public HandlerMapping handlerMapping() {
         Map<String, SocketHandler> map = new HashMap<>();
-        map.put("/ws", new SocketHandler(roomService(), playerService()));
+        map.put("/ws", new SocketHandler(clientMessageHandler(), roomService(), playerService()));
 
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setUrlMap(map);

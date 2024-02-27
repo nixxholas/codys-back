@@ -1,8 +1,9 @@
 package com.goeey.backend.model.entity.socket;
 
-import com.fasterxml.jackson.annotation.JsonView;
-
-@JsonView
+/*
+ * The ServerSocketMessageType enum is used to define the type of message
+ * that is being sent from the server to the client.
+ */
 public enum ServerSocketMessageType {
     CONNECT,
     DISCONNECT,

@@ -5,22 +5,22 @@ import com.goeey.backend.model.entity.socket.ClientSocketMessage;
 import com.goeey.backend.service.PlayerService;
 import com.goeey.backend.service.RoomService;
 import com.goeey.backend.util.SerializationUtil;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Arrays;
 
+@Service
 public class ClientMessageHandler {
     private final RoomService roomService;
     private final PlayerService playerService;
-    private final ClientSocketMessage message;
 
-    public ClientMessageHandler(RoomService roomService, PlayerService playerService, ClientSocketMessage message) {
+    public ClientMessageHandler(RoomService roomService, PlayerService playerService) {
         this.roomService = roomService;
         this.playerService = playerService;
-        this.message = message;
     }
 
-    public String handle() throws IOException {
+    public String handle(ClientSocketMessage message) throws IOException {
         switch (message.getType()) {
             case CONNECT:
                 // If the message has an ID, it means the connection was to reconnect the player

@@ -16,10 +16,12 @@ import java.io.StreamCorruptedException;
 import java.util.Arrays;
 
 public class SocketHandler implements WebSocketHandler {
+    private final ClientMessageHandler handler;
     private final RoomService roomService;
     private final PlayerService playerService;
 
-    public SocketHandler(RoomService roomService, PlayerService playerService) {
+    public SocketHandler(ClientMessageHandler clientMessageHandler, RoomService roomService, PlayerService playerService) {
+        this.handler = clientMessageHandler;
         this.roomService = roomService;
         this.playerService = playerService;
     }
@@ -30,8 +32,7 @@ public class SocketHandler implements WebSocketHandler {
                 .map(msg -> {
                     try {
                         ClientSocketMessage clientSocketMessage = SerializationUtil.deserialize(msg.getPayloadAsText().getBytes(), ClientSocketMessage.class);
-                        ClientMessageHandler handler = new ClientMessageHandler(roomService, playerService, clientSocketMessage);
-                        return session.textMessage(handler.handle());
+                        return session.textMessage(handler.handle(clientSocketMessage));
                     }
                     catch (StreamCorruptedException sce) {
                         ServerSocketMessage<String> message = new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Error: " + sce.getMessage());
