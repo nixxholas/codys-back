@@ -2,7 +2,10 @@ package com.goeey.backend.service;
 
 import com.goeey.backend.model.entity.Player;
 import com.goeey.backend.model.entity.Room;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -11,16 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class RoomService {
-    private final TaskScheduler taskScheduler;
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
-    public RoomService(TaskScheduler taskScheduler) {
-        this.taskScheduler = taskScheduler;
+    public RoomService() {
     }
 
     public Room createRoom() {
         String roomId = UUID.randomUUID().toString();
-        Room room = new Room(roomId, taskScheduler);
+        Room room = new Room(roomId);
         rooms.put(roomId, room);
         return room;
     }

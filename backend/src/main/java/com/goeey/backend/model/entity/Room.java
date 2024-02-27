@@ -1,11 +1,11 @@
 package com.goeey.backend.model.entity;
 
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 
@@ -15,12 +15,14 @@ import java.util.concurrent.ScheduledFuture;
  * The room is responsible for managing the game state and the deck of cards.
  * It also schedules the next round to start after a certain delay.
  */
+@EnableScheduling
 public class Room extends Thread {
     private final String id;
     private final Map<Integer, Player> players = new ConcurrentHashMap<>(6);
     private List<Card> deck = new ArrayList<>();
     private Player dealer = new Player("Dealer");
     private boolean gameStarted = false;
+    private Timer timer;
 
     private enum GameState {
         WAITING_FOR_PLAYERS,
@@ -28,17 +30,15 @@ public class Room extends Thread {
         DEALING,
         PLAYER_TURN,
         DEALER_TURN,
-        ROUND_ENDED
+        ROUND_ENDED,
+        PLAYER_DISCONNECTED,
     }
 
     private GameState gameState = GameState.WAITING_FOR_BETS;
 
-    private final TaskScheduler taskScheduler;
-    private ScheduledFuture<?> nextRoundTask;
-
-    public Room(String id, TaskScheduler taskScheduler) {
+    public Room(String id) {
         this.id = id;
-        this.taskScheduler = taskScheduler;
+        timer = new Timer();
         initializeDeck();
     }
 
@@ -108,46 +108,6 @@ public class Room extends Thread {
         Collections.shuffle(deck);
     }
 
-    // Method to schedule the next round
-    public void scheduleNextRound(long delayInSeconds) {
-        if (nextRoundTask != null && !nextRoundTask.isDone()) {
-            nextRoundTask.cancel(false); // Cancel previous task if it's still pending
-        }
-        nextRoundTask = taskScheduler.schedule(this::startRound,
-                java.time.Instant.now().plusSeconds(delayInSeconds));
-    }
-
-    public void startRound() {
-        if (gameState == GameState.ROUND_ENDED) {
-            // Reset game state for the next round
-            gameState = GameState.WAITING_FOR_BETS;
-
-            // Remove players who have insufficient balance
-            players.values().removeIf(player -> player.getBalance() < 10);
-        }
-
-        if (gameState != GameState.WAITING_FOR_BETS) {
-            throw new IllegalStateException("Previous round not completed.");
-        }
-
-        gameState = GameState.DEALING;
-        // Clear hands and prepare for a new round
-        dealer.getHand().clear();
-        players.values().forEach(player -> {
-            player.getHand().clear(); // Clear hands before dealing new cards
-            player.setStanding(false);  // Reset standing status
-        });
-        initializeDeck(); // Reinitialize the deck each round
-        dealInitialCards();
-        gameState = GameState.PLAYER_TURN; // Players can now take their turns
-    }
-
-    public void cancelScheduledNextRound() {
-        if (nextRoundTask != null && !nextRoundTask.isDone()) {
-            nextRoundTask.cancel(false);
-        }
-    }
-
     public void hit(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
             throw new IllegalStateException("Not the right time to hit.");
@@ -203,14 +163,15 @@ public class Room extends Thread {
             }
         }
         dealerPlay(); // All players are standing, now it's dealer's turn
-        determineOutcome(); // Determine the outcome after the dealer has played
-        gameStarted = false; // Reset the game state
     }
 
     private void dealerPlay() {
+        gameState = GameState.DEALER_TURN;
         while (dealer.calculateHandValue() < 17) {
             dealer.addCard(deck.remove(0));
         }
+
+        determineOutcome(); // Determine the outcome after the dealer has played
     }
 
     private void dealInitialCards() {
@@ -224,12 +185,11 @@ public class Room extends Thread {
     }
 
     private void determineOutcome() {
-        gameState = GameState.DEALER_TURN;
         dealerPlay(); // Dealer takes their turn
         int dealerValue = dealer.calculateHandValue();
         for (Player player : players.values()) {
             int playerValue = player.calculateHandValue();
-            
+
             // Blackjack scenarios
             if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue != 21 || dealerValue == 21 && dealer.getNumCards() != 2)) {
                 System.out.println(player.getId() + " wins!");
@@ -258,7 +218,7 @@ public class Room extends Thread {
         }
         gameStarted = false; // Reset the game state for the next round
         gameState = GameState.ROUND_ENDED; // The round has ended, prepare for a new round
-        scheduleNextRound(30); // Schedule the next round to start after 30 seconds
+
     }
 
     // Add a method for players to place bets at the beginning of each round
@@ -272,10 +232,38 @@ public class Room extends Thread {
         }
     }
 
+    /**
+     * Schedules the next round to start after a certain delay.
+     */
+    @Scheduled(fixedRate = 500)
+    private void syncState() {
+        Instant timeNow = Instant.now();
+        System.out.println("Room: " + this.id + "is syncing state.");
+
+        if (gameState == GameState.WAITING_FOR_BETS) {
+            if (this.atLeastOneHasPlacedBet()) {
+                // Start the round if at least one player has placed a bet
+                if (this.notAllHavePlacedBet() && this.atLeastOneHasPlacedBet()) {
+                    System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            if (gameState == GameState.WAITING_FOR_BETS) {
+                                gameState = GameState.DEALING;
+                            }
+                        }
+                    }, 10000);
+                }
+            } else {
+                System.out.println("Waiting for players to place bets...");
+            }
+        }
+    }
+
     @Override
     public void run() {
         while (!players.isEmpty()) {
-            System.out.println("[Room " + this.id +"] Game state is still running!");
+            System.out.println("[Room " + this.id + "] Game state is still running!");
             try {
                 switch (gameState) {
                     /*
@@ -287,14 +275,13 @@ public class Room extends Thread {
                       - At least one player: Check if at least one player has placed a bet. If so, start the round.
                       - All players have placed bets: Start the round.
                      */
+                    case WAITING_FOR_PLAYERS:
+                        break;
                     case WAITING_FOR_BETS:
                         if (!players.isEmpty() && this.atLeastOneHasPlacedBet()) {
                             // Start the round if at least one player has placed a bet
                             if (this.notAllHavePlacedBet()) {
                                 System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
-                                this.scheduleNextRound(5);
-                            } else {
-                                startRound();
                             }
                         } else {
                             System.out.println("Waiting for players to place bets...");
@@ -308,12 +295,30 @@ public class Room extends Thread {
                             }
                         }
                         break;
+                    case DEALING:
+                        // Clear hands and prepare for a new round
+                        dealer.getHand().clear();
+                        players.values().forEach(player -> {
+                            player.getHand().clear(); // Clear hands before dealing new cards
+                            player.setStanding(false);  // Reset standing status
+                        });
+                        initializeDeck(); // Reinitialize the deck each round
+                        dealInitialCards();
+                        gameState = GameState.PLAYER_TURN; // Players can now take their turns
+                        break;
                     case DEALER_TURN:
                         Thread.sleep(1000);
                         dealerPlay();
                         break;
                     case ROUND_ENDED:
-//                        prepareForNextRound();
+                        // Reset game state for the next round
+                        gameState = GameState.WAITING_FOR_BETS;
+
+                        // Remove players who have insufficient balance
+                        players.values().removeIf(player -> player.getBalance() < 10);
+                        break;
+                    case PLAYER_DISCONNECTED:
+                        // Handle player disconnection
                         break;
                 }
             } catch (InterruptedException e) {
