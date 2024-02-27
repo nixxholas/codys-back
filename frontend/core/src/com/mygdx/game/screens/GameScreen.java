@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -14,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.Boot;
 import com.mygdx.game.objects.Card;
@@ -32,12 +30,12 @@ public class GameScreen extends ScreenAdapter {
     private int cWidth;
     private int cHeight;
 
+    Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
     public GameScreen(Boot game) {
         this.game = game;
-        hud = new Hud(game.batch, 65000, 10, game.getPlayerName());
+        hud = new Hud(game.batch, 65000, game.getPlayerName(), skin);
     }
-
 
     public void dealHorizCards(float delay, int xPos, int yPos, int offset, String imagePath){
         Card newC = new Card(backImage);
@@ -83,8 +81,6 @@ public class GameScreen extends ScreenAdapter {
 
         Gdx.input.setInputProcessor(stage);
 
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-
         // Create dealer's card
         // cards are dealt from here
         final Card cardBACK = new Card(backImage);
@@ -100,7 +96,7 @@ public class GameScreen extends ScreenAdapter {
         float numPlayers = 5; // The number of sprites to generate along the arc
 
         // create a shape renderer
-        ShapeRenderer shapeRenderer = new ShapeRenderer ();
+        ShapeRenderer shapeRenderer = new ShapeRenderer();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.CLEAR);
         shapeRenderer.arc(centerX, centerY, radius, startAngle, sweepAngle);
@@ -156,15 +152,14 @@ public class GameScreen extends ScreenAdapter {
                 // looping through each i player's z position card
                 String cardImagePath = (playerHands.get(i)).get(z) + ".png";
                 if (z<=4){
-                    dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x-cWidth, (int)y,
+                    dealHorizCards(0.5f * (z+1) + 12.0f * i, (int)x-cWidth, (int)y,
                             (cWidth / 5) * (z+1), cardImagePath);
                 }else{
-                    dealHorizCards(2.0f * (z+1) + 12.0f * i, (int)x- 160,
+                    dealHorizCards(0.5f * (z+1) + 12.0f * i, (int)x- 160,
                             (int)y -(cHeight / 4), (cWidth / 5) * (z-4), cardImagePath);
                 }
             }
         }
-
     }
     @Override
     public void render(float delta) {
@@ -174,7 +169,11 @@ public class GameScreen extends ScreenAdapter {
         stage.act(delta);
         stage.draw();
 
-        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
+        /*
+        *   1. Render the HUD details
+        *   2. TODO update the balance on the HUD as it changes
+        * */
+//        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
     }
 
