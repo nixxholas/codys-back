@@ -8,11 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.Boot;
 import com.mygdx.game.objects.Card;
@@ -129,11 +125,11 @@ public class GameScreen extends ScreenAdapter {
                 String cardImagePath = (playerHands.get(i)).get(z) + ".png";
                 if (z<=4){
                     Card newC = new Card();
-                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 12.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x-cWidth, (int)y,
+                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 6.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x-cWidth, (int)y,
                             (cWidth / 5) * (z+1), cardImagePath));
                 }else{
                     Card newC = new Card();
-                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 12.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x- 160,
+                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 6.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x- 160,
                             (int)y -(cHeight / 4), (cWidth / 5) * (z-4), cardImagePath));
                 }
             }
