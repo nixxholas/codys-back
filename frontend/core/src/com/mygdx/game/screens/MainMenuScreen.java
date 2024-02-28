@@ -16,7 +16,6 @@ import com.mygdx.game.Boot;
 public class MainMenuScreen extends ScreenAdapter{
     private final Boot game;
 	private Stage stage;
-    private int proceed = 0;
 
     public MainMenuScreen(Boot boot){
         this.game = boot;
@@ -35,14 +34,13 @@ public class MainMenuScreen extends ScreenAdapter{
         TextButton exitButton = new TextButton("Exit to Desktop", skin);
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                // Handle slider value change
-                proceed = 1;
+                game.setScreen(new GameCreationScreen(game));
             }
         });
         exitButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                // Handle slider value change
-                proceed = -1;
+                Gdx.app.exit();
+                System.exit(-1);
             }
         });
 
@@ -76,15 +74,6 @@ public class MainMenuScreen extends ScreenAdapter{
 		game.batch.begin();
         stage.draw();
         game.batch.end();
-
-        switch (proceed) {
-            case 1:
-                game.setScreen(new GameCreationScreen(game));
-                break;
-            case -1:
-                Gdx.app.exit();
-                System.exit(-1);
-        }
 	}
 	@Override
     public void resize(int width, int height) {
