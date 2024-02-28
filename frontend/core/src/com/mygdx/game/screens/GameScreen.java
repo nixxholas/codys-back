@@ -19,7 +19,8 @@ import java.util.List;
 
 public class GameScreen extends ScreenAdapter {
     final Boot game;
-    private final Hud hud;
+    private Skin skin;
+    private Hud hud;
     private Texture backImage;
     private Texture frontImage;
     private SpriteBatch batch;
@@ -29,15 +30,15 @@ public class GameScreen extends ScreenAdapter {
     private int scrWidth;
     private int scrHeight;
 
-    Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
-
     public GameScreen(Boot game) {
         this.game = game;
-        hud = new Hud(game.batch, 65000, game.getPlayerName(), skin);
+        this.skin = game.skin;
     }
 
     @Override
     public void show() {
+        hud = new Hud(game.batch, 65000, game.getPlayerName(), skin);
+
         backImage = new Texture("back_card_150.png");
         frontImage = new Texture("TWO_CLUBS.png");
 
