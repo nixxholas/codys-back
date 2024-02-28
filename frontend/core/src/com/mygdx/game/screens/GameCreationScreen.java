@@ -16,9 +16,8 @@ public class GameCreationScreen extends ScreenAdapter{
     private Skin skin;
 	private Stage stage;
     private TextField textField;
-    private Label numPlayersLabel, nameLabel;
+    private Label numPlayersLabel;
     private Slider slider;
-    private boolean proceed = false;
 
     public GameCreationScreen(Boot game){
         this.game = game;
@@ -34,7 +33,7 @@ public class GameCreationScreen extends ScreenAdapter{
         textField = new TextField("", skin);
 
         // Label
-        nameLabel = new Label("Username", skin);
+        Label nameLabel = new Label("Username", skin);
         numPlayersLabel = new Label("Number of Players: 1", skin);
 
         // Create a Slider
@@ -49,33 +48,35 @@ public class GameCreationScreen extends ScreenAdapter{
         });
 
         //TextButton
-        TextButton btnStart = new TextButton("Start Game", skin);
-        btnStart.addListener(new ClickListener() {
-            public void touchUp(InputEvent event, float x, float y, int point, int button) {
-                // Handle slider value change
+        TextButton startButton = new TextButton("Start Game", skin);
+        startButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
                 game.setPlayerName(textField.getText());
                 game.setScreen(new GameScreen(game));
+            }
+        });
+
+        TextButton backButton = new TextButton("Back to Main Menu", skin);
+        backButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MainMenuScreen(game));
             }
         });
 
         // Add text field to a table
         Table table = new Table();
         table.setFillParent(true);
-        table.add(nameLabel).top().left();
+        table.add(nameLabel).top().left().padBottom(20);
         table.row();
-        table.add().padTop(20);
-        table.row();
-        table.add(textField).width(300).height(40);
-        table.row();
-        table.add().padTop(50);
+        table.add(textField).width(300).height(40).padBottom(20);
         table.row();
         table.add(numPlayersLabel).top().left();
         table.row();
-        table.add(slider).width(300).height(50).left();
+        table.add(slider).width(300).height(50).left().padBottom(20);
         table.row();
-        table.add().padTop(20);
+        table.add(startButton).width(250).height(50).pad(20);
         table.row();
-        table.add(btnStart).width(250).height(50);
+        table.add(backButton).width(250).height(50);
         stage.addActor(table);
     }
 
@@ -89,7 +90,7 @@ public class GameCreationScreen extends ScreenAdapter{
         stage.act(delta);
         stage.draw();
         game.batch.end();
-	}
+    }
 
     @Override
     public void hide() {

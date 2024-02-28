@@ -37,7 +37,6 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        hud = new Hud(game.batch, 65000, game.getPlayerName(), skin);
 
         backImage = new Texture("back_card_150.png");
         frontImage = new Texture("TWO_CLUBS.png");
@@ -50,6 +49,7 @@ public class GameScreen extends ScreenAdapter {
 
         stage = new Stage();
         stage.setViewport(game.gameViewport);
+        hud = new Hud(game.batch, 65000, game.getPlayerName(), skin);
 
         Gdx.input.setInputProcessor(stage);
 
@@ -148,8 +148,7 @@ public class GameScreen extends ScreenAdapter {
         *   1. Render the HUD details
         *   2. TODO update the balance on the HUD as it changes
         * */
-//        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
-        hud.stage.draw();
+        hud.hudStage.draw();
     }
 
     @Override
