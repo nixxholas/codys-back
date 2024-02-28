@@ -1,6 +1,5 @@
 package com.mygdx.game.entities;
 
-import com.mygdx.game.Boot;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
