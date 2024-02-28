@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.Boot;
 import com.mygdx.game.objects.Card;
-import com.mygdx.game.objects.TableAssets;
+import com.mygdx.game.entities.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,22 +59,6 @@ public class GameScreen extends ScreenAdapter {
         cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
         stage.addActor(cardBACK);
 
-        // Creating an arc and designating points by setting the arc parameters
-        float centerX = scrWidth / 2f; // The x coordinate of the arc's center
-        float centerY = scrHeight / 1.1f; // The y coordinate of the arc's center
-        float radius = Math.min(scrWidth, scrHeight) / 1.4f; // The radius of the arc
-        float startAngle = -30; // The start angle of the arc in degrees
-        float sweepAngle = -120; // The sweep angle of the arc in degrees
-        float numPlayers = 5; // The number of sprites to generate along the arc
-
-        // create a shape renderer
-        ShapeRenderer shapeRenderer = new ShapeRenderer();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.CLEAR);
-        shapeRenderer.arc(centerX, centerY, radius, startAngle, sweepAngle);
-        shapeRenderer.end();
-
-
         // Situation: server passes client a JSON file.
         // Client parses it into a list
         // Add code for that here
@@ -109,30 +93,19 @@ public class GameScreen extends ScreenAdapter {
         playerHands.add(hand2);
         playerHands.add(hand2);
 
+        int numPlayers = 5;
         //looping through i players
-        for (int i = 0; i < numPlayers; i++) {
-            // Calculate the angle and position of each player
-            float angle = MathUtils.lerpAngleDeg(startAngle, startAngle + sweepAngle,
-                    i / (float) (numPlayers - 1));
+        for (int currentPlayer = 0; currentPlayer < numPlayers; currentPlayer++) {
             // Use cosine and sine to calculate diagonal offset from center of circle
-            float x = centerX + MathUtils.cosDeg(angle) * radius;
-            float y = centerY + MathUtils.sinDeg(angle) * radius;
-            TableAssets tb = new TableAssets();
-            stage.addActor(tb.createButtonLabel(skin, (int) x , (int) y + cHeight + 40, i+1));
+            int x = (int)Player.calcXPos(currentPlayer, numPlayers, game.getscreenWidth(), game.getscreenHeight());
+            int y = (int)Player.calcYPos(currentPlayer, numPlayers, game.getscreenWidth(), game.getscreenHeight());
+            stage.addActor(Player.createButtonLabel(skin, x ,  y + cHeight + 40, currentPlayer+1));
             //get hand of current player
-            List<String> currentHand = playerHands.get(i);
-            for(int z = 0; z < currentHand.size(); z++){
+            List<String> currentHand = playerHands.get(currentPlayer);
+            for(int currentCard = 0; currentCard < currentHand.size(); currentCard++){
                 // looping through each i player's z position card
-                String cardImagePath = (playerHands.get(i)).get(z) + ".png";
-                if (z<=4){
-                    Card newC = new Card();
-                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 6.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x-cWidth, (int)y,
-                            (cWidth / 5) * (z+1), cardImagePath));
-                }else{
-                    Card newC = new Card();
-                    stage.addActor(newC.dealHorizCards(0.5f * (z+1) + 6.0f * i,(int)((scrWidth-cWidth) / 2f) , (int)(scrHeight/1.2f), (int)x- 160,
-                            (int)y -(cHeight / 4), (cWidth / 5) * (z-4), cardImagePath));
-                }
+                String cardImagePath = (playerHands.get(currentPlayer)).get(currentCard) + ".png";
+                stage.addActor(Card.dealHorizCards(currentCard, scrWidth, scrHeight, x, y, cardImagePath));
             }
         }
     }

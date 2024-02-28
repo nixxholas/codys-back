@@ -9,9 +9,10 @@ import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 
 public class Card extends Actor {
     
-    private Texture backImage = new Texture("back_card_150.png");
-    private Texture frontImage;
+    final static Texture backImage = new Texture("back_card_150.png");
     private Texture texture;
+
+    private static float totalDelay = 2f;
 
     public Card() {
         this.texture = new Texture("back_card_150.png");
@@ -43,13 +44,22 @@ public class Card extends Actor {
         return finalSequence;
     }
 
-    public Actor dealHorizCards(float delay, int startXPos, int startYPos, int endXPos, int endYPos, int offset, String imagePath){
+    public static Actor dealHorizCards(int cardNum, int scrWidth, int scrHeight, int endXPos, int endYPos, String imagePath){
         Card newC = new Card(backImage);
-        frontImage = new Texture(imagePath);
+        Texture frontImage = new Texture(imagePath);
+        float cWidth = frontImage.getWidth();
+        float cHeight = frontImage.getHeight();
+        float startXPos = (scrWidth-cWidth) / 2f;
+        float startYPos = scrHeight / 1.2f;
         newC.setPosition(startXPos, startYPos);
-        
-        SequenceAction sa = newC.cardAnimation(delay, endXPos +offset
-                ,endYPos, 0.5f, frontImage);
+        SequenceAction sa;
+        if (cardNum <=4){
+            sa = newC.cardAnimation(totalDelay++, (int) (endXPos - cWidth + (cWidth / 5) * (cardNum + 1))
+                    , endYPos, 0.5f, frontImage);
+        }else{
+            sa = newC.cardAnimation(totalDelay++, (int) (endXPos - 160 + (cWidth / 5) * (cardNum - 4)),
+                    (int) (endYPos - (cHeight / 4)), 0.5f, frontImage);
+        }
         newC.addAction(sa);
         return newC;
     }
