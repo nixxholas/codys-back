@@ -48,10 +48,10 @@ public class ClientMessageHandler {
     private String validateCurrentSession(WebSocketSession session, ClientSocketMessage message) {
         // If the message has an ID, it means the connection was to reconnect the player
         if (message.getClientId() == null) {
-            session.textMessage(SerializationUtil.serializeString(new ClientSocketMessage(message.getClientId(),
-                    ClientSocketMessageType.DISCONNECT,
+            session.textMessage(SerializationUtil.serializeString(new ServerSocketMessage<>(
+                    ServerSocketMessageType.ERROR,
                     "Invalid client ID!")));
-            session.close(CloseStatus.NORMAL);
+            session.close(CloseStatus.BAD_DATA);
             return "Invalid client ID!";
         }
 
@@ -77,6 +77,8 @@ public class ClientMessageHandler {
                     addSession(message.getClientId(), session);
 
                     if (player == null) {
+                        sendMessage(message.getClientId(), SerializationUtil.serializeString(
+                                new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Player not found!")));
                         return "Player not found!";
                     }
 
@@ -86,37 +88,64 @@ public class ClientMessageHandler {
                     addSession(message.getClientId(), session);
                 }
 
+                sendMessage(message.getClientId(), SerializationUtil.serializeString(
+                        new ServerSocketMessage<>(ServerSocketMessageType.CONNECT, "Welcome to Gooey!")));
                 return "Connected!";
             case DISCONNECT:
                 // Handle disconnects from a user.
                 Player player = playerService.getPlayerById(message.getClientId());
+                if (player != null) {
+                    // 1. Find out if the user is in a room
+                    Room room = roomService.getPlayerRoomByPlayerId(message.getClientId());
 
-                // 1. Find out if the user is in a room
-                Room room = roomService.getPlayerRoomByPlayerId(message.getClientId());
+                    // 2. If the user is in a room, remove the user from the room
+                    if (room != null) {
+                        room.removePlayer(room.getPlayerSeatNumber(player.getId()));
 
-                // 2. If the user is in a room, remove the user from the room
-                if (room != null) {
-                    room.removePlayer(room.getPlayerSeatNumber(player.getId()));
-
-                    // 3. Inform the other players in the room that the user has left
-                    // Retrieve all sessions in the room from sessions map
-                    String[] players = room.getPlayerIds();
-                    for (String playerId : players) {
-                        sendMessage(playerId, SerializationUtil.serializeString(new ClientSocketMessage(message.getClientId(),
-                                ClientSocketMessageType.DISCONNECT,
-                                "Player " + player.getId() + " has left the room!")));
+                        // 3. Inform the other players in the room that the user has left
+                        // Retrieve all sessions in the room from sessions map
+                        String[] players = room.getPlayerIds();
+                        for (String playerId : players) {
+                            sendMessage(playerId, SerializationUtil.serializeString(
+                                    new ServerSocketMessage<>(ServerSocketMessageType.PLAYER_LEAVE,
+                                            "Player " + player.getId() + " has left the room!")));
+                        }
                     }
+
+                    // 4. Remove the user from the list of sessions
+                    removeSession(message.getClientId());
+                    return "Disconnected!";
                 }
 
-                // 4. Remove the user from the list of sessions
-                removeSession(message.getClientId());
-                return "Disconnected!";
+                sendMessage(message.getClientId(), SerializationUtil.serializeString(
+                        new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Player not found!")));
+                return "Player not found!";
             case JOIN:
+                // Check if the player is already in a room
                 if (roomService.getPlayerRoomByPlayerId(message.getClientId()) == null) {
                     int seatNumber = 1;
                     String roomId = message.getMessage();
-                    roomService.getRoom(roomId)
-                            .addPlayer(playerService.getPlayerById(message.getClientId()), seatNumber);
+                    Player currentPlayer = playerService.getPlayerById(message.getClientId());
+                    if (currentPlayer == null) {
+                        sendMessage(message.getClientId(), SerializationUtil.serializeString(
+                                new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Player not found!")));
+                        return "Player not found!";
+                    }
+
+                    // Add the player to the room
+                    Room room = roomService.getRoom(roomId);
+                    room.addPlayer(currentPlayer, seatNumber);
+
+                    // Retrieve all sessions in the room from sessions map and inform all other users
+                    String[] players = room.getPlayerIds();
+                    for (String playerId : players) {
+                        sendMessage(playerId, SerializationUtil.serializeString(
+                                new ServerSocketMessage<>(ServerSocketMessageType.PLAYER_JOIN,
+                                        "Player " + currentPlayer.getId() + " has joined the room!")));
+                    }
+                } else {
+                    sendMessage(message.getClientId(), SerializationUtil.serializeString(
+                            new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "You are already in a room!")));
                 }
 
                 break;
@@ -129,8 +158,7 @@ public class ClientMessageHandler {
                     if (currentPlayer == null) {
                         // Player not found, warn the user and abort.
                         sendMessage(message.getClientId(), SerializationUtil.serializeString(
-                                new ClientSocketMessage(message.getClientId(), ClientSocketMessageType.MESSAGE,
-                                "Player not found!")));
+                                new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Player not found!")));
                         return "Player not found!";
                     }
 
@@ -139,8 +167,7 @@ public class ClientMessageHandler {
                     if (playerRoom != null) {
                         // Player is already in a room, warn the user and abort.
                         sendMessage(currentPlayer.getId(), SerializationUtil.serializeString(
-                                new ClientSocketMessage(message.getClientId(), ClientSocketMessageType.MESSAGE,
-                                "Player is already in a room!")));
+                                new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Player is already in a room!")));
                         return "Player is already in a room!";
                     }
 
@@ -150,16 +177,28 @@ public class ClientMessageHandler {
                     roomService.addPlayerToRoom(newRoom.getRoomId(), currentPlayer);
                     // Inform the player that they have been added to the room
                     sendMessage(currentPlayer.getId(), SerializationUtil.serializeString(
-                            new ServerSocketMessage<>(ServerSocketMessageType.JOIN,
-                                    "You have been added to a new room!")));
+                            new ServerSocketMessage<>(ServerSocketMessageType.JOIN, "You have been added to a new room!")));
                 }
                 break;
             case LEAVE:
+                Player currentPlayer = playerService.getPlayerById(message.getClientId());
+                // Check if the player exists
+                if (currentPlayer == null) {
+                    // Player not found, warn the user and abort.
+                    sendMessage(message.getClientId(), SerializationUtil.serializeString(
+                            new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Player not found!")));
+                    return "Player not found!";
+                }
+
                 // When a player leaves the room
-                if (message.getClientId() != null) {
-
-                } else {
-
+                // Check if the player is in any room first
+                Room playerRoom = roomService.getPlayerRoomByPlayerId(currentPlayer.getId());
+                if (playerRoom != null) {
+                    // Remove the player from the room
+                    playerRoom.removePlayer(playerRoom.getPlayerSeatNumber(currentPlayer.getId()));
+                    sendMessage(currentPlayer.getId(), SerializationUtil.serializeString(
+                            new ServerSocketMessage<>(ServerSocketMessageType.LEAVE,
+                                    "You have left the room!")));
                 }
                 break;
             case SIT:

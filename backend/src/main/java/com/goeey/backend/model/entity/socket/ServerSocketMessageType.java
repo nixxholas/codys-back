@@ -8,6 +8,7 @@ public enum ServerSocketMessageType {
     CONNECT,
     DISCONNECT,
     ERROR,
+    UPDATE,
     JOIN,
     LEAVE,
     SIT,
