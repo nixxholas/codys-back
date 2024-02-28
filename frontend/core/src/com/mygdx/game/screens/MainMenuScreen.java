@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygdx.game.Boot;
 
 public class MainMenuScreen extends ScreenAdapter{
-    final Boot game;
+    private final Boot game;
 	private Stage stage;
     private int proceed = 0;
 
@@ -34,13 +34,13 @@ public class MainMenuScreen extends ScreenAdapter{
         TextButton startButton = new TextButton("Start Game", skin);
         TextButton exitButton = new TextButton("Exit to Desktop", skin);
         startButton.addListener(new ClickListener() {
-            public void touchUp(InputEvent event, float x, float y, int point, int button) {
+            public void clicked(InputEvent event, float x, float y) {
                 // Handle slider value change
                 proceed = 1;
             }
         });
         exitButton.addListener(new ClickListener() {
-            public void touchUp(InputEvent event, float x, float y, int point, int button) {
+            public void clicked(InputEvent event, float x, float y) {
                 // Handle slider value change
                 proceed = -1;
             }
@@ -65,11 +65,6 @@ public class MainMenuScreen extends ScreenAdapter{
         table.row();
         table.add(exitButton).width(500).height(100).padTop(50);
 
-        /*
-         *   Uncomment the following line to enable outline of the tables for debugging.
-         */
-        // table.setDebug(true);
-
         stage.addActor(table);
     }
 
@@ -79,7 +74,6 @@ public class MainMenuScreen extends ScreenAdapter{
 		game.batch.setProjectionMatrix(stage.getCamera().combined);
 
 		game.batch.begin();
-        stage.act(delta);
         stage.draw();
         game.batch.end();
 

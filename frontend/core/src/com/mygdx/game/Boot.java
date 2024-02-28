@@ -2,11 +2,13 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.screens.MainMenuScreen;
+import jdk.tools.jmod.Main;
 
 public class Boot extends Game{
     private String playerName;
@@ -51,7 +53,7 @@ public class Boot extends Game{
 
     public void render() {
         /*
-        *   super.render() is IMPORTANT because see below.
+        *   super.render() is IMPORTANT because Game will call the render() function in screen if it exists.
         *
         *   Game class source code for render():
         *   @Override
