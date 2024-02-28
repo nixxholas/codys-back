@@ -10,6 +10,7 @@ import com.google.gson.JsonIOException;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 
 import java.io.IOException;
 import java.io.StreamCorruptedException;
@@ -17,13 +18,9 @@ import java.util.Arrays;
 
 public class SocketHandler implements WebSocketHandler {
     private final ClientMessageHandler handler;
-    private final RoomService roomService;
-    private final PlayerService playerService;
 
-    public SocketHandler(ClientMessageHandler clientMessageHandler, RoomService roomService, PlayerService playerService) {
+    public SocketHandler(ClientMessageHandler clientMessageHandler) {
         this.handler = clientMessageHandler;
-        this.roomService = roomService;
-        this.playerService = playerService;
     }
 
     @Override
@@ -32,7 +29,7 @@ public class SocketHandler implements WebSocketHandler {
                 .map(msg -> {
                     try {
                         ClientSocketMessage clientSocketMessage = SerializationUtil.deserialize(msg.getPayloadAsText().getBytes(), ClientSocketMessage.class);
-                        return session.textMessage(handler.handle(clientSocketMessage));
+                        return session.textMessage(handler.handle(session, clientSocketMessage));
                     }
                     catch (StreamCorruptedException sce) {
                         ServerSocketMessage<String> message = new ServerSocketMessage<>(ServerSocketMessageType.ERROR, "Error: " + sce.getMessage());

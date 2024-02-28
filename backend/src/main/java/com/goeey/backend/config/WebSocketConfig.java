@@ -33,7 +33,7 @@ public class WebSocketConfig {
     @Bean
     public HandlerMapping handlerMapping() {
         Map<String, SocketHandler> map = new HashMap<>();
-        map.put("/ws", new SocketHandler(clientMessageHandler(), roomService(), playerService()));
+        map.put("/ws", new SocketHandler(clientMessageHandler()));
 
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setUrlMap(map);

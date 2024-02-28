@@ -51,6 +51,25 @@ public class Room extends Thread {
         return -1; // No available seats
     }
 
+    public int getPlayerSeatNumber(String playerId) {
+        for (Map.Entry<Integer, Player> entry : players.entrySet()) {
+            if (entry.getValue().getId().equals(playerId)) {
+                return entry.getKey();
+            }
+        }
+        return -1;
+    }
+
+    public String[] getPlayerIds() {
+        String[] playerIds = new String[players.size()];
+        int i = 0;
+        for (Player player : players.values()) {
+            playerIds[i] = player.getId();
+            i++;
+        }
+        return playerIds;
+    }
+
     public String getRoomId() {
         return id;
     }

@@ -30,6 +30,10 @@ public class RoomService {
         return rooms.get(roomId);
     }
 
+    public int getRoomCount() {
+        return rooms.size();
+    }
+
     public Room getPlayerRoomByPlayerId(String playerId) {
         for (Room room : rooms.values()) {
             if (room.hasPlayerById(playerId)) {

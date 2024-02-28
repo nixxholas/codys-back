@@ -7,6 +7,13 @@ public class ClientSocketMessage extends BaseSocketMessage<String, ClientSocketM
         this.clientId = clientId;
     }
 
+    public ClientSocketMessage(String clientId, ClientSocketMessageType type, String message) {
+        super();
+        this.clientId = clientId;
+        setType(type);
+        setMessage(message);
+    }
+
     public String getClientId() {
         return clientId;
     }

@@ -20,4 +20,6 @@ public enum ClientSocketMessageType {
     SPLIT,
     INSURANCE,
     SURRENDER,
+    CREATE_AND_JOIN_ROOM,
+    MESSAGE,
 }
