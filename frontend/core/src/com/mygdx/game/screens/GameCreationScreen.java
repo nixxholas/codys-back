@@ -14,14 +14,16 @@ import com.mygdx.game.Boot;
 
 public class GameCreationScreen extends ScreenAdapter{
     final Boot game;
+    private Skin skin;
 	private Stage stage;
     private TextField textField;
     private Label valueLabel, nameLabel;
     private Slider slider;
     private boolean proceed = false;
 
-    public GameCreationScreen(Boot boot){
-        this.game = boot;
+    public GameCreationScreen(Boot game){
+        this.game = game;
+        this.skin = game.skin;
     }
 
 	public void show() {
@@ -30,7 +32,6 @@ public class GameCreationScreen extends ScreenAdapter{
 
         Gdx.input.setInputProcessor(stage);
 
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json")); // You can use a different skin
         // Create a text field
         TextFieldStyle textFieldStyle = skin.get(TextFieldStyle.class);
         textField = new TextField("", skin);

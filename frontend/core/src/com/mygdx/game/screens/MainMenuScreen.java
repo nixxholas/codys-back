@@ -17,17 +17,19 @@ public class MainMenuScreen extends ScreenAdapter{
     private final Boot game;
 	private Stage stage;
 
-    public MainMenuScreen(Boot boot){
-        this.game = boot;
+    private Skin skin;
+
+    public MainMenuScreen(Boot game){
+        this.game = game;
+        this.skin = game.skin;
     }
 
 	public void show() {
         stage = new Stage();
         stage.setViewport(game.gameViewport);
-
         Gdx.input.setInputProcessor(stage);
 
-        Skin skin = new Skin(Gdx.files.internal("uiskin.json")); // You can use a different skin
+        Image bjImage = new Image(new Texture("images/decor/blackjacklogo.png"));
         
         //TextButton
         TextButton startButton = new TextButton("Start Game", skin);
@@ -44,9 +46,6 @@ public class MainMenuScreen extends ScreenAdapter{
             }
         });
 
-        // Create the bjImage as a scene2d.ui Image because table.add() only accepts Actors as input,
-        // and Image is a subtype of Actors.
-        Image bjImage = new Image(new Texture("images/decor/blackjacklogo.png"));
 
         /*
         *   Table is used to control layout of UI elements and widgets in a scene2d.ui
@@ -78,6 +77,11 @@ public class MainMenuScreen extends ScreenAdapter{
 	@Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+    }
+
+    @Override
+    public void hide() {
+        dispose();
     }
 
 	@Override
