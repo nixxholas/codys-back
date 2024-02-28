@@ -14,7 +14,7 @@ import jdk.tools.jmod.Main;
 public class Boot extends Game{
     private String playerName;
     private int screenWidth, screenHeight;
-    public final Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+    public Skin skin;
     public SpriteBatch batch;
 
     /*
@@ -36,15 +36,14 @@ public class Boot extends Game{
      *  stage.getViewport().update() also ensures the UI stays in the center of the screen by setting centerCamera = true.
      */
     public FitViewport gameViewport;
-
-    public Boot(){
-    }
     
     public void create(){
         this.batch = new SpriteBatch();
         this.screenWidth = Gdx.graphics.getWidth();
         this.screenHeight = Gdx.graphics.getHeight();
         gameViewport = new FitViewport(1920, 1080);
+
+        skin = new Skin(Gdx.files.internal("uiskin.json"));
 
         /*
          *  Sets screen to MainMenuScreen.java

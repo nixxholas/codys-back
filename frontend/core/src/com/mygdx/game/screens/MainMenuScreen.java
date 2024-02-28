@@ -16,7 +16,6 @@ import com.mygdx.game.Boot;
 public class MainMenuScreen extends ScreenAdapter{
     private final Boot game;
 	private Stage stage;
-
     private Skin skin;
 
     public MainMenuScreen(Boot game){
