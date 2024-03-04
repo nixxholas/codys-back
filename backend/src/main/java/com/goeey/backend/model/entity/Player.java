@@ -75,6 +75,7 @@ public class Player {
         return standing;
     }
 
+    /*
     public void setDoubleDown(boolean doubleDown) {
         this.doubleDown = doubleDown;
     }
@@ -82,6 +83,7 @@ public class Player {
     public boolean isDoubleDown() {
         return doubleDown;
     }
+    */
 
     public void placeBet(int amount) {
         if (amount > balance) {
