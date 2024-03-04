@@ -154,6 +154,7 @@ public class Room extends Thread {
         }
     }
 
+    /*
     // Double down method
     public void doubleDown(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
@@ -174,6 +175,7 @@ public class Room extends Thread {
             player.setStanding(true); // Player is forced to stand as he can only take one additional card
         }
     }
+    */
 
     private void checkGameOver() {
         for (Player player : players.values()) {
