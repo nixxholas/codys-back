@@ -1,12 +1,14 @@
-package com.goeey.backend.model.entity;
+package com.gooey.base;
+
+import com.gooey.base.socket.ServerEvent;
+import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-public class Player {
-    private String id;
-    private String name;
+public class Player extends BasePlayer {
     private List<Card> hand = new ArrayList<>();
     private boolean standing = false;
     private boolean doubleDown = false;
@@ -14,13 +16,8 @@ public class Player {
     private int currentBet;
     private int numCards;
 
-    public Player(String name) {
-        this.name = name;
-        this.id = UUID.randomUUID().toString();
-    }
-
-    public String getId() {
-        return id;
+    public Player(String id, String name) {
+        super(id, name);
     }
 
     public int getBalance() {

@@ -1,19 +1,14 @@
-package com.goeey.backend.model.entity.socket;
+package com.gooey.base.socket;
 
-import com.goeey.backend.model.entity.EntityTarget;
+import com.gooey.base.EntityTarget;
 
 import java.io.*;
 
-public abstract class BaseSocketMessage<E, T> implements Serializable {
-    private T type;
+public abstract class BaseEvent<E> implements Serializable {
     private E message;
     private EntityTarget target;
 
-    protected BaseSocketMessage() {
-    }
-
-    public T getType() {
-        return type;
+    protected BaseEvent() {
     }
 
     public E getMessage() {
@@ -22,10 +17,6 @@ public abstract class BaseSocketMessage<E, T> implements Serializable {
 
     public EntityTarget getTarget() {
         return target;
-    }
-
-    public void setType(T type) {
-        this.type = type;
     }
 
     public void setMessage(E message) {

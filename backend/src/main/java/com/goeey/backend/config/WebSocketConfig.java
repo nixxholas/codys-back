@@ -1,9 +1,6 @@
 package com.goeey.backend.config;
 
-import com.goeey.backend.handler.ClientMessageHandler;
 import com.goeey.backend.handler.SocketHandler;
-import com.goeey.backend.service.PlayerService;
-import com.goeey.backend.service.RoomService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.HandlerMapping;
@@ -16,24 +13,9 @@ import java.util.Map;
 @Configuration
 public class WebSocketConfig {
     @Bean
-    public ClientMessageHandler clientMessageHandler() {
-        return new ClientMessageHandler(roomService(), playerService());
-    }
-
-    @Bean
-    public RoomService roomService() {
-        return new RoomService();
-    }
-
-    @Bean
-    public PlayerService playerService() {
-        return new PlayerService();
-    }
-
-    @Bean
     public HandlerMapping handlerMapping() {
         Map<String, SocketHandler> map = new HashMap<>();
-        map.put("/ws", new SocketHandler(clientMessageHandler()));
+        map.put("/ws", new SocketHandler());
 
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
         mapping.setUrlMap(map);

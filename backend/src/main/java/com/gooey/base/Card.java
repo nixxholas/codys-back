@@ -1,4 +1,4 @@
-package com.goeey.backend.model.entity;
+package com.gooey.base;
 
 public class Card {
     private final Suit suit;

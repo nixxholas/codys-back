@@ -1,13 +1,18 @@
-package com.goeey.backend.model.entity;
+package com.gooey.base;
 
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import com.gooey.base.socket.ServerEvent;
+import com.goeey.backend.util.SerializationUtil;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.web.reactive.socket.WebSocketSession;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
+
+import static com.goeey.backend.util.SerializationUtil.gson;
 
 /**
  * Represents a room in the casino where players can play blackjack.
@@ -15,14 +20,15 @@ import java.util.concurrent.ScheduledFuture;
  * The room is responsible for managing the game state and the deck of cards.
  * It also schedules the next round to start after a certain delay.
  */
-@EnableScheduling
-public class Room extends Thread {
+public class Room {
+    private final Sinks.Many<ServerEvent> broadcastSink; // For broadcasting to all players in the room
     private final String id;
     private final Map<Integer, Player> players = new ConcurrentHashMap<>(6);
-    private List<Card> deck = new ArrayList<>();
-    private Player dealer = new Player("Dealer");
+    private transient List<Card> deck = new ArrayList<>();
+    private transient Player dealer = new Player(UUID.randomUUID().toString(), "Dealer");
     private boolean gameStarted = false;
-    private Timer timer;
+    private transient Timer timer;
+    private transient Thread thread;
 
     private enum GameState {
         WAITING_FOR_PLAYERS,
@@ -38,6 +44,8 @@ public class Room extends Thread {
 
     public Room(String id) {
         this.id = id;
+        this.broadcastSink = Sinks.many().multicast().onBackpressureBuffer();
+//        this.playerSinks = new ConcurrentHashMap<>();
         timer = new Timer();
         initializeDeck();
     }
@@ -78,6 +86,15 @@ public class Room extends Thread {
         return players;
     }
 
+    public Player getPlayerById(String playerId) {
+        for (Player player : players.values()) {
+            if (player.getId().equals(playerId)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     public boolean hasPlayerById(String playerId) {
         for (Player player : players.values()) {
             if (player.getId().equals(playerId)) {
@@ -105,15 +122,98 @@ public class Room extends Thread {
         return false;
     }
 
-    public void addPlayer(Player player, int seatNumber) {
-        if (seatNumber < 1 || seatNumber > 6) {
-            throw new IllegalArgumentException("Invalid seat number.");
-        }
+    public Mono<Void> subscribePlayerToRoomBroadcasts(WebSocketSession session) {
+        Flux<ServerEvent> eventsFlux = broadcastSink.asFlux();
 
-        players.put(seatNumber, player);
+        return session.send(eventsFlux.map(event ->
+            session.textMessage(SerializationUtil.serializeString(event))
+        ));
     }
 
-    public void removePlayer(int seatNumber) {
+    public Mono<Void> playerJoin(Player player, WebSocketSession session) {
+        // CAVEAT: Check if the player is in a room or in this room before adding them
+        if (players.size() >= 6) {
+            return session.send(Mono.just(session.textMessage(
+                    gson.toJson(new ServerEvent<>(ServerEvent.Type.ERROR, "Room is full.")))));
+        }
+        if (hasPlayerById(player.getId())) {
+            return session.send(Mono.just(session.textMessage(
+                    gson.toJson(new ServerEvent<>(ServerEvent.Type.ERROR, "You are already in a room.")))));
+        }
+
+        if (!players.isEmpty()) {
+            // Create and emit the join event
+            ServerEvent joinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_JOIN, "Player " + player.getName() + " joined the room.");
+            this.broadcastSink.tryEmitNext(joinEvent);
+        }
+        players.put(getNextAvailableSeat(), player);
+        subscribePlayerToRoomBroadcasts(session).subscribe();
+
+        return session.send(broadcastSink.asFlux()
+                .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
+    }
+
+    public Player playerLeave(String playerId) {
+        // Inform all players someone is leaving
+        int seatNumber = getPlayerSeatNumber(playerId);
+        if (seatNumber < 0) {
+            // It's usually better to handle this case without throwing an exception if it's a normal part of your application flow
+            System.err.println("Player not found or already removed.");
+            return null;
+        }
+
+        Player leavingPlayer = players.get(seatNumber);
+        if (leavingPlayer != null) {
+            // Broadcast a message to the room indicating that the player has left
+            // Assuming you have a method to convert Player object or playerId to a String that identifies the player to other clients
+            ServerEvent leaveEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LEAVE, leavingPlayer.getId());
+            broadcastSink.tryEmitNext(leaveEvent);
+
+            // Remove the player from the room's player map
+            players.remove(seatNumber);
+        }
+
+        return leavingPlayer;
+    }
+
+    public ServerEvent sit(Player player, int seatNumber) {
+        if (seatNumber < 1 || seatNumber > 6) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Invalid seat number.");
+        }
+        if (players.containsKey(seatNumber)) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Seat is already taken.");
+        }
+
+        // Broadcast a message to the room indicating that the player has sat down
+        ServerEvent sitEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_SAT, player.getId() + " sat down at seat " + seatNumber);
+        broadcastSink.tryEmitNext(sitEvent);
+
+        players.put(seatNumber, player);
+
+        // Return a message to the sitter
+        return new ServerEvent(ServerEvent.Type.PLAYER_SAT, seatNumber);
+    }
+
+    public ServerEvent standUp(Player player) {
+        int seatNumber = getPlayerSeatNumber(player.getId());
+        if (seatNumber < 0) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Player not found.");
+        }
+
+        // Broadcast a message to the room indicating that the player has stood up
+        ServerEvent standEvent = new ServerEvent<>(ServerEvent.Type.STOOD_UP, player.getId() + " stood up from seat " + seatNumber);
+        broadcastSink.tryEmitNext(standEvent);
+
+        players.remove(seatNumber);
+
+        // Return a message to the stander
+        return new ServerEvent(ServerEvent.Type.STOOD_UP, seatNumber);
+    }
+
+    public void removePlayer(int seatNumber) throws NullPointerException {
+        Player player = players.get(seatNumber);
+        if (player == null)
+            throw new NullPointerException("Player not found.");
         players.remove(seatNumber);
     }
 
@@ -281,12 +381,12 @@ public class Room extends Thread {
         }
     }
 
-    @Override
     public void run() {
-        while (!players.isEmpty()) {
-            System.out.println("[Room " + this.id + "] Game state is still running!");
-            try {
-                switch (gameState) {
+        thread = new Thread(() -> {
+            while (!players.isEmpty()) {
+                System.out.println("[Room " + this.id + "] Game state is still running!");
+                try {
+                    switch (gameState) {
                     /*
                       Add a case for WAITING_FOR_PLAYERS to check if there are enough players to start the game.
                       If there are enough players, start the game by calling startRound().
@@ -296,55 +396,57 @@ public class Room extends Thread {
                       - At least one player: Check if at least one player has placed a bet. If so, start the round.
                       - All players have placed bets: Start the round.
                      */
-                    case WAITING_FOR_PLAYERS:
-                        break;
-                    case WAITING_FOR_BETS:
-                        if (!players.isEmpty() && this.atLeastOneHasPlacedBet()) {
-                            // Start the round if at least one player has placed a bet
-                            if (this.notAllHavePlacedBet()) {
-                                System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
+                        case WAITING_FOR_PLAYERS:
+                            break;
+                        case WAITING_FOR_BETS:
+                            if (!players.isEmpty() && this.atLeastOneHasPlacedBet()) {
+                                // Start the round if at least one player has placed a bet
+                                if (this.notAllHavePlacedBet()) {
+                                    System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
+                                }
+                            } else {
+                                System.out.println("Waiting for players to place bets...");
                             }
-                        } else {
-                            System.out.println("Waiting for players to place bets...");
-                        }
-                        break;
-                    case PLAYER_TURN:
-                        for (Player player : players.values()) {
-                            if (!player.isStanding()) {
-                                Thread.sleep(1000);
+                            break;
+                        case PLAYER_TURN:
+                            for (Player player : players.values()) {
+                                if (!player.isStanding()) {
+                                    Thread.sleep(1000);
 //                                hit(player.getSeatNumber());
+                                }
                             }
-                        }
-                        break;
-                    case DEALING:
-                        // Clear hands and prepare for a new round
-                        dealer.getHand().clear();
-                        players.values().forEach(player -> {
-                            player.getHand().clear(); // Clear hands before dealing new cards
-                            player.setStanding(false);  // Reset standing status
-                        });
-                        initializeDeck(); // Reinitialize the deck each round
-                        dealInitialCards();
-                        gameState = GameState.PLAYER_TURN; // Players can now take their turns
-                        break;
-                    case DEALER_TURN:
-                        Thread.sleep(1000);
-                        dealerPlay();
-                        break;
-                    case ROUND_ENDED:
-                        // Reset game state for the next round
-                        gameState = GameState.WAITING_FOR_BETS;
+                            break;
+                        case DEALING:
+                            // Clear hands and prepare for a new round
+                            dealer.getHand().clear();
+                            players.values().forEach(player -> {
+                                player.getHand().clear(); // Clear hands before dealing new cards
+                                player.setStanding(false);  // Reset standing status
+                            });
+                            initializeDeck(); // Reinitialize the deck each round
+                            dealInitialCards();
+                            gameState = GameState.PLAYER_TURN; // Players can now take their turns
+                            break;
+                        case DEALER_TURN:
+                            Thread.sleep(1000);
+                            dealerPlay();
+                            break;
+                        case ROUND_ENDED:
+                            // Reset game state for the next round
+                            gameState = GameState.WAITING_FOR_BETS;
 
-                        // Remove players who have insufficient balance
-                        players.values().removeIf(player -> player.getBalance() < 10);
-                        break;
-                    case PLAYER_DISCONNECTED:
-                        // Handle player disconnection
-                        break;
+                            // Remove players who have insufficient balance
+                            players.values().removeIf(player -> player.getBalance() < 10);
+                            break;
+                        case PLAYER_DISCONNECTED:
+                            // Handle player disconnection
+                            break;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
-        }
+        });
+        thread.start();
     }
 }

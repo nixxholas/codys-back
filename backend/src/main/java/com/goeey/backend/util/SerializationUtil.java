@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 
 public class SerializationUtil {
 
-    private static final Gson gson = new Gson();
+    public static final Gson gson = new Gson();
 
     // Serialize to JSON
     public static byte[] serialize(Object obj) {
@@ -21,5 +21,9 @@ public class SerializationUtil {
     // Deserialize from JSON
     public static <T> T deserialize(byte[] bytes, Class<T> clazz) {
         return gson.fromJson(new String(bytes, StandardCharsets.UTF_8), clazz);
+    }
+
+    public static <T> T deserializeString(String json, Class<T> clazz) {
+        return gson.fromJson(json, clazz);
     }
 }
