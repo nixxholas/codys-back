@@ -104,14 +104,16 @@ public class SocketHandler implements WebSocketHandler {
         // Remove the player from the lobby
         lobbySessions.remove(player.getId());
         playerBroadcastSubscriptions.get(player.getId()).dispose();
+
+        // Room will handle the player joining
+        room.playerJoin(player, session);
+
         // Announce the player's departure from the lobby
-        if (lobbySessions.size() > 0) {
+        if (!lobbySessions.isEmpty()) {
             ServerEvent leaveEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LEFT, player.getName());
             broadcastToLobby(leaveEvent);
         }
 
-        // Room will handle the player joining
-        room.playerJoin(player, session);
         return session.send(broadcastSink.asFlux()
                 .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
     }
@@ -188,7 +190,7 @@ public class SocketHandler implements WebSocketHandler {
                 .flatMap(event -> {
                     // Process event to determine if it's for the lobby or a specific room
                     switch (event.getType()) {
-                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM, JOIN:
+                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM, JOIN, LIST_ROOMS:
                             return processLobbyEvent(session, event); // Implement this method for lobby-specific actions
                         case DISCONNECT:
                             return processDisconnectEvent(session, event); // Implement this method for disconnect-specific actions
@@ -268,6 +270,14 @@ public class SocketHandler implements WebSocketHandler {
                     movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
                 }
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, roomToJoin.getRoomId())))));
+            case LIST_ROOMS:
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ROOM_LIST, rooms.keySet())))));
+            case ROOM_PLAYERS: {
+                Room room = getRoom(event.getMessage());
+                if (room == null)
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid room")))));
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ROOM_PLAYERS, room.getPlayerIds().length)))));
+            }
             case CREATE_AND_JOIN_ROOM:
                 Player joiningAndCreatingPlayer = getPlayerById(event.getClientId());
                 if (joiningAndCreatingPlayer == null)

@@ -10,6 +10,8 @@ public class ServerEvent<E> extends BaseEvent<E> {
     public enum Type {
         CONNECT,
         DISCONNECT,
+        ROOM_LIST,
+        ROOM_PLAYERS,
         REGISTERED,
         ERROR,
         UPDATE,

@@ -10,6 +10,8 @@ public class ClientEvent extends BaseEvent<String> {
         REGISTER,
         DISCONNECT,
         JOIN,
+        LIST_ROOMS,
+        ROOM_PLAYERS,
         LEAVE,
         SIT,
         LEAVE_SEAT,
