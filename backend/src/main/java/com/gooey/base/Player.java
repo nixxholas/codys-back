@@ -15,6 +15,7 @@ public class Player extends BasePlayer {
     private int balance;
     private int currentBet;
     private int numCards;
+    private Sinks.Many<ServerEvent> sink;
 
     public Player(String id, String name) {
         super(id, name);
@@ -30,6 +31,14 @@ public class Player extends BasePlayer {
 
     public int getNumCards() {
         return this.numCards;
+    }
+
+    public Sinks.Many<ServerEvent> getSink() {
+        return sink;
+    }
+
+    public void setSink(Sinks.Many<ServerEvent> sink) {
+        this.sink = sink;
     }
     
     public void setNumCards(int num_cards) {
@@ -72,7 +81,6 @@ public class Player extends BasePlayer {
         return standing;
     }
 
-    /*
     public void setDoubleDown(boolean doubleDown) {
         this.doubleDown = doubleDown;
     }
@@ -80,7 +88,6 @@ public class Player extends BasePlayer {
     public boolean isDoubleDown() {
         return doubleDown;
     }
-    */
 
     public void placeBet(int amount) {
         if (amount > balance) {

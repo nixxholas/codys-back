@@ -6,8 +6,10 @@ import com.gooey.base.Room;
 import com.gooey.base.socket.ClientEvent;
 import com.gooey.base.socket.ServerEvent;
 import com.goeey.backend.util.SerializationUtil;
+import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
+import reactor.core.Disposable;
 import reactor.core.publisher.*;
 
 import java.util.Map;
@@ -16,12 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SocketHandler implements WebSocketHandler {
     private final Sinks.Many<ServerEvent> broadcastSink; // For broadcasting to all players in the lobby
+    private final Map<String, Disposable> playerBroadcastSubscriptions = new ConcurrentHashMap<>();
+    // Store all players in a lobby session first
+    private final Map<String, Player> lobbySessions = new ConcurrentHashMap<>();
     // broadcast messages to all players within a specific room.
     private final Map<String, Sinks.Many<ServerEvent>> roomSinkMap = new ConcurrentHashMap<>();
     // Runtime datastore for player data
     private final Map<String, BasePlayer> players = new ConcurrentHashMap<>();
-    // Store all players in a lobby session first
-    private final Map<String, Player> lobbySessions = new ConcurrentHashMap<>();
     // Runtime datastore for rooms
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
@@ -55,6 +58,10 @@ public class SocketHandler implements WebSocketHandler {
         return player;
     }
 
+    public boolean isPlayerInLobby(String playerId) {
+        return lobbySessions.containsKey(playerId);
+    }
+
     public Mono<Void> joinLobby(WebSocketSession session, String playerId) {
         Player player = getPlayerById(playerId);
         if (player == null)
@@ -64,12 +71,12 @@ public class SocketHandler implements WebSocketHandler {
 
         // Notify all players in the lobby
         if (lobbySessions.size() > 0) {
-            ServerEvent joinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_JOIN, "Player " + player.getName() + " joined the lobby");
+            ServerEvent joinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_JOINED, player.getName());
             broadcastSink.tryEmitNext(joinEvent);
         }
         // Add the joining player to the lobby
         lobbySessions.put(playerId, player);
-        subscribePlayerToLobbyBroadcasts(session).subscribe();
+        playerBroadcastSubscriptions.put(playerId, subscribePlayerToLobbyBroadcasts(session).subscribe());
 
         return session.send(broadcastSink.asFlux()
                 .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
@@ -84,6 +91,51 @@ public class SocketHandler implements WebSocketHandler {
     }
 
     // END OF PLAYER MANAGEMENT METHODS
+
+    // START OF LOBBY MANAGEMENT METHODS
+
+    // Call this method when moving a player from the lobby to a room.
+    public Mono<Void> movePlayerToRoom(Player player, Room room, WebSocketSession session) {
+        if (room == null || player == null) {
+            // Handle the case where the room doesn't exist
+            return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid room")))));
+        }
+
+        // Remove the player from the lobby
+        lobbySessions.remove(player.getId());
+        playerBroadcastSubscriptions.get(player.getId()).dispose();
+        // Announce the player's departure from the lobby
+        if (lobbySessions.size() > 0) {
+            ServerEvent leaveEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LEFT, player.getName());
+            broadcastToLobby(leaveEvent);
+        }
+
+        // Room will handle the player joining
+        room.playerJoin(player, session);
+        return session.send(broadcastSink.asFlux()
+                .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
+    }
+
+    // Call this method when moving a player from a room back to the lobby.
+    public void movePlayerToLobby(Player player, Room room) {
+        if (room == null || player == null) {
+            // Handle the case where the room doesn't exist
+            return;
+        }
+        room.playerLeave(player.getId());
+        lobbySessions.put(player.getId(), player);
+    }
+
+    // PREPARES a broadcast to all players in the lobby
+    private Sinks.EmitResult broadcastToLobby(ServerEvent<?> event) {
+        return this.broadcastSink.tryEmitNext(event);
+    }
+
+    private Mono<Void> closeWebSocketSession(WebSocketSession session) {
+        return session.close(CloseStatus.NORMAL);
+    }
+
+    // END OF LOBBY MANAGEMENT METHODS
 
     // START OF ROOM MANAGEMENT METHODS
 
@@ -114,7 +166,7 @@ public class SocketHandler implements WebSocketHandler {
     public Flux<ClientEvent> removePlayerFromRoom(String playerId, String roomId) {
         Room room = getRoom(roomId);
         if (room != null) {
-            room.removePlayer(room.getPlayerSeatNumber(playerId));
+            room.playerLeave(playerId);
         }
 
         return null;
@@ -136,7 +188,7 @@ public class SocketHandler implements WebSocketHandler {
                 .flatMap(event -> {
                     // Process event to determine if it's for the lobby or a specific room
                     switch (event.getType()) {
-                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM:
+                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM, JOIN:
                             return processLobbyEvent(session, event); // Implement this method for lobby-specific actions
                         case DISCONNECT:
                             return processDisconnectEvent(session, event); // Implement this method for disconnect-specific actions
@@ -151,7 +203,39 @@ public class SocketHandler implements WebSocketHandler {
 
     private Mono<Void> processDisconnectEvent(WebSocketSession session, ClientEvent event) {
         // Handle disconnect
-        return Mono.empty();
+        // Assuming event.getClientId() gives us the ID of the player who has disconnected.
+        String playerId = event.getClientId();
+        Room room = getPlayerRoomByPlayerId(playerId);
+
+        // If the player is in a room, let others know they've left and perform cleanup.
+        if (room != null) {
+            return Mono.fromRunnable(() -> {
+                // Notify other players in the room about the disconnect.
+                room.playerLeave(playerId);
+
+                // Do additional cleanup if necessary (e.g., remove player from the lobby if they are there).
+                Player player = lobbySessions.remove(playerId);
+
+                // Close the player's Sink Pipeline (DMs).
+                player.getSink().tryEmitComplete();
+
+                // Close the player's WebSocket session.
+                closeWebSocketSession(session);
+
+                // Log the disconnect event.
+                System.out.println("Player " + playerId + " disconnected.");
+            });
+        } else {
+            // If the player was not in a room, we may need to remove them from the lobby.
+            Player player = lobbySessions.remove(playerId);
+            if (player != null) {
+                // Notify others in the lobby about the disconnect, if necessary.
+                broadcastToLobby(new ServerEvent<>(ServerEvent.Type.PLAYER_DISCONNECT, playerId));
+            }
+
+            // Close the WebSocket session.
+            return closeWebSocketSession(session);
+        }
     }
 
     private Mono<Void> processLobbyEvent(WebSocketSession session, ClientEvent event) {
@@ -168,7 +252,7 @@ public class SocketHandler implements WebSocketHandler {
                 // Join the player to the lobby
                 joinLobby(session, event.getClientId());
                 // Send a welcome message to the player
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOIN, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
             case REGISTER:
                 // Create a new player
                 Player newPlayer = createPlayer(event.getClientId(), event.getMessage());
@@ -176,6 +260,14 @@ public class SocketHandler implements WebSocketHandler {
                 joinLobby(session, event.getClientId());
                 // Register the player
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.REGISTERED, "Welcome to the lobby " + newPlayer.getName() + "!")))));
+            case JOIN:
+                Room roomToJoin = getRoom(event.getMessage());
+                if (roomToJoin == null)
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid room")))));
+                if (isPlayerInLobby(event.getClientId()) && getPlayerRoomByPlayerId(event.getClientId()) == null) {
+                    movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
+                }
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, roomToJoin.getRoomId())))));
             case CREATE_AND_JOIN_ROOM:
                 Player joiningAndCreatingPlayer = getPlayerById(event.getClientId());
                 if (joiningAndCreatingPlayer == null)
@@ -184,9 +276,9 @@ public class SocketHandler implements WebSocketHandler {
                 // Create a new room
                 Room room = createRoom();
                 // Join the player to the room
-                room.playerJoin(joiningAndCreatingPlayer, session);
+                movePlayerToRoom(joiningAndCreatingPlayer, room, session);
                 // Send a welcome message to the player
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOIN, "Welcome to room " + room.getRoomId())))));
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to room " + room.getRoomId())))));
             default:
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid event")))));
         }
@@ -199,30 +291,12 @@ public class SocketHandler implements WebSocketHandler {
             return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid player")))));
         // Retrieve the player's room
         Room room = getPlayerRoomByPlayerId(event.getClientId());
-        if (room == null) {
-            if (event.getType() == ClientEvent.Type.JOIN) {
-                // Create a new room
-                room = getRoom(event.getMessage());
-                if (room == null)
-                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid room")))));
-                // Join the player to the room
-                room.playerJoin(player, session);
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOIN, "Welcome to room " + room.getRoomId())))));
-            } else {
-                // Player is not in a room
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "You are not in a room")))));
-            }
-        }
+        if (room == null)
+            return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid room")))));
+
         Sinks.Many<ServerEvent> roomSink = roomSinkMap.computeIfAbsent(room.getRoomId(), id -> Sinks.many().multicast().onBackpressureBuffer());
         ServerEvent responseEvent;
         switch (event.getType()) {
-            case JOIN:
-                // TODO: Check if from lobby or another room
-
-                // Join the room
-                room.playerJoin(player, session);
-                responseEvent = new ServerEvent(ServerEvent.Type.JOIN, "You have joined room " + room.getRoomId());
-                break;
             case LEAVE:
                 // Leave the room
                 Player leftPlayer = room.playerLeave(event.getClientId());

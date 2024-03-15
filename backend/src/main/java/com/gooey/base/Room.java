@@ -4,6 +4,7 @@ import com.gooey.base.socket.ServerEvent;
 import com.goeey.backend.util.SerializationUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.reactive.socket.WebSocketSession;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -22,6 +23,7 @@ import static com.goeey.backend.util.SerializationUtil.gson;
  */
 public class Room {
     private final Sinks.Many<ServerEvent> broadcastSink; // For broadcasting to all players in the room
+    private final Map<String, Disposable> playerBroadcastDisposables = new ConcurrentHashMap<>();
     private final String id;
     private final Map<Integer, Player> players = new ConcurrentHashMap<>(6);
     private transient List<Card> deck = new ArrayList<>();
@@ -143,37 +145,41 @@ public class Room {
 
         if (!players.isEmpty()) {
             // Create and emit the join event
-            ServerEvent joinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_JOIN, "Player " + player.getName() + " joined the room.");
+            ServerEvent joinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_JOINED, "Player " + player.getName() + " joined the room.");
             this.broadcastSink.tryEmitNext(joinEvent);
         }
         players.put(getNextAvailableSeat(), player);
-        subscribePlayerToRoomBroadcasts(session).subscribe();
+        playerBroadcastDisposables.put(player.getId(), subscribePlayerToRoomBroadcasts(session).subscribe());
 
         return session.send(broadcastSink.asFlux()
                 .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
     }
 
     public Player playerLeave(String playerId) {
-        // Inform all players someone is leaving
+        // Get the seat number of the player
         int seatNumber = getPlayerSeatNumber(playerId);
-        if (seatNumber < 0) {
-            // It's usually better to handle this case without throwing an exception if it's a normal part of your application flow
-            System.err.println("Player not found or already removed.");
-            return null;
+        // Stand up the player if they are sitting
+        if (seatNumber > 0) {
+            standUp(getPlayerById(playerId));
         }
 
+        // Remove the player from the room
         Player leavingPlayer = players.get(seatNumber);
         if (leavingPlayer != null) {
             // Broadcast a message to the room indicating that the player has left
             // Assuming you have a method to convert Player object or playerId to a String that identifies the player to other clients
-            ServerEvent leaveEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LEAVE, leavingPlayer.getId());
+            ServerEvent leaveEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LEFT, leavingPlayer.getId());
             broadcastSink.tryEmitNext(leaveEvent);
 
             // Remove the player from the room's player map
             players.remove(seatNumber);
+            playerBroadcastDisposables.get(playerId).dispose();
+            playerBroadcastDisposables.remove(playerId);
+
+            return leavingPlayer;
         }
 
-        return leavingPlayer;
+        return null;
     }
 
     public ServerEvent sit(Player player, int seatNumber) {
