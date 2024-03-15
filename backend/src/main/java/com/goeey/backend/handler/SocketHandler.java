@@ -2,7 +2,7 @@ package com.goeey.backend.handler;
 
 import com.gooey.base.BasePlayer;
 import com.gooey.base.Player;
-import com.gooey.base.Room;
+import com.goeey.backend.entity.Room;
 import com.gooey.base.socket.ClientEvent;
 import com.gooey.base.socket.ServerEvent;
 import com.goeey.backend.util.SerializationUtil;

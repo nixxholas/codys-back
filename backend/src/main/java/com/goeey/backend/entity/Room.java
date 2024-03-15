@@ -1,5 +1,9 @@
-package com.gooey.base;
+package com.goeey.backend.entity;
 
+import com.gooey.base.Card;
+import com.gooey.base.Player;
+import com.gooey.base.Rank;
+import com.gooey.base.Suit;
 import com.gooey.base.socket.ServerEvent;
 import com.goeey.backend.util.SerializationUtil;
 import org.springframework.scheduling.annotation.Scheduled;
