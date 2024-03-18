@@ -1,4 +1,4 @@
-package com.goeey.frontend.screen;
+package com.goeey.game.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.goeey.frontend.GameManager;
+import com.goeey.game.GameManager;
 
 public class MainMenuScreen extends ScreenAdapter {
     private final GameManager game;

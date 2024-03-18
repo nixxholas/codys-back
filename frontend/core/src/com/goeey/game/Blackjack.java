@@ -1,4 +1,4 @@
-package com.goeey.frontend;
+package com.goeey.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.Texture;

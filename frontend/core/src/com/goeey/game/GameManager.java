@@ -1,10 +1,10 @@
-package com.goeey.frontend;
+package com.goeey.game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.goeey.frontend.screen.MainMenuScreen;
+import com.goeey.game.screen.MainMenuScreen;
 
 public class GameManager extends Game {
     public static final int SCREEN_WIDTH = 1920;
