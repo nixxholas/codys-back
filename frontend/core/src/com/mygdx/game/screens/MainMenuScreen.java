@@ -69,9 +69,9 @@ public class MainMenuScreen extends ScreenAdapter{
 		ScreenUtils.clear(0.28f, 0.31f, 0.60f, 1);
 		game.batch.setProjectionMatrix(stage.getCamera().combined);
 
-		game.batch.begin();
+//		game.batch.begin();
         stage.draw();
-        game.batch.end();
+//        game.batch.end();
 	}
 	@Override
     public void resize(int width, int height) {
