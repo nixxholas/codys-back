@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -25,6 +26,7 @@ public class GameScreen extends ScreenAdapter {
     private int cHeight;
     private int scrWidth = Gdx.graphics.getWidth();
     private int scrHeight= Gdx.graphics.getHeight();
+    private int[][] playerArr;
 
     public GameScreen(GameManager game) {
         this.game = game;
@@ -79,32 +81,64 @@ public class GameScreen extends ScreenAdapter {
         List<String> hand3 = new ArrayList<String>();
         List<String> hand4 = new ArrayList<String>();
         List<String> hand5 = new ArrayList<String>();
-        List<List<String>> playerHands = new ArrayList<>(5);
+        List<List<String>> playerHands = new ArrayList<>(2);
         playerHands.add(hand);
         playerHands.add(hand2);
-        playerHands.add(hand2);
+        playerHands.add(hand);
         playerHands.add(hand2);
         playerHands.add(hand2);
 
         int numPlayers = 5;
-        //looping through i players
+        playerArr = new int[5][3];
+        // 2d array of all 5 player positional values and how many cards were dealt to each
         for (int currentPlayer = 0; currentPlayer < numPlayers; currentPlayer++) {
             // Use cosine and sine to calculate diagonal offset from center of circle
-            int x = (int)PlayerUtils.calcXPos(currentPlayer, numPlayers, scrWidth, scrHeight);
-            int y = (int)PlayerUtils.calcYPos(currentPlayer, numPlayers, scrWidth, scrHeight);
+            int x = (int)PlayerUtils.calcXPos(currentPlayer, numPlayers);
+            int y = (int)PlayerUtils.calcYPos(currentPlayer, numPlayers);
+            playerArr[currentPlayer][0] = x;
+            playerArr[currentPlayer][1] = y;
+            playerArr[currentPlayer][2] = 0;
+            //Create player name tag for each player position
             stage.addActor(PlayerUtils.createButtonLabel(skin, x ,  y + cHeight + 40, currentPlayer+1));
-            //get hand of current player
-            List<String> currentHand = playerHands.get(currentPlayer);
-            for(int currentCard = 0; currentCard < currentHand.size(); currentCard++){
-                // looping through each i player's z position card
-                String cardImagePath = (playerHands.get(currentPlayer)).get(currentCard) + ".png";
-                stage.addActor(CardAnimation.dealCards(currentCard, scrWidth, scrHeight, x, y, cardImagePath));
-            }
         }
 
-        
+        // single line code to deal card to players
+        stage.addActor(deal(0, "TWO_DIAMONDS"));
+        stage.addActor(deal(0, "THREE_DIAMONDS"));
+        stage.addActor(deal(0, "KING_DIAMONDS"));
+        stage.addActor(deal(0, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(0, "ACE_DIAMONDS"));
+        stage.addActor(deal(0, "THREE_DIAMONDS"));
+        stage.addActor(deal(1, "KING_DIAMONDS"));
+        stage.addActor(deal(2, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(3, "ACE_DIAMONDS"));
+        stage.addActor(deal(4,"THREE_DIAMONDS"));
+        stage.addActor(deal(4,"THREE_CLUBS"));
+        //looping through i players
+        // for (int currentPlayer = 0; currentPlayer < numPlayers; currentPlayer++) {
+        //     // Use cosine and sine to calculate diagonal offset from center of circle
+        //     int x = playerPositionArr[currentPlayer][0];
+        //     int y = playerPositionArr[currentPlayer][1];
+        //     stage.addActor(PlayerUtils.createButtonLabel(skin, x ,  y + cHeight + 40, currentPlayer+1));
+        //     //get hand of current player
+        //     List<String> currentHand = playerHands.get(currentPlayer);
+        //     for(int currentCard = 0; currentCard < currentHand.size(); currentCard++){
+        //         // looping through each i player's z position card
+        //         String cardImagePath = (playerHands.get(currentPlayer)).get(currentCard);
+        //         stage.addActor(CardAnimation.dealCards(currentCard, x, y, cardImagePath));
+        //     }
+        // }
 
     }
+
+    public Actor deal(int playerNum, String card){
+        int x = playerArr[playerNum][0];
+        int y = playerArr[playerNum][1];
+        int count = playerArr[playerNum][2];
+        playerArr[playerNum][2]++;
+        return CardAnimation.dealCards(count, x, y, card);
+    }
+
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0.3f, 0, 1);

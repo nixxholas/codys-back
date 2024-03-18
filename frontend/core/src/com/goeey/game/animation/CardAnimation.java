@@ -2,6 +2,7 @@ package com.goeey.game.animation;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
@@ -13,6 +14,9 @@ public class CardAnimation extends Actor {
     private Texture texture;
 
     private static float totalDelay = 2f;
+
+    private static int scrWidth = Gdx.graphics.getWidth();
+    private static int scrHeight= Gdx.graphics.getHeight();
 
     public CardAnimation() {
         this.texture = new Texture("cards/BACK_CARD.png");
@@ -26,6 +30,7 @@ public class CardAnimation extends Actor {
     public void setTexture(Texture t){
         this.texture = t;
     }
+
 
     public SequenceAction cardAnimation(float afterDelay, int x, int y, float delay, Texture t){
         MoveToAction moveToAction = Actions.moveTo(x, y, delay);
@@ -45,9 +50,9 @@ public class CardAnimation extends Actor {
         return finalSequence;
     }
 
-    public static Actor dealCards(int cardNum, int scrWidth, int scrHeight, int endXPos, int endYPos, String imagePath){
+    public static Actor dealCards(int cardNum, int endXPos, int endYPos, String imagePath){
         CardAnimation newC = new CardAnimation(backImage);
-        Texture frontImage = new Texture("cards/" + imagePath);
+        Texture frontImage = new Texture("cards/" + imagePath + ".png");
         float cWidth = frontImage.getWidth();
         float cHeight = frontImage.getHeight();
         float startXPos = (scrWidth-cWidth) / 2f;
