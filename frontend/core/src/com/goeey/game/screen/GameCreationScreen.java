@@ -5,9 +5,13 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
+
+import java.awt.*;
 
 public class GameCreationScreen extends ScreenAdapter {
     private final GameManager game;
@@ -25,7 +29,7 @@ public class GameCreationScreen extends ScreenAdapter {
     public Table uiTableFactory() {
 
         // Label
-        Label nameLabel = new Label("Username", skin);
+        Label nameLabel = new Label("Username:", skin);
 
         // Create a text field
         nameTextfield = new TextField("", skin);
@@ -48,15 +52,15 @@ public class GameCreationScreen extends ScreenAdapter {
 
 
         // Prepare Table
-        // Add text field to a uiTable
         Table uiTable = new Table();
+//        uiTable.setDebug(true);
         uiTable.setFillParent(true);
-        uiTable.add(nameLabel).top().left().padBottom(20);
-        uiTable.add(nameTextfield).width(300).height(40).padBottom(20);
-        uiTable.row();
-        uiTable.add(startButton).width(250).height(50).pad(20).padLeft(50).right();
-        uiTable.add(backButton).width(250).height(50).pad(20).padRight(50);
-uiTable.setDebug(true);
+        uiTable.row().height(40);
+        uiTable.add(nameLabel).padRight(10).right();
+        uiTable.add(nameTextfield).width(200).height(40).left();
+        uiTable.row().height(50);
+        uiTable.add(startButton).width(200).height(50).pad(20).padLeft(50);
+        uiTable.add(backButton).width(200).height(50).pad(20).padRight(50);
         return uiTable;
     }
 
@@ -74,9 +78,11 @@ uiTable.setDebug(true);
         stage.draw();
     }
 
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
     public void hide() {
         dispose();
     }
-
     public void dispose() { stage.dispose(); }
 }
