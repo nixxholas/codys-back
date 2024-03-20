@@ -264,7 +264,6 @@ public class Room {
         }
     }
 
-    /*
     // Double down method
     public void doubleDown(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
@@ -283,6 +282,39 @@ public class Room {
             player.setStanding(false); // Player busts
         } else {
             player.setStanding(true); // Player is forced to stand as he can only take one additional card
+        }
+    }
+
+    /*
+    // Split method
+    public void split(int seatNumber) {
+        if (gameState != GameState.PLAYER_TURN) {
+            throw new IllegalStateException("Not the right time to split.");
+        }
+        if (!gameStarted) {
+            throw new IllegalStateException("Game not started.");
+        }
+        Player player = players.get(seatNumber);
+        if (player != null && !player.isStanding()) {
+            player.setSplit(true);
+            // TODO
+        }
+    }
+    */
+
+    /*
+    // Insurance method
+    public void insurance(int seatNumber) {
+        if (gameState != GameState.PLAYER_TURN) {
+            throw new IllegalStateException("Not the right time to take insurance.");
+        }
+        if (!gameStarted) {
+            throw new IllegalStateException("Game not started.");
+        }
+        Player player = players.get(seatNumber);
+        if (player != null && !player.isStanding()) {
+            player.setInsurance(true);
+            // TODO
         }
     }
     */

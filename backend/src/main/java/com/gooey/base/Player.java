@@ -12,6 +12,8 @@ public class Player extends BasePlayer {
     private List<Card> hand = new ArrayList<>();
     private boolean standing = false;
     private boolean doubleDown = false;
+    private boolean split = false;
+    private boolean insurance = false;
     private int balance;
     private int currentBet;
     private int numCards;
@@ -89,12 +91,28 @@ public class Player extends BasePlayer {
         return doubleDown;
     }
 
+    public void setSplit(boolean split) {
+        this.split = split;
+    }
+
+    public boolean isSplit() {
+        return split;
+    }
+
+    public void setInsurance(boolean insurance) {
+        this.insurance = insurance;
+    }
+
+    public boolean isInsurance() {
+        return insurance;
+    }
+
     public void placeBet(int amount) {
         if (amount > balance) {
             throw new IllegalArgumentException("Bet amount exceeds balance.");
         }
         if (isDoubleDown()) {
-            this.currentBet += amount;
+            this.currentBet = 2 * amount;
         } else {
         this.currentBet = amount;
         }
@@ -104,7 +122,7 @@ public class Player extends BasePlayer {
     public void winBet() {
 
         // Blackjack scenarios
-        if (this.calculateHandValue() == 21 && this.getNumCards() == 2) {
+        if (this.calculateHandValue() == 21 && this.getNumCards() == 2 && this.isSplit() == false) {
             this.balance += (currentBet * 2.5); // Blackjack pays 3 to 2
             this.currentBet = 0;
         } else {
