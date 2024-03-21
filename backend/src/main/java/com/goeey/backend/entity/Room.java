@@ -26,13 +26,13 @@ import static com.goeey.backend.util.SerializationUtil.gson;
  * It also schedules the next round to start after a certain delay.
  */
 public class Room {
+    private boolean noMoreBets;
     private final Sinks.Many<ServerEvent> broadcastSink; // For broadcasting to all players in the room
     private final Map<String, Disposable> playerBroadcastDisposables = new ConcurrentHashMap<>();
     private final String id;
     private final Map<Integer, Player> players = new ConcurrentHashMap<>(6);
     private transient List<Card> deck = new ArrayList<>();
     private transient Player dealer = new Player(UUID.randomUUID().toString(), "Dealer");
-    private boolean gameStarted = false;
     private transient Timer timer;
     private transient Thread thread;
 
@@ -53,6 +53,7 @@ public class Room {
         this.broadcastSink = Sinks.many().multicast().onBackpressureBuffer();
 //        this.playerSinks = new ConcurrentHashMap<>();
         timer = new Timer();
+        noMoreBets = false;
         initializeDeck();
     }
 
@@ -63,6 +64,10 @@ public class Room {
             }
         }
         return -1; // No available seats
+    }
+
+    public boolean hasAPlayerSeated() {
+        return !players.isEmpty();
     }
 
     public int getPlayerSeatNumber(String playerId) {
@@ -128,6 +133,14 @@ public class Room {
         return false;
     }
 
+    public void placeBet(String playerId, int amount) {
+
+        Player player = getPlayerById(playerId);
+        if (player != null) {
+            player.placeBet(amount);
+        }
+    }
+
     public Mono<Void> subscribePlayerToRoomBroadcasts(WebSocketSession session) {
         Flux<ServerEvent> eventsFlux = broadcastSink.asFlux();
 
@@ -186,6 +199,16 @@ public class Room {
         return null;
     }
 
+    /**
+     * Sits a player at a seat in the room.
+     * If the seat is already taken, returns an error message.
+     * If the seat number is invalid, returns an error message.
+     * If the player is already sitting, returns an error message.
+     * Otherwise, broadcasts a message to the room indicating that the player has sat down.
+     * @param player
+     * @param seatNumber
+     * @return
+     */
     public ServerEvent sit(Player player, int seatNumber) {
         if (seatNumber < 1 || seatNumber > 6) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Invalid seat number.");
@@ -193,12 +216,19 @@ public class Room {
         if (players.containsKey(seatNumber)) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Seat is already taken.");
         }
+        if (getPlayerSeatNumber(player.getId()) > 0) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "You are already sitting.");
+        }
 
         // Broadcast a message to the room indicating that the player has sat down
         ServerEvent sitEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_SAT, player.getId() + " sat down at seat " + seatNumber);
         broadcastSink.tryEmitNext(sitEvent);
-
         players.put(seatNumber, player);
+
+        // if the player is the first to sit down, start the game
+        if (players.size() == 1) {
+            run();
+        }
 
         // Return a message to the sitter
         return new ServerEvent(ServerEvent.Type.PLAYER_SAT, seatNumber);
@@ -218,6 +248,43 @@ public class Room {
 
         // Return a message to the stander
         return new ServerEvent(ServerEvent.Type.STOOD_UP, seatNumber);
+    }
+
+    public void startTimer() {
+        if (this.atLeastOneHasPlacedBet()) {
+            // Start the round if at least one player has placed a bet
+            if (this.notAllHavePlacedBet() && this.atLeastOneHasPlacedBet()) {
+                System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
+                Thread countdownThread = new Thread(() -> {
+                    for (int i = 0; i < 10; i++) {
+                        ServerEvent timerEvent = new ServerEvent<>(ServerEvent.Type.COUNTDOWN, 10 - i);
+                        broadcastSink.tryEmitNext(timerEvent);
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (gameState == GameState.WAITING_FOR_BETS) {
+                        gameState = GameState.DEALING;
+                        noMoreBets = true;
+                    }
+                });
+                countdownThread.start();
+
+                // Wait for the countdown to finish
+                while (countdownThread.isAlive()) {
+                    // If all players stand up, end the countdown
+                    if (!this.atLeastOneHasPlacedBet() || !hasAPlayerSeated()) {
+                        countdownThread.interrupt();
+                        gameState = GameState.WAITING_FOR_PLAYERS;
+                        noMoreBets = false;
+                    }
+                }
+            }
+        } else {
+            System.out.println("Waiting for players to place bets...");
+        }
     }
 
     public void removePlayer(int seatNumber) throws NullPointerException {
@@ -241,7 +308,7 @@ public class Room {
         if (gameState != GameState.PLAYER_TURN) {
             throw new IllegalStateException("Not the right time to hit.");
         }
-        if (!gameStarted) {
+        if (!gameState.equals(GameState.PLAYER_TURN)) {
             throw new IllegalStateException("Game not started.");
         }
         Player player = players.get(seatNumber);
@@ -379,14 +446,13 @@ public class Room {
                 player.loseBet();
             }
         }
-        gameStarted = false; // Reset the game state for the next round
         gameState = GameState.ROUND_ENDED; // The round has ended, prepare for a new round
 
     }
 
     // Add a method for players to place bets at the beginning of each round
     public void placeBet(int seatNumber, int amount) {
-        if (!gameStarted) {
+        if (!gameState.equals(GameState.WAITING_FOR_BETS)) {
             throw new IllegalStateException("Can't place bets, game not started.");
         }
         Player player = players.get(seatNumber);
@@ -398,32 +464,37 @@ public class Room {
     /**
      * Schedules the next round to start after a certain delay.
      */
-    @Scheduled(fixedRate = 500)
-    private void syncState() {
-        Instant timeNow = Instant.now();
-        System.out.println("Room: " + this.id + "is syncing state.");
-
-        if (gameState == GameState.WAITING_FOR_BETS) {
-            if (this.atLeastOneHasPlacedBet()) {
-                // Start the round if at least one player has placed a bet
-                if (this.notAllHavePlacedBet() && this.atLeastOneHasPlacedBet()) {
-                    System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            if (gameState == GameState.WAITING_FOR_BETS) {
-                                gameState = GameState.DEALING;
-                            }
-                        }
-                    }, 10000);
-                }
-            } else {
-                System.out.println("Waiting for players to place bets...");
-            }
-        }
-    }
+//    @Scheduled(fixedRate = 500)
+//    private void syncState() {
+//        Instant timeNow = Instant.now();
+//        System.out.println("Room: " + this.id + "is syncing state.");
+//
+//        if (gameState == GameState.WAITING_FOR_BETS) {
+//            if (this.atLeastOneHasPlacedBet()) {
+//                // Start the round if at least one player has placed a bet
+//                if (this.notAllHavePlacedBet() && this.atLeastOneHasPlacedBet()) {
+//                    System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
+//                    timer.schedule(new TimerTask() {
+//                        @Override
+//                        public void run() {
+//                            if (gameState == GameState.WAITING_FOR_BETS) {
+//                                gameState = GameState.DEALING;
+//                            }
+//                        }
+//                    }, 10000);
+//                }
+//            } else {
+//                System.out.println("Waiting for players to place bets...");
+//            }
+//        }
+//    }
 
     public void run() {
+        // Make sure we're not overriding the thread
+        if (thread != null && thread.isAlive()) {
+            return;
+        }
+
         thread = new Thread(() -> {
             while (!players.isEmpty()) {
                 System.out.println("[Room " + this.id + "] Game state is still running!");
@@ -439,16 +510,12 @@ public class Room {
                       - All players have placed bets: Start the round.
                      */
                         case WAITING_FOR_PLAYERS:
+                            if (!players.isEmpty()) { // At least one player
+                                gameState = GameState.WAITING_FOR_BETS; // Start the round
+                            }
                             break;
                         case WAITING_FOR_BETS:
-                            if (!players.isEmpty() && this.atLeastOneHasPlacedBet()) {
-                                // Start the round if at least one player has placed a bet
-                                if (this.notAllHavePlacedBet()) {
-                                    System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
-                                }
-                            } else {
-                                System.out.println("Waiting for players to place bets...");
-                            }
+                            startTimer();
                             break;
                         case PLAYER_TURN:
                             for (Player player : players.values()) {
@@ -488,6 +555,8 @@ public class Room {
                     e.printStackTrace();
                 }
             }
+
+            System.out.println("[Room " + this.id + "] Game state has stopped running as there are no players sitting.");
         });
         thread.start();
     }

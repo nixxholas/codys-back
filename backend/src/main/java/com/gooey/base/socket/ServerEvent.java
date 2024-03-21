@@ -14,6 +14,7 @@ public class ServerEvent<E> extends BaseEvent<E> {
         ROOM_PLAYERS,
         REGISTERED,
         ERROR,
+        COUNTDOWN,
         UPDATE,
         JOINED,
         LEAVE,
