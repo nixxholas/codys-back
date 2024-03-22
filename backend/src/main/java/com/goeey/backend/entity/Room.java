@@ -1,9 +1,6 @@
 package com.goeey.backend.entity;
 
-import com.gooey.base.Card;
-import com.gooey.base.Player;
-import com.gooey.base.Rank;
-import com.gooey.base.Suit;
+import com.gooey.base.*;
 import com.gooey.base.socket.ServerEvent;
 import com.goeey.backend.util.SerializationUtil;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -453,6 +450,34 @@ public class Room {
         determineOutcome(); // Determine the outcome after the dealer has played
     }
 
+    private EntityTarget getEntityTarget(String target) {
+        if (target.equals("dealer")) {
+            return EntityTarget.DEALER;
+        } else {
+            // Loop all seated players and return the corresponding seat
+            for (Map.Entry<Integer, Player> entry : players.entrySet()) {
+                if (entry.getValue().getId().equals(target)) {
+                    switch (entry.getKey()) {
+                        case 1:
+                            return EntityTarget.PLAYER_1;
+                        case 2:
+                            return EntityTarget.PLAYER_2;
+                        case 3:
+                            return EntityTarget.PLAYER_3;
+                        case 4:
+                            return EntityTarget.PLAYER_4;
+                        case 5:
+                            return EntityTarget.PLAYER_5;
+                        case 6:
+                            return EntityTarget.PLAYER_6;
+                    }
+                }
+            }
+        }
+
+        return EntityTarget.ALL;
+    }
+
     private void dealInitialCards() {
         // Deal two cards to each player and the dealer at the start of each round
         for (int i = 0; i < 2; i++) {
@@ -460,11 +485,11 @@ public class Room {
 
             // Broadcast the card to all players
             if (i == 0) {
-                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card);
+                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card, getEntityTarget("dealer"));
                 broadcastSink.tryEmitNext(cardEvent);
             } else {
                 // Hide the second card
-                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, null);
+                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, null, getEntityTarget("dealer"));
                 broadcastSink.tryEmitNext(cardEvent);
             }
 
@@ -474,7 +499,7 @@ public class Room {
                 player.addCard(playerCard);
 
                 // Broadcast the card to all players
-                ServerEvent playerCardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DRAW, playerCard);
+                ServerEvent playerCardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DRAW, playerCard, getEntityTarget(player.getId()));
                 broadcastSink.tryEmitNext(playerCardEvent);
             }
         }
