@@ -38,6 +38,7 @@ public class ServerEvent<E> extends BaseEvent<E> {
         DEALER_WIN,
         DEALER_LOSE,
         DEALER_PUSH,
+        PLAYER_TURN,
         PLAYER_DRAW,
         PLAYER_WIN,
         PLAYER_LOSE,

@@ -3,16 +3,15 @@ package com.goeey.backend.entity;
 import com.gooey.base.*;
 import com.gooey.base.socket.ServerEvent;
 import com.goeey.backend.util.SerializationUtil;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.goeey.backend.util.SerializationUtil.gson;
 
@@ -344,7 +343,7 @@ public class Room {
         Collections.shuffle(deck);
     }
 
-    public void hit(int seatNumber) {
+    public ServerEvent hit(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
             throw new IllegalStateException("Not the right time to hit.");
         }
@@ -355,12 +354,18 @@ public class Room {
             throw new IllegalStateException("Game not started.");
         }
         Player player = players.get(seatNumber);
+        Card card;
         if (player != null && !player.isStanding()) {
-            player.addCard(deck.remove(0));
+            card = deck.remove(0);
+            player.addCard(card);
             if (player.calculateHandValue() > 21) {
                 player.setStanding(false); // Player busts
             }
+        } else {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Player is standing.");
         }
+
+        return new ServerEvent(ServerEvent.Type.PLAYER_HIT, card, getEntityTarget(player.getId()));
     }
 
     public void stand(int seatNumber) {
@@ -577,12 +582,70 @@ public class Room {
                             startTimer();
                             break;
                         case PLAYER_TURN:
-                            // Time for players to take their turns
+                            // Time for players to take their turns in order
                             for (Player player : players.values()) {
+                                // Retrieve which N player we're targeting
+                                EntityTarget entityTarget = getEntityTarget(player.getId());
+
+                                // Broadcast the player's turn
+                                ServerEvent playerTurnEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_TURN,
+                                        null, entityTarget);
+                                broadcastSink.tryEmitNext(playerTurnEvent);
+
+                                // Wait for the player to take their turn, provide 10 seconds to make a decision
+                                // If the player is standing, skip their turn
+                                // If the player is not standing, they can hit, reset the timer, and wait for them again
+                                AtomicReference<List<Card>> playerInitialHand = new AtomicReference<>(player.getHand());
+                                while (player.shouldStillDraw() && !player.isStanding()) {
+                                    Thread playerTurnCountdown = new Thread(() -> {
+                                        // Send timer to wait for player to take action
+                                        int countdown = 10;
+                                        // While the player still can draw cards
+                                        while (player.shouldStillDraw()) {
+                                            // While the player has not taken any action
+                                            while (playerInitialHand.get().size() == player.getHand().size()) {
+                                                ServerEvent timerEvent = new ServerEvent<>(ServerEvent.Type.COUNTDOWN, countdown);
+                                                broadcastSink.tryEmitNext(timerEvent);
+
+                                                try {
+                                                    Thread.sleep(1000);
+                                                } catch (InterruptedException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                                countdown--;
+
+                                                if (countdown == 0) {
+                                                    // Player has not taken any action, force stand
+                                                    player.setStanding(true);
+                                                }
+                                            }
+
+                                            if (player.isStanding()) {
+                                                break;
+                                            } else {
+                                                // Reset the countdown
+                                                countdown = 10;
+
+                                                // Deal with the draw broadcast elsewhere
+                                                playerInitialHand.set(player.getHand());
+                                            }
+                                        }
+                                    });
+                                    playerTurnCountdown.start();
+
+                                    // Wait for the countdown to finish
+                                    while (playerTurnCountdown.isAlive()) {
+                                        if (player.isStanding() || !player.shouldStillDraw()) {
+                                            playerTurnCountdown.interrupt();
+                                        }
+                                    }
+                                }
+
                                 if (!player.isStanding()) {
                                     Thread.sleep(1000);
                                 }
                             }
+                            gameState = GameState.DEALER_TURN; // All players have taken their turns
                             break;
                         case DEALING:
                             // Clear hands and prepare for a new round

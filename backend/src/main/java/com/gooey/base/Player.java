@@ -76,6 +76,10 @@ public class Player extends BasePlayer {
         return value;
     }
 
+    public boolean shouldStillDraw() {
+        return calculateHandValue() <= 21 || isStanding() || isDoubleDown();
+    }
+
     public void setStanding(boolean standing) {
         this.standing = standing;
     }
