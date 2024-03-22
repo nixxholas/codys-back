@@ -296,7 +296,7 @@ public class Room {
         if (this.atLeastOneHasPlacedBet()) {
             // Start the round if at least one player has placed a bet
             if (this.atLeastOneHasPlacedBet()) {
-                System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
+                System.out.println("Sending a timer to wait for bets.");
                 Thread countdownThread = new Thread(() -> {
                     for (int i = 0; i < 10; i++) {
                         ServerEvent timerEvent = new ServerEvent<>(ServerEvent.Type.COUNTDOWN, 10 - i);
@@ -567,6 +567,12 @@ public class Room {
                                 player.setStanding(false);  // Reset standing status
                             });
                             initializeDeck(); // Reinitialize the deck each round
+
+                            // Broadcast the deal event
+                            ServerEvent dealEvent = new ServerEvent<>(ServerEvent.Type.DEAL, this.id);
+                            broadcastSink.tryEmitNext(dealEvent);
+
+                            // Deal initial cards to players and the dealer
                             dealInitialCards();
                             gameState = GameState.PLAYER_TURN; // Players can now take their turns
                             break;
