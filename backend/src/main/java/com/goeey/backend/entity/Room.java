@@ -484,29 +484,36 @@ public class Room {
     }
 
     private void dealInitialCards() {
-        // Deal two cards to each player and the dealer at the start of each round
-        for (int i = 0; i < 2; i++) {
-            Card card = deck.remove(0);
-
-            // Broadcast the card to all players
-            if (i == 0) {
-                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card, getEntityTarget("dealer"));
-                broadcastSink.tryEmitNext(cardEvent);
-            } else {
-                // Hide the second card
-                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, null, getEntityTarget("dealer"));
-                broadcastSink.tryEmitNext(cardEvent);
-            }
-
-            dealer.addCard(card);
-            for (Player player : players.values()) {
-                Card playerCard = deck.remove(0);
-                player.addCard(playerCard);
+        try {
+            // Deal two cards to each player and the dealer at the start of each round
+            for (int i = 0; i < 2; i++) {
+                Card card = deck.remove(0);
 
                 // Broadcast the card to all players
-                ServerEvent playerCardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DRAW, playerCard, getEntityTarget(player.getId()));
-                broadcastSink.tryEmitNext(playerCardEvent);
+                if (i == 0) {
+                    ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card, getEntityTarget("dealer"));
+                    broadcastSink.tryEmitNext(cardEvent);
+                    Thread.sleep(1500);
+                } else {
+                    // Hide the second card
+                    ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, null, getEntityTarget("dealer"));
+                    broadcastSink.tryEmitNext(cardEvent);
+                    Thread.sleep(1500);
+                }
+
+                dealer.addCard(card);
+                for (Player player : players.values()) {
+                    Card playerCard = deck.remove(0);
+                    player.addCard(playerCard);
+
+                    // Broadcast the card to all players
+                    ServerEvent playerCardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DRAW, playerCard, getEntityTarget(player.getId()));
+                    broadcastSink.tryEmitNext(playerCardEvent);
+                    Thread.sleep(1500);
+                }
             }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
