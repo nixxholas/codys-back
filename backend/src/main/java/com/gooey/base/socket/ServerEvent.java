@@ -21,6 +21,7 @@ public class ServerEvent<E> extends BaseEvent<E> {
         SIT,
         STOOD_UP,
         BET,
+        STARTING,
         MODIFY,
         HIT,
         STAND,

@@ -30,7 +30,8 @@ public class Room {
     private final Sinks.Many<ServerEvent> broadcastSink; // For broadcasting to all players in the room
     private final Map<String, Disposable> playerBroadcastDisposables = new ConcurrentHashMap<>();
     private final String id;
-    private final Map<Integer, Player> players = new ConcurrentHashMap<>(6);
+    private Map<String, Player> unseatedPlayers = new ConcurrentHashMap<>();
+    private Map<Integer, Player> players = new ConcurrentHashMap<>(6);
     private transient List<Card> deck = new ArrayList<>();
     private transient Player dealer = new Player(UUID.randomUUID().toString(), "Dealer");
     private transient Timer timer;
@@ -70,6 +71,15 @@ public class Room {
         return !players.isEmpty();
     }
 
+    public boolean isSeated(String playerId) {
+        for (Player player : players.values()) {
+            if (player.getId().equals(playerId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int getPlayerSeatNumber(String playerId) {
         for (Map.Entry<Integer, Player> entry : players.entrySet()) {
             if (entry.getValue().getId().equals(playerId)) {
@@ -103,6 +113,13 @@ public class Room {
                 return player;
             }
         }
+
+        for (Player player : unseatedPlayers.values()) {
+            if (player.getId().equals(playerId)) {
+                return player;
+            }
+        }
+
         return null;
     }
 
@@ -112,6 +129,13 @@ public class Room {
                 return true;
             }
         }
+
+        for (Player player : unseatedPlayers.values()) {
+            if (player.getId().equals(playerId)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -140,6 +164,9 @@ public class Room {
     public ServerEvent placeBet(String playerId, int amount) {
         if (!gameState.equals(GameState.WAITING_FOR_BETS)) {
             throw new IllegalStateException("Can't place bets, game not started.");
+        }
+        if (!isSeated(playerId)) {
+            throw new IllegalStateException("Player is not seated.");
         }
 
         Player player = getPlayerById(playerId);
@@ -178,7 +205,7 @@ public class Room {
             ServerEvent joinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_JOINED, "Player " + player.getName() + " joined the room.");
             this.broadcastSink.tryEmitNext(joinEvent);
         }
-        players.put(getNextAvailableSeat(), player);
+        unseatedPlayers.put(player.getId(), player);
         playerBroadcastDisposables.put(player.getId(), subscribePlayerToRoomBroadcasts(session).subscribe());
 
         return session.send(broadcastSink.asFlux()
@@ -236,6 +263,7 @@ public class Room {
         // Broadcast a message to the room indicating that the player has sat down
         ServerEvent sitEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_SAT, player.getId() + " sat down at seat " + seatNumber);
         broadcastSink.tryEmitNext(sitEvent);
+        unseatedPlayers.remove(player.getId());
         players.put(seatNumber, player);
 
         // if the player is the first to sit down, start the game
@@ -258,6 +286,7 @@ public class Room {
         broadcastSink.tryEmitNext(standEvent);
 
         players.remove(seatNumber);
+        unseatedPlayers.put(player.getId(), player);
 
         // Return a message to the stander
         return new ServerEvent(ServerEvent.Type.STOOD_UP, seatNumber);
@@ -266,7 +295,7 @@ public class Room {
     public void startTimer() {
         if (this.atLeastOneHasPlacedBet()) {
             // Start the round if at least one player has placed a bet
-            if (this.notAllHavePlacedBet() && this.atLeastOneHasPlacedBet()) {
+            if (this.atLeastOneHasPlacedBet()) {
                 System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
                 Thread countdownThread = new Thread(() -> {
                     for (int i = 0; i < 10; i++) {
@@ -508,8 +537,15 @@ public class Room {
                       - All players have placed bets: Start the round.
                      */
                         case WAITING_FOR_PLAYERS:
-                            if (!players.isEmpty()) { // At least one player
+                            if (!players.isEmpty() && hasAPlayerSeated() && atLeastOneHasPlacedBet()) { // At least one player
                                 gameState = GameState.WAITING_FOR_BETS; // Start the round
+
+                                ServerEvent startEvent = new ServerEvent<>(ServerEvent.Type.STARTING, this.id);
+                                broadcastSink.tryEmitNext(startEvent);
+                            } else {
+                                // Send out alive
+                                ServerEvent aliveEvent = new ServerEvent<>(ServerEvent.Type.PONG, this.id);
+                                broadcastSink.tryEmitNext(aliveEvent);
                             }
                             break;
                         case WAITING_FOR_BETS:
@@ -551,6 +587,12 @@ public class Room {
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }
 

@@ -21,6 +21,7 @@ public class Player extends BasePlayer {
 
     public Player(String id, String name) {
         super(id, name);
+        this.balance = 1000; // Default balance
     }
 
     public int getBalance() {
@@ -107,9 +108,10 @@ public class Player extends BasePlayer {
         return insurance;
     }
 
-    public void placeBet(int amount) {
+    public boolean placeBet(int amount) {
         if (amount > balance) {
-            throw new IllegalArgumentException("Bet amount exceeds balance.");
+//            throw new IllegalArgumentException("Bet amount exceeds balance.");
+            return false;
         }
         if (isDoubleDown()) {
             this.currentBet = 2 * amount;
@@ -117,6 +119,7 @@ public class Player extends BasePlayer {
         this.currentBet = amount;
         }
         this.balance -= amount;
+        return true;
     }
 
     public void winBet() {
