@@ -358,8 +358,19 @@ public class Room {
         if (player != null && !player.isStanding()) {
             card = deck.remove(0);
             player.addCard(card);
+            // Check if the player busts
             if (player.calculateHandValue() > 21) {
                 player.setStanding(false); // Player busts
+
+                // Settle with the player
+                int lossAmount = player.loseBet();
+                ServerEvent bustEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_BUST,
+                        new PlayerResultData(lossAmount, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(bustEvent);
+
+                player.setSettled(true); // Player has settled
+
+                return new ServerEvent<>(ServerEvent.Type.PLAYER_BUST, card, getEntityTarget(player.getId()));
             }
         } else {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Player is standing.");
@@ -378,7 +389,6 @@ public class Room {
         Player player = players.get(seatNumber);
         if (player != null) {
             player.setStanding(true);
-            checkGameOver();
         }
     }
 
@@ -437,19 +447,27 @@ public class Room {
     }
     */
 
-    private void checkGameOver() {
-        for (Player player : players.values()) {
-            if (!player.isStanding()) {
-                return; // Game is not over if any player is not standing
-            }
-        }
-        dealerPlay(); // All players are standing, now it's dealer's turn
-    }
-
     private void dealerPlay() {
-        gameState = GameState.DEALER_TURN;
-        while (dealer.calculateHandValue() < 17) {
-            dealer.addCard(deck.remove(0));
+        // Reveal the dealer's second card
+        ServerEvent revealEvent = new ServerEvent<>(ServerEvent.Type.DEALER_REVEAL, dealer.getHand().get(1),
+                getEntityTarget("dealer"));
+        broadcastSink.tryEmitNext(revealEvent);
+
+        // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
+        // includes soft 17 as well.
+        while (dealer.calculateHandValue() < 17 ||
+                (dealer.calculateHandValue() == 17 && dealer.hasAce() && dealer.getNumCards() < 3)) {
+            Card nextCard = deck.remove(0);
+            dealer.addCard(nextCard);
+
+            ServerEvent dealerDrawEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, nextCard, getEntityTarget("dealer"));
+            broadcastSink.tryEmitNext(dealerDrawEvent);
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         determineOutcome(); // Determine the outcome after the dealer has played
@@ -493,12 +511,12 @@ public class Room {
                 if (i == 0) {
                     ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card, getEntityTarget("dealer"));
                     broadcastSink.tryEmitNext(cardEvent);
-                    Thread.sleep(1500);
+                    Thread.sleep(2000);
                 } else {
                     // Hide the second card
                     ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, null, getEntityTarget("dealer"));
                     broadcastSink.tryEmitNext(cardEvent);
-                    Thread.sleep(1500);
+                    Thread.sleep(2000);
                 }
 
                 dealer.addCard(card);
@@ -509,7 +527,7 @@ public class Room {
                     // Broadcast the card to all players
                     ServerEvent playerCardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DRAW, playerCard, getEntityTarget(player.getId()));
                     broadcastSink.tryEmitNext(playerCardEvent);
-                    Thread.sleep(1500);
+                    Thread.sleep(2000);
                 }
             }
         } catch (InterruptedException e) {
@@ -517,40 +535,87 @@ public class Room {
         }
     }
 
+    // Determine the outcome of the round, and distribute the winnings to the players
+    // Also broadcast balance updates to all players
     private void determineOutcome() {
-        dealerPlay(); // Dealer takes their turn
         int dealerValue = dealer.calculateHandValue();
         for (Player player : players.values()) {
+            // Skip players who have already settled
+            if (player.isSettled()) {
+                continue;
+            }
+
             int playerValue = player.calculateHandValue();
 
             // Blackjack scenarios
             if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue != 21 || dealerValue == 21 && dealer.getNumCards() != 2)) {
                 System.out.println(player.getId() + " wins!");
-                player.winBet();
+                int playerEarning = player.winBet();
+
+                // Broadcast the player win event
+                ServerEvent playerWinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_WIN,
+                        new PlayerResultData(playerEarning, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(playerWinEvent);
+                // Move to the next player
+                continue;
             } else if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue == 21 && dealer.getNumCards() == 2)) {
                 System.out.println(player.getId() + " pushes (ties).");
                 player.push();
+
+                // Broadcast the player win event
+                ServerEvent playerPushEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_PUSH,
+                        new PlayerResultData(0, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(playerPushEvent);
+                // Move to the next player
+                continue;
             } else if ((playerValue != 21 || playerValue == 21 && player.getNumCards() != 2) && (dealerValue == 21 && dealer.getNumCards() == 2)) {
                 System.out.println(player.getId() + " loses.");
-                player.loseBet();
+                int playerLosses = player.loseBet();
+
+                // Broadcast the player loss event
+                ServerEvent playerLossEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE,
+                        new PlayerResultData(playerLosses, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(playerLossEvent);
+                continue;
             }
 
+            // Regular scenarios
             if (playerValue > 21) {
                 System.out.println(player.getId() + " busts and loses.");
-                player.loseBet();
+                int playerLosses = player.loseBet();
+
+                // Broadcast the player loss event
+                ServerEvent playerLossEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE,
+                        new PlayerResultData(playerLosses, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(playerLossEvent);
             } else if (playerValue > dealerValue || dealerValue > 21) {
                 System.out.println(player.getId() + " wins!");
-                player.winBet();
+                int playerEarning = player.winBet();
+
+                // Broadcast the player win event
+                ServerEvent playerWinEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_WIN,
+                        new PlayerResultData(playerEarning, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(playerWinEvent);
             } else if (playerValue == dealerValue) {
                 System.out.println(player.getId() + " pushes (ties).");
                 player.push();
+
+                // Broadcast the player win event
+                ServerEvent playerPushEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_PUSH,
+                        new PlayerResultData(0, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(playerPushEvent);
+                // Move to the next player
             } else {
                 System.out.println(player.getId() + " loses.");
-                player.loseBet();
+                int playerLosses = player.loseBet();
+
+                // Broadcast the player loss event
+                ServerEvent playerLossEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE,
+                        new PlayerResultData(playerLosses, player.getBalance()), getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(playerLossEvent);
             }
         }
         gameState = GameState.ROUND_ENDED; // The round has ended, prepare for a new round
-
     }
 
     public void run() {
@@ -611,6 +676,15 @@ public class Room {
                                         while (player.shouldStillDraw()) {
                                             // While the player has not taken any action
                                             while (playerInitialHand.get().size() == player.getHand().size()) {
+                                                if (countdown == 0) {
+                                                    // Player has not taken any action, force stand
+                                                    player.setStanding(true);
+                                                    ServerEvent standEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_STAND,
+                                                            null, entityTarget);
+                                                    broadcastSink.tryEmitNext(standEvent);
+                                                    break;
+                                                }
+
                                                 ServerEvent timerEvent = new ServerEvent<>(ServerEvent.Type.COUNTDOWN, countdown);
                                                 broadcastSink.tryEmitNext(timerEvent);
 
@@ -620,11 +694,6 @@ public class Room {
                                                     throw new RuntimeException(e);
                                                 }
                                                 countdown--;
-
-                                                if (countdown == 0) {
-                                                    // Player has not taken any action, force stand
-                                                    player.setStanding(true);
-                                                }
                                             }
 
                                             if (player.isStanding()) {
@@ -652,7 +721,10 @@ public class Room {
                                     Thread.sleep(1000);
                                 }
                             }
-                            gameState = GameState.DEALER_TURN; // All players have taken their turns
+                            gameState = GameState.DEALER_TURN;
+                            // All players have taken their turns, emit dealer reveal event
+                            ServerEvent dealerTurnEvent = new ServerEvent<>(ServerEvent.Type.DEALER_REVEAL, this.id);
+                            broadcastSink.tryEmitNext(dealerTurnEvent);
                             break;
                         case DEALING:
                             // Clear hands and prepare for a new round
@@ -672,15 +744,33 @@ public class Room {
                             gameState = GameState.PLAYER_TURN; // Players can now take their turns
                             break;
                         case DEALER_TURN:
-                            Thread.sleep(1000);
+                            Thread.sleep(2000);
                             dealerPlay();
                             break;
                         case ROUND_ENDED:
                             // Reset game state for the next round
-                            gameState = GameState.WAITING_FOR_BETS;
-
                             // Remove players who have insufficient balance
-                            players.values().removeIf(player -> player.getBalance() < 10);
+                            for (Player player : players.values()) {
+                                if (player.getBalance() < 1) {
+                                    standUp(player);
+                                }
+
+                                // Reset internal player state
+                                player.reset();
+                            }
+
+                            dealer.reset();
+
+                            if (players.isEmpty()) {
+                                gameState = GameState.WAITING_FOR_PLAYERS;
+                            } else {
+                                gameState = GameState.WAITING_FOR_BETS;
+                            }
+
+                            ServerEvent serverEvent = new ServerEvent<>(ServerEvent.Type.UPDATE,
+                                    "Room state has been reset.");
+                            broadcastSink.tryEmitNext(serverEvent);
+
                             break;
                         case PLAYER_DISCONNECTED:
                             // Handle player disconnection

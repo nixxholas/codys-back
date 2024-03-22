@@ -30,6 +30,7 @@ public class ServerEvent<E> extends BaseEvent<E> {
         INSURANCE,
         SURRENDER,
         DEAL,
+        DEALER_REVEAL,
         DEALER_DRAW,
         DEALER_HIT,
         DEALER_STAND,

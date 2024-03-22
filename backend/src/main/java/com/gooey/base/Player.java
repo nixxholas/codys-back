@@ -11,17 +11,27 @@ import java.util.List;
 public class Player extends BasePlayer {
     private List<Card> hand = new ArrayList<>();
     private boolean standing = false;
+    private boolean settled = false;
     private boolean doubleDown = false;
     private boolean split = false;
     private boolean insurance = false;
     private int balance;
     private int currentBet;
-    private int numCards;
     private Sinks.Many<ServerEvent> sink;
 
     public Player(String id, String name) {
         super(id, name);
         this.balance = 1000; // Default balance
+    }
+
+    public void reset() {
+        hand.clear();
+        standing = false;
+        settled = false;
+        doubleDown = false;
+        split = false;
+        insurance = false;
+        currentBet = 0;
     }
 
     public int getBalance() {
@@ -33,7 +43,7 @@ public class Player extends BasePlayer {
     }
 
     public int getNumCards() {
-        return this.numCards;
+        return this.hand.size();
     }
 
     public Sinks.Many<ServerEvent> getSink() {
@@ -43,15 +53,9 @@ public class Player extends BasePlayer {
     public void setSink(Sinks.Many<ServerEvent> sink) {
         this.sink = sink;
     }
-    
-    public void setNumCards(int num_cards) {
-        this.numCards = numCards;
-    }
 
     public void addCard(Card card) {
-        int num = getNumCards();
         hand.add(card);
-        setNumCards(num + 1); // Increases number of cards by 1
     }
 
     public List<Card> getHand() {
@@ -76,8 +80,25 @@ public class Player extends BasePlayer {
         return value;
     }
 
+    public boolean hasAce() {
+        for (Card card : hand) {
+            if (card.getRank() == Rank.ACE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean shouldStillDraw() {
         return calculateHandValue() <= 21 || isStanding() || isDoubleDown();
+    }
+
+    public boolean isSettled() {
+        return settled;
+    }
+
+    public void setSettled(boolean settled) {
+        this.settled = settled;
     }
 
     public void setStanding(boolean standing) {
@@ -126,20 +147,25 @@ public class Player extends BasePlayer {
         return true;
     }
 
-    public void winBet() {
-
+    public int winBet() {
+        int winnings = currentBet;
         // Blackjack scenarios
         if (this.calculateHandValue() == 21 && this.getNumCards() == 2 && this.isSplit() == false) {
-            this.balance += (currentBet * 2.5); // Blackjack pays 3 to 2
+            winnings = (int) (currentBet * 2.5);
+            this.balance += winnings; // Blackjack pays 3 to 2
             this.currentBet = 0;
         } else {
-            this.balance += (currentBet * 2); // Winner gets double their bet
+            winnings = currentBet * 2;
+            this.balance += winnings; // Winner gets double their bet
             this.currentBet = 0;
         }
+        return winnings;
     }
 
-    public void loseBet() {
+    public int loseBet() {
+        int loss = currentBet;
         this.currentBet = 0; // Loss already accounted for when bet was placed
+        return loss;
     }
 
     public void push() { // In case of a tie
