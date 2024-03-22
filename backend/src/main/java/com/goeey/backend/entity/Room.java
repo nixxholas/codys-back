@@ -429,8 +429,14 @@ public class Room {
             Card card = deck.remove(0);
 
             // Broadcast the card to all players
-            ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card);
-            broadcastSink.tryEmitNext(cardEvent);
+            if (i == 0) {
+                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card);
+                broadcastSink.tryEmitNext(cardEvent);
+            } else {
+                // Hide the second card
+                ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, null);
+                broadcastSink.tryEmitNext(cardEvent);
+            }
 
             dealer.addCard(card);
             for (Player player : players.values()) {
@@ -509,10 +515,10 @@ public class Room {
                             startTimer();
                             break;
                         case PLAYER_TURN:
+                            // Time for players to take their turns
                             for (Player player : players.values()) {
                                 if (!player.isStanding()) {
                                     Thread.sleep(1000);
-//                                hit(player.getSeatNumber());
                                 }
                             }
                             break;
