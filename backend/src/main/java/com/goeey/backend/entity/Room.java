@@ -133,12 +133,25 @@ public class Room {
         return false;
     }
 
-    public void placeBet(String playerId, int amount) {
+    public ServerEvent placeBet(Player player, int amount) {
+        return placeBet(player.getId(), amount);
+    }
+
+    public ServerEvent placeBet(String playerId, int amount) {
+        if (!gameState.equals(GameState.WAITING_FOR_BETS)) {
+            throw new IllegalStateException("Can't place bets, game not started.");
+        }
 
         Player player = getPlayerById(playerId);
         if (player != null) {
             player.placeBet(amount);
+
+            // Inform everyone in the room that the player has placed a bet
+            ServerEvent betEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_BET, new PlayerBetData(playerId, amount));
+            broadcastSink.tryEmitNext(betEvent);
         }
+
+        return new ServerEvent<>(ServerEvent.Type.BET, amount);
     }
 
     public Mono<Void> subscribePlayerToRoomBroadcasts(WebSocketSession session) {
@@ -311,6 +324,9 @@ public class Room {
         if (!gameState.equals(GameState.PLAYER_TURN)) {
             throw new IllegalStateException("Game not started.");
         }
+        if (!noMoreBets) {
+            throw new IllegalStateException("Game not started.");
+        }
         Player player = players.get(seatNumber);
         if (player != null && !player.isStanding()) {
             player.addCard(deck.remove(0));
@@ -324,6 +340,9 @@ public class Room {
         if (gameState != GameState.PLAYER_TURN) {
             throw new IllegalStateException("Not the right time to stand.");
         }
+        if (!noMoreBets) {
+            throw new IllegalStateException("Game not started.");
+        }
         Player player = players.get(seatNumber);
         if (player != null) {
             player.setStanding(true);
@@ -336,7 +355,7 @@ public class Room {
         if (gameState != GameState.PLAYER_TURN) {
             throw new IllegalStateException("Not the right time to double down.");
         }
-        if (!gameStarted) {
+        if (!noMoreBets) {
             throw new IllegalStateException("Game not started.");
         }
         Player player = players.get(seatNumber);
@@ -448,17 +467,6 @@ public class Room {
         }
         gameState = GameState.ROUND_ENDED; // The round has ended, prepare for a new round
 
-    }
-
-    // Add a method for players to place bets at the beginning of each round
-    public void placeBet(int seatNumber, int amount) {
-        if (!gameState.equals(GameState.WAITING_FOR_BETS)) {
-            throw new IllegalStateException("Can't place bets, game not started.");
-        }
-        Player player = players.get(seatNumber);
-        if (player != null) {
-            player.placeBet(amount);
-        }
     }
 
     /**

@@ -323,9 +323,10 @@ public class SocketHandler implements WebSocketHandler {
             case LEAVE_SEAT:
                 // Leave the seat
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.standUp(player)))));
-//            case BET:
-//                // Place a bet
-//                return processBetEvent(session, event, room, roomSink);
+            case BET:
+                // Place a bet
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(
+                        room.placeBet(player, Integer.parseInt(event.getMessage()))))));
             default:
                 responseEvent = new ServerEvent(ServerEvent.Type.ERROR, "Invalid event");
         }
