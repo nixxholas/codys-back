@@ -49,6 +49,10 @@ public class SocketHandler implements WebSocketHandler {
 
         // Finally, by player
         BasePlayer playerData = players.get(id);
+        if (playerData == null) {
+            return null;
+        }
+
         return new Player(playerData.getId(), playerData.getName());
     }
 
@@ -252,9 +256,14 @@ public class SocketHandler implements WebSocketHandler {
                     return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid player")))));
 
                 // Join the player to the lobby
-                joinLobby(session, event.getClientId());
-                // Send a welcome message to the player
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
+                if (!isPlayerInLobby(event.getClientId())) {
+                    joinLobby(session, event.getClientId());
+                    // Send a welcome message to the player
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
+                } else {
+                    // Send a warning message to the player
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "You are already in the lobby!")))));
+                }
             case REGISTER:
                 // Create a new player
                 Player newPlayer = createPlayer(event.getClientId(), event.getMessage());

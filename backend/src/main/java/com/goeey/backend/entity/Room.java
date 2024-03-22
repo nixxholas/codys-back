@@ -288,9 +288,10 @@ public class Room {
                 // Wait for the countdown to finish
                 while (countdownThread.isAlive()) {
                     // If all players stand up, end the countdown
-                    if (!this.atLeastOneHasPlacedBet() || !hasAPlayerSeated()) {
+                    if (!this.atLeastOneHasPlacedBet()) {
+                        // Reset the entire state back to waiting for players
                         countdownThread.interrupt();
-                        gameState = GameState.WAITING_FOR_PLAYERS;
+                        gameState = hasAPlayerSeated() ? GameState.WAITING_FOR_BETS : GameState.WAITING_FOR_PLAYERS;
                         noMoreBets = false;
                     }
                 }
