@@ -330,8 +330,6 @@ public class SocketHandler implements WebSocketHandler {
             default:
                 responseEvent = new ServerEvent(ServerEvent.Type.ERROR, "Invalid event");
         }
-
-//         = new ServerEvent(ServerEvent.Type.BET, "Processed event for room: " + room.getRoomId());
         roomSink.tryEmitNext(responseEvent);
         return session.send(roomSink.asFlux().map(evt -> session.textMessage(SerializationUtil.serializeString(evt))));
     }

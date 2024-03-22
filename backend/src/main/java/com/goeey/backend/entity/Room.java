@@ -426,9 +426,20 @@ public class Room {
     private void dealInitialCards() {
         // Deal two cards to each player and the dealer at the start of each round
         for (int i = 0; i < 2; i++) {
-            dealer.addCard(deck.remove(0));
+            Card card = deck.remove(0);
+
+            // Broadcast the card to all players
+            ServerEvent cardEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, card);
+            broadcastSink.tryEmitNext(cardEvent);
+
+            dealer.addCard(card);
             for (Player player : players.values()) {
-                player.addCard(deck.remove(0));
+                Card playerCard = deck.remove(0);
+                player.addCard(playerCard);
+
+                // Broadcast the card to all players
+                ServerEvent playerCardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DRAW, playerCard);
+                broadcastSink.tryEmitNext(playerCardEvent);
             }
         }
     }
@@ -468,34 +479,6 @@ public class Room {
         gameState = GameState.ROUND_ENDED; // The round has ended, prepare for a new round
 
     }
-
-    /**
-     * Schedules the next round to start after a certain delay.
-     */
-//    @Scheduled(fixedRate = 500)
-//    private void syncState() {
-//        Instant timeNow = Instant.now();
-//        System.out.println("Room: " + this.id + "is syncing state.");
-//
-//        if (gameState == GameState.WAITING_FOR_BETS) {
-//            if (this.atLeastOneHasPlacedBet()) {
-//                // Start the round if at least one player has placed a bet
-//                if (this.notAllHavePlacedBet() && this.atLeastOneHasPlacedBet()) {
-//                    System.out.println("Not all players have placed bets. Sending a timer to wait for bets.");
-//                    timer.schedule(new TimerTask() {
-//                        @Override
-//                        public void run() {
-//                            if (gameState == GameState.WAITING_FOR_BETS) {
-//                                gameState = GameState.DEALING;
-//                            }
-//                        }
-//                    }, 10000);
-//                }
-//            } else {
-//                System.out.println("Waiting for players to place bets...");
-//            }
-//        }
-//    }
 
     public void run() {
         // Make sure we're not overriding the thread
