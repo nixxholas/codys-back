@@ -54,13 +54,6 @@ public class GameScreen extends ScreenAdapter {
         cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
         stage.addActor(cardBACK);
 
-        // Situation: server passes client a JSON file.
-        // Client parses it into a list
-        // Add code for that here
-        // *here*
-        // given the following list file of the cards in a player's hand,
-        // deal out cards such that the png used is the actual card value and suit
-        
         int numPlayers = 5;
         playerArr = new int[5][3];
         // 2d array of all 5 player positional values and how many cards were dealt to each
