@@ -3,8 +3,9 @@ package com.goeey.game.socket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-import com.gooey.base.socket.*;
 import java.net.URI;
+
+import com.gooey.base.socket.BaseEvent;
 
 public class WebSocket extends WebSocketClient{
 
