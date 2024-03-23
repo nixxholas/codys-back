@@ -80,20 +80,6 @@ public class GameScreen extends ScreenAdapter {
         stage.addActor(deal(3, "ACE_DIAMONDS"));
         stage.addActor(deal(4,"THREE_DIAMONDS"));
         stage.addActor(deal(4,"THREE_CLUBS"));
-        //looping through i players
-        // for (int currentPlayer = 0; currentPlayer < numPlayers; currentPlayer++) {
-        //     // Use cosine and sine to calculate diagonal offset from center of circle
-        //     int x = playerPositionArr[currentPlayer][0];
-        //     int y = playerPositionArr[currentPlayer][1];
-        //     stage.addActor(PlayerUtils.createButtonLabel(skin, x ,  y + cHeight + 40, currentPlayer+1));
-        //     //get hand of current player
-        //     List<String> currentHand = playerHands.get(currentPlayer);
-        //     for(int currentCard = 0; currentCard < currentHand.size(); currentCard++){
-        //         // looping through each i player's z position card
-        //         String cardImagePath = (playerHands.get(currentPlayer)).get(currentCard);
-        //         stage.addActor(CardAnimation.dealCards(currentCard, x, y, cardImagePath));
-        //     }
-        // }
 
     }
 
