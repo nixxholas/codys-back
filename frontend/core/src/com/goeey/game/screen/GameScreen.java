@@ -10,9 +10,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
 import com.goeey.game.animation.CardAnimation;
+import com.goeey.game.utils.PlayerXY;
 import com.goeey.game.utils.PlayerUtils;
-import java.util.ArrayList;
-import java.util.List;
+import com.gooey.base.Card;
+import com.gooey.base.EntityTarget;
+import com.gooey.base.socket.ServerEvent;
+import com.google.gson.*;
+
+import java.io.InvalidObjectException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameScreen extends ScreenAdapter {
     final GameManager game;
@@ -26,7 +33,7 @@ public class GameScreen extends ScreenAdapter {
     private int cHeight;
     private int scrWidth = Gdx.graphics.getWidth();
     private int scrHeight= Gdx.graphics.getHeight();
-    private int[][] playerArr;
+    private Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
 
     public GameScreen(GameManager game) {
         this.game = game;
@@ -54,41 +61,80 @@ public class GameScreen extends ScreenAdapter {
         cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
         stage.addActor(cardBACK);
 
-        int numPlayers = 5;
-        playerArr = new int[5][3];
-        // 2d array of all 5 player positional values and how many cards were dealt to each
-        for (int currentPlayer = 0; currentPlayer < numPlayers; currentPlayer++) {
-            // Use cosine and sine to calculate diagonal offset from center of circle
-            int x = (int)PlayerUtils.calcXPos(currentPlayer, numPlayers);
-            int y = (int)PlayerUtils.calcYPos(currentPlayer, numPlayers);
-            playerArr[currentPlayer][0] = x;
-            playerArr[currentPlayer][1] = y;
-            playerArr[currentPlayer][2] = 0;
-            //Create player name tag for each player position
-            stage.addActor(PlayerUtils.createButtonLabel(skin, x ,  y + cHeight + 40, currentPlayer+1));
+
+
+        // generate clean hashmap of all Entity targets, X and Y coords and card count
+        playerMap = PlayerXY.refreshMap();
+
+        // iterate through all players
+        for (Map.Entry<EntityTarget, PlayerXY> mapElement: playerMap.entrySet()) {
+            if(!(mapElement.getKey()==EntityTarget.DEALER)){
+                String name = "" + mapElement.getKey();
+                // Adding some bonus marks to all the students
+                PlayerXY xy = mapElement.getValue();
+                //Create player name tag for each player position
+                stage.addActor(PlayerUtils.createLabel(skin, xy.getPlayerX(),  xy.getPlayerY() + cHeight + 40, name));
+            }
         }
 
         // single line code to deal card to players
-        stage.addActor(deal(0, "TWO_DIAMONDS"));
-        stage.addActor(deal(0, "THREE_DIAMONDS"));
-        stage.addActor(deal(0, "KING_DIAMONDS"));
-        stage.addActor(deal(0, "QUEEN_DIAMONDS"));
-        stage.addActor(deal(0, "ACE_DIAMONDS"));
-        stage.addActor(deal(0, "THREE_DIAMONDS"));
-        stage.addActor(deal(1, "KING_DIAMONDS"));
-        stage.addActor(deal(2, "QUEEN_DIAMONDS"));
-        stage.addActor(deal(3, "ACE_DIAMONDS"));
-        stage.addActor(deal(4,"THREE_DIAMONDS"));
-        stage.addActor(deal(4,"THREE_CLUBS"));
+        stage.addActor(deal(EntityTarget.DEALER, "TWO_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.DEALER, "THREE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.DEALER, "KING_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.DEALER, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.DEALER, "ACE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.DEALER, "THREE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.DEALER, "KING_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.DEALER, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_1, "THREE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_1, "KING_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_1, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_1, "ACE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_1, "THREE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_1, "KING_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_1, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_2, "KING_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_2, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_2, "THREE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_2, "KING_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_2, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_3, "QUEEN_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_4, "THREE_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_5, "KING_DIAMONDS"));
+        stage.addActor(deal(EntityTarget.PLAYER_5, "QUEEN_DIAMONDS"));
+
 
     }
 
-    public Actor deal(int playerNum, String card){
-        int x = playerArr[playerNum][0];
-        int y = playerArr[playerNum][1];
-        int count = playerArr[playerNum][2];
-        playerArr[playerNum][2]++;
+    public Actor deal(EntityTarget entity, String card){
+        PlayerXY xy = playerMap.get(entity);
+        int x = xy.getPlayerX();
+        int y = xy.getPlayerY();
+        int count = xy.getCount();
+        xy.setCount(count+1);
         return CardAnimation.dealCards(count, x, y, card);
+    }
+
+    public Actor parseServerMsg(ServerEvent<?> event) throws InvalidObjectException {
+        Card card = null;
+        if(event.getMessage() instanceof Card) {
+            card = (Card) event.getMessage();
+        }
+        EntityTarget entity = event.getTarget();
+        switch (event.getType()) {
+            case PLAYER_DRAW:
+                if (card != null) {
+                    return deal(entity, card.getRank() + "_" + card.getSuit());
+                }
+            case DEALER_DRAW:
+                if (card==null) {
+                    return deal(entity, "BACK_CARD");
+                } else {
+                    return deal(entity, card.getRank() + "_" + card.getSuit());
+                }
+            default:
+                throw new InvalidObjectException("Not Player/Dealer draw event");
+        }
     }
 
     @Override
