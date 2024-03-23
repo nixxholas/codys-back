@@ -6,11 +6,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.goeey.game.screen.MainMenuScreen;
 import com.goeey.game.socket.SocketHandler;
-import com.goeey.game.socket.WebSocket;
-import org.java_websocket.client.WebSocketClient;
+import com.gooey.base.socket.ClientEvent;
+import com.gooey.base.socket.ServerEvent;
 
-import java.net.Socket;
-import java.net.URI;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class GameManager extends Game {
     public static final int SCREEN_WIDTH = 1920;
@@ -19,6 +18,7 @@ public class GameManager extends Game {
     public FitViewport gameViewPort;
     private Skin skin;
     public static SocketHandler socketHandler;
+    private static LinkedBlockingQueue<ServerEvent<?>> clientQueue;
 
     @Override
     public void create() {
@@ -26,6 +26,7 @@ public class GameManager extends Game {
         gameViewPort = new FitViewport(1920, 1080);
         setScreen(new MainMenuScreen(this));
         socketHandler = new SocketHandler("ws://10.0.0.10:8081/ws");
+        clientQueue = new LinkedBlockingQueue<>();
     }
 
     public void render() {
@@ -38,6 +39,14 @@ public class GameManager extends Game {
         return this.skin;
     }
     public void dispose() {
-        socketHandler.closeSocket();
+        socketHandler.closeWebSocket();
+    }
+
+    public ServerEvent<?> processEvents() throws InterruptedException {
+        if(clientQueue.peek() != null) {
+            return clientQueue.take();
+        }
+
+        return null;
     }
 }

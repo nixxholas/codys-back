@@ -40,7 +40,7 @@ public class GameCreationScreen extends ScreenAdapter {
         // Create a text field
         nameTextfield = new TextField("", skin);
 
-        ///TextButton
+        // TextButton
         TextButton startButton = new TextButton("Start Game", skin);
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
