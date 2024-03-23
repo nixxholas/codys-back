@@ -150,7 +150,7 @@ public class Player extends BasePlayer {
     public int winBet() {
         int winnings = currentBet;
         // Blackjack scenarios
-        if (this.calculateHandValue() == 21 && this.getNumCards() == 2 && this.isSplit() == false) {
+        if (this.calculateHandValue() == 21 && this.getNumCards() == 2 && !this.isSplit()) {
             winnings = (int) (currentBet * 2.5);
             this.balance += winnings; // Blackjack pays 3 to 2
             this.currentBet = 0;
