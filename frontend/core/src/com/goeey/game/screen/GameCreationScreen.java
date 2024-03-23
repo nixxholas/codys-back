@@ -10,8 +10,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
+import com.goeey.game.socket.SocketHandler;
+import com.goeey.game.socket.WebSocket;
 
-import java.awt.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class GameCreationScreen extends ScreenAdapter {
     private final GameManager game;
@@ -26,6 +29,9 @@ public class GameCreationScreen extends ScreenAdapter {
         this.skin = game.getSkin();
     }
 
+    public void registerUser (String playerName) {
+
+    }
     public Table uiTableFactory() {
 
         // Label
@@ -39,6 +45,7 @@ public class GameCreationScreen extends ScreenAdapter {
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 game.setPlayerName(nameTextfield.getText());
+                GameManager.socketHandler.register(game.getPlayerName());
                 game.setScreen(new GameScreen(game));
             }
         });
