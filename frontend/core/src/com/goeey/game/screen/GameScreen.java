@@ -54,40 +54,6 @@ public class GameScreen extends ScreenAdapter {
         cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
         stage.addActor(cardBACK);
 
-        // Situation: server passes client a JSON file.
-        // Client parses it into a list
-        // Add code for that here
-        // *here*
-        // given the following list file of the cards in a player's hand,
-        // deal out cards such that the png used is the actual card value and suit
-        List<String> hand = new ArrayList<String>();
-        hand.add("TWO_DIAMONDS");
-        hand.add("THREE_SPADES");
-        hand.add("FOUR_HEARTS");
-        hand.add("KING_CLUBS");
-        hand.add("ACE_DIAMONDS");
-        hand.add("QUEEN_DIAMONDS");
-        hand.add("TWO_DIAMONDS");
-        hand.add("THREE_SPADES");
-        hand.add("FOUR_HEARTS");
-        hand.add("KING_CLUBS");
-        hand.add("ACE_DIAMONDS");
-        List<String> hand2 = new ArrayList<String>();
-        hand2.add("THREE_DIAMONDS");
-        hand2.add("TEN_SPADES");
-        hand2.add("ACE_HEARTS");
-        hand2.add("QUEEN_CLUBS");
-        hand2.add("ACE_DIAMONDS");
-        List<String> hand3 = new ArrayList<String>();
-        List<String> hand4 = new ArrayList<String>();
-        List<String> hand5 = new ArrayList<String>();
-        List<List<String>> playerHands = new ArrayList<>(2);
-        playerHands.add(hand);
-        playerHands.add(hand2);
-        playerHands.add(hand);
-        playerHands.add(hand2);
-        playerHands.add(hand2);
-
         int numPlayers = 5;
         playerArr = new int[5][3];
         // 2d array of all 5 player positional values and how many cards were dealt to each
@@ -114,20 +80,6 @@ public class GameScreen extends ScreenAdapter {
         stage.addActor(deal(3, "ACE_DIAMONDS"));
         stage.addActor(deal(4,"THREE_DIAMONDS"));
         stage.addActor(deal(4,"THREE_CLUBS"));
-        //looping through i players
-        // for (int currentPlayer = 0; currentPlayer < numPlayers; currentPlayer++) {
-        //     // Use cosine and sine to calculate diagonal offset from center of circle
-        //     int x = playerPositionArr[currentPlayer][0];
-        //     int y = playerPositionArr[currentPlayer][1];
-        //     stage.addActor(PlayerUtils.createButtonLabel(skin, x ,  y + cHeight + 40, currentPlayer+1));
-        //     //get hand of current player
-        //     List<String> currentHand = playerHands.get(currentPlayer);
-        //     for(int currentCard = 0; currentCard < currentHand.size(); currentCard++){
-        //         // looping through each i player's z position card
-        //         String cardImagePath = (playerHands.get(currentPlayer)).get(currentCard);
-        //         stage.addActor(CardAnimation.dealCards(currentCard, x, y, cardImagePath));
-        //     }
-        // }
 
     }
 
