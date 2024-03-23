@@ -67,5 +67,6 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         implementation 'org.java-websocket:Java-WebSocket:1.5.6'
         implementation name: 'backend-0.0.1-SNAPSHOT-plain'
+        implementation 'com.google.code.gson:gson:2.10.1'
     }
 }

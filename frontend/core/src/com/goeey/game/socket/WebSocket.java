@@ -5,6 +5,7 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 
+import com.goeey.backend.util.SerializationUtil;
 import com.gooey.base.socket.BaseEvent;
 
 public class WebSocket extends WebSocketClient{
@@ -21,7 +22,7 @@ public class WebSocket extends WebSocketClient{
 
     @Override
     public void onMessage(String s) {
-
+        SerializationUtil.serializeString(s);
     }
 
     @Override
