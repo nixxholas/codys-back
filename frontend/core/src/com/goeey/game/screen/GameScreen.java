@@ -60,34 +60,7 @@ public class GameScreen extends ScreenAdapter {
         // *here*
         // given the following list file of the cards in a player's hand,
         // deal out cards such that the png used is the actual card value and suit
-        List<String> hand = new ArrayList<String>();
-        hand.add("TWO_DIAMONDS");
-        hand.add("THREE_SPADES");
-        hand.add("FOUR_HEARTS");
-        hand.add("KING_CLUBS");
-        hand.add("ACE_DIAMONDS");
-        hand.add("QUEEN_DIAMONDS");
-        hand.add("TWO_DIAMONDS");
-        hand.add("THREE_SPADES");
-        hand.add("FOUR_HEARTS");
-        hand.add("KING_CLUBS");
-        hand.add("ACE_DIAMONDS");
-        List<String> hand2 = new ArrayList<String>();
-        hand2.add("THREE_DIAMONDS");
-        hand2.add("TEN_SPADES");
-        hand2.add("ACE_HEARTS");
-        hand2.add("QUEEN_CLUBS");
-        hand2.add("ACE_DIAMONDS");
-        List<String> hand3 = new ArrayList<String>();
-        List<String> hand4 = new ArrayList<String>();
-        List<String> hand5 = new ArrayList<String>();
-        List<List<String>> playerHands = new ArrayList<>(2);
-        playerHands.add(hand);
-        playerHands.add(hand2);
-        playerHands.add(hand);
-        playerHands.add(hand2);
-        playerHands.add(hand2);
-
+        
         int numPlayers = 5;
         playerArr = new int[5][3];
         // 2d array of all 5 player positional values and how many cards were dealt to each
