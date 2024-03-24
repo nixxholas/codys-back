@@ -456,7 +456,7 @@ public class Room {
         // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
         // Includes soft 17 as well.
         while (dealer.calculateHandValue() < 17 ||
-                (dealer.calculateHandValue() == 17 && dealer.hasAce()) {
+                (dealer.calculateHandValue() == 17 && dealer.hasAce())) {
             Card nextCard = deck.remove(0);
             dealer.addCard(nextCard);
 
