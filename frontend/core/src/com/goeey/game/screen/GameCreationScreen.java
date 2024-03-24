@@ -47,6 +47,9 @@ public class GameCreationScreen extends ScreenAdapter {
                 game.setPlayerName(nameTextfield.getText());
                 GameManager.socketHandler.register(game.getPlayerName());
                 GameManager.socketHandler.connect(game.getPlayerName());
+                GameManager.socketHandler.createandjoin(game.getPlayerName());
+                GameManager.socketHandler.sit(game.getPlayerName());
+                GameManager.socketHandler.bet(game.getPlayerName());
                 game.setScreen(new GameScreen(game));
             }
         });

@@ -1,6 +1,5 @@
 package com.goeey.game.socket;
 
-import com.goeey.backend.util.SerializationUtil;
 import com.gooey.base.socket.ClientEvent;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -16,7 +15,6 @@ public class WebSocket extends WebSocketClient{
 
     public WebSocket(URI serverUri) {
         super(serverUri);
-        //serverQueue = new LinkedBlockingQueue<>();
     }
 
     @Override
@@ -40,7 +38,7 @@ public class WebSocket extends WebSocketClient{
     }
 
     public LinkedBlockingQueue<String> getMessageQueue(){
-        return  this.messageQueue;
+        return this.messageQueue;
     }
     @Override
     public void onClose(int i, String s, boolean b) {

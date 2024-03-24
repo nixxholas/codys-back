@@ -7,7 +7,6 @@ import com.gooey.base.socket.ServerEvent;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.attribute.UserDefinedFileAttributeView;
 
 public class SocketHandler {
     private WebSocket ws;
@@ -23,11 +22,11 @@ public class SocketHandler {
         }
 
         ws = new WebSocket(uri);
-        startListeing();
+        startListening();
         //ws.connect();
     }
 
-    public void startListeing(){
+    public void startListening(){
         Thread listenerThread = new Thread(() -> {
             try {
                 System.out.println(ws.getReadyState());
@@ -70,13 +69,36 @@ public class SocketHandler {
         }
     }
 
-//    public void register(String clientId) {
-//        try {
-//            ws.addToQueue(new ClientEvent(clientId, ClientEvent.Type.REGISTER));
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
+    public void createandjoin(String clientId){
+        ClientEvent createAndJoinEvent = new ClientEvent(clientId, ClientEvent.Type.CREATE_AND_JOIN_ROOM, clientId);
+        try{
+            ws.send(SerializationUtil.serializeString(createAndJoinEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void sit(String clientId){
+        ClientEvent sitEvent = new ClientEvent(clientId, ClientEvent.Type.SIT, "1");
+        try{
+            ws.send(SerializationUtil.serializeString(sitEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void bet(String clientId){
+        ClientEvent betEvent = new ClientEvent(clientId, ClientEvent.Type.BET, "100");
+        try{
+            ws.send(SerializationUtil.serializeString(betEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+
+    }
 
     public void closeWebSocket() {
         if(ws.isOpen()){
