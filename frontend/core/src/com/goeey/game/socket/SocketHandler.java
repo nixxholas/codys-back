@@ -9,7 +9,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class SocketHandler {
-    // Glenn is here
     private WebSocket ws;
 
     public SocketHandler(String uriStr) {
