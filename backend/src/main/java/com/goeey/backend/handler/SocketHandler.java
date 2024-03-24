@@ -58,6 +58,8 @@ public class SocketHandler implements WebSocketHandler {
 
     public Player createPlayer(String id, String name) {
         Player player = new Player(id, name);
+        if (players.containsKey(player.getId()))
+            return null;
         players.put(player.getId(), player);
         return player;
     }
