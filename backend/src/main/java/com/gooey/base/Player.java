@@ -133,6 +133,10 @@ public class Player extends BasePlayer {
         return insurance;
     }
 
+    public boolean isBlackjack() {
+        return (this.calculateHandValue() == 21 && this.getNumCards() == 2 && !this.isSplit());
+    }
+
     public boolean placeBet(int amount) {
         if (amount > balance) {
 //            throw new IllegalArgumentException("Bet amount exceeds balance.");
@@ -149,8 +153,7 @@ public class Player extends BasePlayer {
 
     public int winBet() {
         int winnings = currentBet;
-        // Blackjack scenarios
-        if (this.calculateHandValue() == 21 && this.getNumCards() == 2 && !this.isSplit()) {
+        if (isBlackjack()) {
             winnings = (int) (currentBet * 2.5);
             this.balance += winnings; // Blackjack pays 3 to 2
             this.currentBet = 0;

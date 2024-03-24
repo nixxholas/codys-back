@@ -454,9 +454,9 @@ public class Room {
         broadcastSink.tryEmitNext(revealEvent);
 
         // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
-        // includes soft 17 as well.
+        // Includes soft 17 as well.
         while (dealer.calculateHandValue() < 17 ||
-                (dealer.calculateHandValue() == 17 && dealer.hasAce() && dealer.getNumCards() < 3)) {
+                (dealer.calculateHandValue() == 17 && dealer.hasAce()) {
             Card nextCard = deck.remove(0);
             dealer.addCard(nextCard);
 
@@ -548,7 +548,7 @@ public class Room {
             int playerValue = player.calculateHandValue();
 
             // Blackjack scenarios
-            if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue != 21 || dealerValue == 21 && dealer.getNumCards() != 2)) {
+            if (player.isBlackjack() && !dealer.isBlackjack()) {
                 System.out.println(player.getId() + " wins!");
                 int playerEarning = player.winBet();
 
@@ -558,7 +558,7 @@ public class Room {
                 broadcastSink.tryEmitNext(playerWinEvent);
                 // Move to the next player
                 continue;
-            } else if ((playerValue == 21 && player.getNumCards() == 2) && (dealerValue == 21 && dealer.getNumCards() == 2)) {
+            } else if (player.isBlackjack() && dealer.isBlackjack()) {
                 System.out.println(player.getId() + " pushes (ties).");
                 player.push();
 
@@ -568,7 +568,7 @@ public class Room {
                 broadcastSink.tryEmitNext(playerPushEvent);
                 // Move to the next player
                 continue;
-            } else if ((playerValue != 21 || playerValue == 21 && player.getNumCards() != 2) && (dealerValue == 21 && dealer.getNumCards() == 2)) {
+            } else if (!player.isBlackjack() && dealer.isBlackjack()) {
                 System.out.println(player.getId() + " loses.");
                 int playerLosses = player.loseBet();
 
