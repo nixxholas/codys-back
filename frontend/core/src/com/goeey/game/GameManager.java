@@ -25,7 +25,7 @@ public class GameManager extends Game {
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         gameViewPort = new FitViewport(1920, 1080);
         setScreen(new MainMenuScreen(this));
-        socketHandler = new SocketHandler("ws://10.0.0.10:8081/ws");
+        socketHandler = new SocketHandler("ws://localhost:8080/ws");
         clientQueue = new LinkedBlockingQueue<>();
     }
 
@@ -42,11 +42,11 @@ public class GameManager extends Game {
         socketHandler.closeWebSocket();
     }
 
-    public ServerEvent<?> processEvents() throws InterruptedException {
-        if(clientQueue.peek() != null) {
-            return clientQueue.take();
-        }
-
-        return null;
-    }
+//    public ServerEvent<?> processEvents() throws InterruptedException {
+//        if(clientQueue.peek() != null) {
+//            return clientQueue.take();
+//        }
+//
+//        return null;
+//    }
 }
