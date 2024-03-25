@@ -28,7 +28,7 @@ public class GameManager extends Game {
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         gameViewPort = new FitViewport(1920, 1080);
         setScreen(new MainMenuScreen(this));
-        socketHandler = new SocketHandler("ws://10.0.0.10:8081/ws");
+        socketHandler = new SocketHandler("ws://localhost:8080/ws");
     }
 
     public void render() {
