@@ -44,7 +44,7 @@ public class GameScreen extends ScreenAdapter {
     private int cHeight;
     private int scrWidth = Gdx.graphics.getWidth();
     private int scrHeight= Gdx.graphics.getHeight();
-    private Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
+    private static Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
 
     private SocketHandler socketHandler;
 
@@ -194,7 +194,7 @@ public class GameScreen extends ScreenAdapter {
 //        stage.addActor(deal(EntityTarget.PLAYER_5, "QUEEN_DIAMONDS"));
     }
 
-    public Actor deal(EntityTarget entity, String card){
+    public static Actor deal(EntityTarget entity, String card){
         PlayerXY xy = playerMap.get(entity);
         int x = xy.getPlayerX();
         int y = xy.getPlayerY();

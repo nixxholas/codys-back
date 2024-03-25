@@ -22,15 +22,13 @@ public class GameManager extends Game {
     public FitViewport gameViewPort;
     private Skin skin;
     public static SocketHandler socketHandler;
-    private static LinkedBlockingQueue<ServerEvent<?>> clientQueue;
 
     @Override
     public void create() {
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
         gameViewPort = new FitViewport(1920, 1080);
         setScreen(new MainMenuScreen(this));
-        socketHandler = new SocketHandler("ws://localhost:8080/ws");
-        clientQueue = new LinkedBlockingQueue<>();
+        socketHandler = new SocketHandler("ws://10.0.0.10:8081/ws");
     }
 
     public void render() {
@@ -75,12 +73,4 @@ public class GameManager extends Game {
     public void dispose() {
         socketHandler.closeWebSocket();
     }
-
-//    public ServerEvent<?> processEvents() throws InterruptedException {
-//        if(clientQueue.peek() != null) {
-//            return clientQueue.take();
-//        }
-//
-//        return null;
-//    }
 }

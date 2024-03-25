@@ -1,10 +1,8 @@
 package com.goeey.game.socket;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.goeey.backend.util.SerializationUtil;
-import com.goeey.game.GameManager;
 import com.goeey.game.screen.GameCreationScreen;
 import com.goeey.game.screen.GameScreen;
 import com.gooey.base.Card;
@@ -16,7 +14,7 @@ import com.google.gson.GsonBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
 
 public class SocketHandler {
     private WebSocket ws;

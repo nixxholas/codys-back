@@ -1,14 +1,10 @@
 package com.goeey.game.socket;
 
-import com.goeey.game.GameManager;
-import com.gooey.base.socket.ClientEvent;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.CountDownLatch;
 import java.net.URI;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class WebSocket extends WebSocketClient{
