@@ -67,11 +67,11 @@ public class ProcessServerMessage {
                 //targetType EntityTarget
                 return targetType.cast(playerTurn(event));
             case PLAYER_WIN, PLAYER_LOSE, PLAYER_PUSH, PLAYER_BUST:
-                //typeCast PlayerResultData
+                //typeType PlayerResultData
                 return targetType.cast(playerPRD(event));
-
             case PLAYER_STAND:
-
+                //typeType EntityTarget
+                return targetType.cast(playerStand(event));
             case PLAYER_BET:
                 //TargetType PlayerBetData
                 return targetType.cast(returnBet(event));
@@ -80,13 +80,14 @@ public class ProcessServerMessage {
                 return targetType.cast(returnJoined(event));
             case PLAYER_LEFT:
                 //targetType String
-                return targetType.cast(processPlayerLeft(event));
+                return targetType.cast(returnPlayerLeft(event));
             case PLAYER_SAT:
-
-            case PLAYER_DISCONNECT:
+                //targetType String
+                return targetType.cast(returnPlayerSat(event));
+            case PLAYER_DISCONNECTED:
 
             case PONG:
-
+                //targetType
             default:
                 System.out.println("Not a Server Event object");
         }
@@ -135,8 +136,13 @@ public class ProcessServerMessage {
         return event.getMessage();
     }
 
-    public static String processPlayerLeft(ServerEvent<String> event){
+    public static String returnPlayerLeft(ServerEvent<String> event){
         //returns player ID
+        return event.getMessage();
+    }
+
+    public static String returnPlayerSat(ServerEvent<String> event){
+        //returns player sat message
         return event.getMessage();
     }
 
@@ -196,4 +202,8 @@ public class ProcessServerMessage {
         return null;
     }
 
+    public static EntityTarget playerStand(ServerEvent<String> event){
+        EntityTarget whichPlayerStand = event.getTarget();
+        return whichPlayerStand;
+    }
 }
