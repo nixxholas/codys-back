@@ -10,6 +10,7 @@ import com.gooey.base.socket.ClientEvent;
 import com.gooey.base.socket.ServerEvent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.java_websocket.enums.ReadyState;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,12 +18,12 @@ import java.text.DecimalFormat;
 import java.util.concurrent.CountDownLatch;
 
 public class SocketHandler {
-    private WebSocket ws;
+    private final WebSocket ws;
 
     private CountDownLatch latch = new CountDownLatch(1);
 
     //Creating GSON Instance
-    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private ScreenAdapter gs;
 
@@ -71,7 +72,7 @@ public class SocketHandler {
 
                         } else if (severEvent.getType() == ServerEvent.Type.COUNTDOWN) {
                             System.out.println(severEvent.getMessage());
-                        }else if(severEvent.getType() == ServerEvent.Type.DEAL){
+                        } else if(severEvent.getType() == ServerEvent.Type.DEAL){
                             System.out.println(severEvent.getMessage());
                         } else if (severEvent.getType() == ServerEvent.Type.DEALER_DRAW) {
                             System.out.println(severEvent.getMessage());
@@ -85,13 +86,11 @@ public class SocketHandler {
                                 System.out.println(card.getRank());
                                 System.out.println(card.getSuit());
                                 System.out.println(targetPlayer);
-                                if(gs instanceof GameScreen){
-                                    GameScreen gs1 = (GameScreen) gs;
+                                if(gs instanceof GameScreen gs1){
                                     Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
                                  }
                             }else{
-                                if(gs instanceof GameScreen){
-                                    GameScreen gs1 = (GameScreen) gs;
+                                if(gs instanceof GameScreen gs1){
                                     Gdx.app.postRunnable(() -> gs1.updateUI(null, targetPlayer, false));
                                 }
                             }
@@ -108,8 +107,7 @@ public class SocketHandler {
                                 System.out.println(card.getRank());
                                 System.out.println(card.getSuit());
                                 System.out.println(targetPlayer);
-                                if(gs instanceof GameScreen){
-                                    GameScreen gs1 = (GameScreen) gs;
+                                if(gs instanceof GameScreen gs1){
                                     Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, true));
                                 }
                             }
@@ -124,8 +122,7 @@ public class SocketHandler {
                                 System.out.println(card.getRank());
                                 System.out.println(card.getSuit());
                                 System.out.println(targetPlayer);
-                                if(gs instanceof GameScreen){
-                                    GameScreen gs1 = (GameScreen) gs;
+                                if(gs instanceof GameScreen gs1){
                                     Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
                                 }
                             }
@@ -143,6 +140,10 @@ public class SocketHandler {
 
     public void setGS(ScreenAdapter gs){
         this.gs = gs;
+    }
+
+    public ReadyState getState() {
+        return ws.getReadyState();
     }
 
     public WebSocket getWebSocket(){
@@ -177,7 +178,7 @@ public class SocketHandler {
         }
     }
 
-    public void createandjoin(String clientId){
+    public void createAndJoin(String clientId){
         ClientEvent createAndJoinEvent = new ClientEvent(clientId, ClientEvent.Type.CREATE_AND_JOIN_ROOM, clientId);
         try{
             ws.send(SerializationUtil.serializeString(createAndJoinEvent));

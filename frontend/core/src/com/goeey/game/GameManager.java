@@ -16,12 +16,20 @@ public class GameManager extends Game {
     public static final int SCREEN_WIDTH = 1920;
     public static final int screen_height = 1080;
     private String playerName;
-
     private EntityTarget currentPlayer;
-
     public FitViewport gameViewPort;
     private Skin skin;
     public static SocketHandler socketHandler;
+
+    public boolean isDisposed() {
+        return isDisposed;
+    }
+
+    public void setDisposed(boolean disposed) {
+        isDisposed = disposed;
+    }
+
+    private boolean isDisposed;
 
     @Override
     public void create() {
@@ -36,6 +44,7 @@ public class GameManager extends Game {
     }
 
     public void setPlayerName(String playerName) {this.playerName = playerName;}
+
     public String getPlayerName() {return playerName;}
 
     public  EntityTarget getPlayerEntityType(){
@@ -70,7 +79,10 @@ public class GameManager extends Game {
     public Skin getSkin() {
         return this.skin;
     }
+
     public void dispose() {
+        System.out.println("disposing game");
+        isDisposed = true;
         socketHandler.closeWebSocket();
     }
 }

@@ -11,6 +11,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
+import com.goeey.game.socket.SocketHandler;
+import org.java_websocket.enums.ReadyState;
+
+import java.net.Socket;
 
 public class MainMenuScreen extends ScreenAdapter {
     private final GameManager game;
@@ -29,6 +33,7 @@ public class MainMenuScreen extends ScreenAdapter {
         TextButton exitButton = new TextButton("Exit to Desktop", game.getSkin());
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                connectToServer();
                 game.setScreen(new GameCreationScreen(game));
             }
         });
@@ -59,6 +64,17 @@ public class MainMenuScreen extends ScreenAdapter {
         stage.addActor(uiTableFactory());
     }
 
+    public void connectToServer() {
+        while(GameManager.socketHandler.getState() != ReadyState.OPEN) {
+            ScreenUtils.clear(0, 0, 0, 0.7f);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0.28f, 0.31f, 0.60f, 1);
@@ -77,6 +93,6 @@ public class MainMenuScreen extends ScreenAdapter {
 
     @Override
     public void dispose() {
-        stage.dispose();
+        super.dispose();
     }
 }

@@ -1,6 +1,5 @@
 package com.goeey.game.screen;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -11,12 +10,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
-import com.goeey.game.socket.SocketHandler;
-import com.goeey.game.socket.WebSocket;
-
-import javax.swing.plaf.TableHeaderUI;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 public class GameCreationScreen extends ScreenAdapter {
     private final GameManager game;
@@ -58,7 +51,7 @@ public class GameCreationScreen extends ScreenAdapter {
                 GameManager.socketHandler.connect(game.getPlayerName());
 
                 //Player Creating & Joining a Room
-                GameManager.socketHandler.createandjoin(game.getPlayerName());
+                GameManager.socketHandler.createAndJoin(game.getPlayerName());
 
                 do {
                     try{
