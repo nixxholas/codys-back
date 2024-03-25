@@ -1,5 +1,6 @@
 package com.goeey.game.socket;
 
+import com.goeey.backend.util.SerializationUtil;
 import com.gooey.base.socket.ClientEvent;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -8,7 +9,7 @@ import java.net.URI;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class WebSocket extends WebSocketClient{
-    private static LinkedBlockingQueue<ClientEvent> serverQueue;
+    private static LinkedBlockingQueue<ClientEvent> serverQueue = new LinkedBlockingQueue<>();
     private CountDownLatch latch = new CountDownLatch(1);
 
     private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
@@ -49,17 +50,17 @@ public class WebSocket extends WebSocketClient{
 
     }
 
-//    public void addToQueue(ClientEvent event) throws InterruptedException {
-//        serverQueue.put(event);
-//    }
-//
-//    public void sentEvents() throws InterruptedException {
-//        while(this.isOpen()) {
-//            if(serverQueue.peek() != null) {
-//                this.send(SerializationUtil.serializeString(serverQueue.take()));
-//            }
-//
-//            Thread.sleep(1000);
-//        }
-//    }
+    public void addToQueue(ClientEvent event) throws InterruptedException {
+        serverQueue.put(event);
+    }
+
+    public void sentEvents() throws InterruptedException {
+        while(this.isOpen()) {
+            if(serverQueue.peek() != null) {
+                this.send(SerializationUtil.serializeString(serverQueue.take()));
+            }
+
+            Thread.sleep(1000);
+        }
+    }
 }
