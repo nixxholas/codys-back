@@ -16,10 +16,6 @@ public class WebSocket extends WebSocketClient{
 
     private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
-    private static final long RECONNECT_DELAY_MS = 1000; // 1 second delay
-    private boolean reconnectScheduled = false;
-    private Timer reconnectTimer;
-
     public WebSocket(URI serverUri) {
         super(serverUri);
     }
@@ -50,42 +46,11 @@ public class WebSocket extends WebSocketClient{
     @Override
     public void onClose(int i, String s, boolean b) {
         System.out.println("Socket is closed");
-        //scheduleReconnect();
     }
     @Override
     public void onError(Exception e) {
         System.out.println("Socket has an error");
-        //scheduleReconnect();
     }
 
-    private void scheduleReconnect(){
-        if (!reconnectScheduled) {
-            reconnectScheduled = true;
-            reconnectTimer = new Timer();
-            reconnectTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    reconnect();
-                }
-            }, RECONNECT_DELAY_MS);
-        }
-    }
-
-    public void reconnect() {
-        System.out.println("Attempting to reconnect...");
-        try {
-            reconnectScheduled = false;
-            reconnectTimer.cancel();
-            reconnectTimer.purge();
-            reconnectTimer = null;
-
-            //Connect To Socket Again
-            GameManager.socketHandler = new SocketHandler("ws://localhost:8080/ws");
-
-        } catch (Exception e) {
-            System.err.println("Failed to reconnect: " + e.getMessage());
-            scheduleReconnect(); // Retry reconnecting
-        }
-    }
 
 }
