@@ -30,6 +30,7 @@ public class Room {
     private Map<Integer, Player> players = new ConcurrentHashMap<>(6);
     private transient List<Card> deck = new ArrayList<>();
     private transient Player dealer = new Player(UUID.randomUUID().toString(), "Dealer");
+    private String currentTurnPlayerId = null;
     private transient Timer timer;
     private transient Thread thread;
 
@@ -347,15 +348,16 @@ public class Room {
         if (gameState != GameState.PLAYER_TURN) {
             throw new IllegalStateException("Not the right time to hit.");
         }
-        if (!gameState.equals(GameState.PLAYER_TURN)) {
-            throw new IllegalStateException("Game not started.");
-        }
         if (!noMoreBets) {
             throw new IllegalStateException("Game not started.");
         }
         Player player = players.get(seatNumber);
+        if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(player.getId())) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not your turn.");
+        }
+
         Card card;
-        if (player != null && !player.isStanding()) {
+        if (!player.isStanding()) {
             card = deck.remove(0);
             player.addCard(card);
             // Check if the player busts
@@ -448,6 +450,7 @@ public class Room {
     */
 
     private void dealerPlay() {
+        currentTurnPlayerId = "dealer";
         // Reveal the dealer's second card
         ServerEvent revealEvent = new ServerEvent<>(ServerEvent.Type.DEALER_REVEAL, dealer.getHand().get(1),
                 getEntityTarget("dealer"));
@@ -656,6 +659,7 @@ public class Room {
                         case PLAYER_TURN:
                             // Time for players to take their turns in order
                             for (Player player : players.values()) {
+                                currentTurnPlayerId = player.getId();
                                 // Retrieve which N player we're targeting
                                 EntityTarget entityTarget = getEntityTarget(player.getId());
 
@@ -734,6 +738,7 @@ public class Room {
                                 player.setStanding(false);  // Reset standing status
                             });
                             initializeDeck(); // Reinitialize the deck each round
+                            currentTurnPlayerId = "dealer";
 
                             // Broadcast the deal event
                             ServerEvent dealEvent = new ServerEvent<>(ServerEvent.Type.DEAL, this.id);
@@ -760,6 +765,7 @@ public class Room {
                             }
 
                             dealer.reset();
+                            currentTurnPlayerId = null;
 
                             if (players.isEmpty()) {
                                 gameState = GameState.WAITING_FOR_PLAYERS;
