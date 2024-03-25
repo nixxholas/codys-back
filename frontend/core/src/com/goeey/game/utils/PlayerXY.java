@@ -1,6 +1,7 @@
 package com.goeey.game.utils;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.gooey.base.EntityTarget;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ public class PlayerXY {
     private int playerX;
     private int playerY;
     private int count;
+    private Actor[] cards;
 
     public PlayerXY(int playerX, int playerY) {
         this.playerX = playerX;
