@@ -355,6 +355,9 @@ public class Room {
         if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(player.getId())) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Not your turn.");
         }
+        if (player.isSettled()) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Player has already settled.");
+        }
 
         Card card;
         if (!player.isStanding()) {
@@ -381,17 +384,29 @@ public class Room {
         return new ServerEvent(ServerEvent.Type.PLAYER_HIT, card, getEntityTarget(player.getId()));
     }
 
-    public void stand(int seatNumber) {
+    public ServerEvent stand(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to stand.");
+            throw new IllegalStateException("Not the right time to hit.");
         }
         if (!noMoreBets) {
             throw new IllegalStateException("Game not started.");
         }
         Player player = players.get(seatNumber);
-        if (player != null) {
-            player.setStanding(true);
+        if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(player.getId())) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not your turn.");
         }
+        if (player.isSettled()) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Player has already settled.");
+        }
+
+        if (!player.isStanding()) {
+            player.setStanding(true);
+
+            ServerEvent standEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_STAND, null, getEntityTarget(player.getId()));
+            broadcastSink.tryEmitNext(standEvent);
+        }
+
+        return new ServerEvent<>(ServerEvent.Type.PLAYER_STAND, null, getEntityTarget(player.getId()));
     }
 
     // Double down method
