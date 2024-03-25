@@ -13,7 +13,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class WebSocket extends WebSocketClient{
     private CountDownLatch latch = new CountDownLatch(1);
-
     private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
     public WebSocket(URI serverUri) {
@@ -37,7 +36,7 @@ public class WebSocket extends WebSocketClient{
     }
 
     public CountDownLatch getLatch(){
-        return  this.latch;
+        return this.latch;
     }
 
     public LinkedBlockingQueue<String> getMessageQueue(){
@@ -51,6 +50,4 @@ public class WebSocket extends WebSocketClient{
     public void onError(Exception e) {
         System.out.println("Socket has an error");
     }
-
-
 }

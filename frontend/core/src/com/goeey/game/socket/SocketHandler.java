@@ -136,7 +136,6 @@ public class SocketHandler {
                         }
                     }
                 }
-
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -147,7 +146,6 @@ public class SocketHandler {
     public void setGS(ScreenAdapter gs){
         this.gs = gs;
     }
-
 
     public WebSocket getWebSocket(){
         return this.ws;
@@ -211,7 +209,6 @@ public class SocketHandler {
         }catch (InterruptedException ex){
             ex.printStackTrace();
         }
-
     }
 
     public void closeWebSocket() {
