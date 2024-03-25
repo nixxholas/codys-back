@@ -31,7 +31,7 @@ public class GameScreen extends ScreenAdapter {
     private Texture backImage;
     private Texture frontImage;
     private SpriteBatch batch;
-    private Stage stage;
+    private static Stage stage;
     private int cWidth;
     private int cHeight;
     private int scrWidth = Gdx.graphics.getWidth();
@@ -109,21 +109,30 @@ public class GameScreen extends ScreenAdapter {
         Card playerCard = new Card(Suit.CLUBS, Rank.THREE);
         String sPlayerCard = SerializationUtil.serializeString(playerCard);
         ServerEvent<String> seString = new ServerEvent<String>(Type.PLAYER_DRAW, sPlayerCard, EntityTarget.PLAYER_1);
-        stage.addActor(ProcessServerMessage.callMethod(seString, Actor.class));
+        ProcessServerMessage.callMethod(seString);
+        ProcessServerMessage.callMethod(seString);
+        ProcessServerMessage.callMethod(seString);
 
+        ServerEvent<String> seString1 = new ServerEvent<String>(Type.DEALER_DRAW, sPlayerCard, EntityTarget.DEALER);
+        ProcessServerMessage.callMethod(seString1);
+        ProcessServerMessage.callMethod(seString1);
+        ProcessServerMessage.callMethod(seString1);
+        ProcessServerMessage.callMethod(seString1);
+        ProcessServerMessage.callMethod(seString1);
+        ProcessServerMessage.callMethod(seString1);
 //        while(true){
 //            ServerEvent<String> seString1 = SocketHandler.getEvent();
 //            stage.addActor((Actor)ProcessServerMessage.callMethod(seString1));
 //        }
     }
 
-    public static Actor deal(EntityTarget entity, String card){
+    public static void deal(EntityTarget entity, String card){
         PlayerXY xy = playerMap.get(entity);
         int x = xy.getPlayerX();
         int y = xy.getPlayerY();
         int count = xy.getCount();
         xy.setCount(count+1);
-        return CardAnimation.dealCards(count, x, y, card);
+        stage.addActor(CardAnimation.dealCards(count, x, y, card));
     }
 
     @Override

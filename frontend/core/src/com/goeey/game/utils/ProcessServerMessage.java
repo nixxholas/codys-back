@@ -1,6 +1,5 @@
 package com.goeey.game.utils;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.goeey.backend.entity.PlayerBetData;
 import com.goeey.backend.entity.PlayerResultData;
 import com.goeey.backend.util.SerializationUtil;
@@ -15,8 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 public class ProcessServerMessage {
-    // NEED TO CHANGE Object to something less disastrous
-    public static <T> T callMethod(ServerEvent<String> event, Class<T> targetType){
+    public static void callMethod(ServerEvent<String> event){
         switch (event.getType()){
             case CONNECT:
 
@@ -24,39 +22,39 @@ public class ProcessServerMessage {
 
             case ROOM_LIST:// most likely deprecated OR not used
                 //targetType List<String>
-                return targetType.cast(returnRoomsList(event));
+                returnRoomsList(event);
             case ROOM_PLAYERS:
 
             case REGISTERED:
                 //targetType String
-                return targetType.cast(returnRegistered(event));
+                returnRegistered(event);
             case ERROR:
 
             case COUNTDOWN:
                 //targetType String
-                return targetType.cast(returnCountdown(event));
+                returnCountdown(event);
             case UPDATE:
                 //targetType String
-                return targetType.cast(returnUpdate(event));
+                returnUpdate(event);
             case STOOD_UP:
                 //targetType String
-                return targetType.cast(returnStoodUp(event));
+                returnStoodUp(event);
             case STARTING:
                 //targetType String
-                return targetType.cast(returnStarting(event));
+                returnStarting(event);
             case DEAL:
                 //targetType String
-                return targetType.cast(returnDeal(event));
+                returnDeal(event);
             case DEALER_REVEAL:
-
+                break;
             case DEALER_DRAW, PLAYER_DRAW, PLAYER_HIT:
-                //targetType Actor
                 try {
-                    return targetType.cast(dealCardMethod(event));
+                    dealCardMethod(event);
                 } catch (InvalidObjectException e) {
                     System.out.println(e.getMessage());
                 }
-//            case PLAYER_HIT:
+                break;
+            //            case PLAYER_HIT:
 //                //targetType Actor
 //                try {
 //                    return targetType.cast(dealCardMethod(event));
@@ -65,25 +63,25 @@ public class ProcessServerMessage {
 //                }
             case PLAYER_TURN:
                 //targetType EntityTarget
-                return targetType.cast(playerTurn(event));
+                playerTurn(event);
             case PLAYER_WIN, PLAYER_LOSE, PLAYER_PUSH, PLAYER_BUST:
                 //typeType PlayerResultData
-                return targetType.cast(playerPRD(event));
+                playerPRD(event);
             case PLAYER_STAND:
                 //typeType EntityTarget
-                return targetType.cast(playerStand(event));
+                playerStand(event);
             case PLAYER_BET:
                 //TargetType PlayerBetData
-                return targetType.cast(returnBet(event));
+                returnBet(event);
             case PLAYER_JOINED:
                 //targetType String
-                return targetType.cast(returnJoined(event));
+                returnJoined(event);
             case PLAYER_LEFT:
                 //targetType String
-                return targetType.cast(returnPlayerLeft(event));
+                returnPlayerLeft(event);
             case PLAYER_SAT:
                 //targetType String
-                return targetType.cast(returnPlayerSat(event));
+                returnPlayerSat(event);
             case PLAYER_DISCONNECTED:
 
             case PONG:
@@ -91,10 +89,9 @@ public class ProcessServerMessage {
             default:
                 System.out.println("Not a Server Event object");
         }
-        return null;
     }
 
-    public static List<String> returnRoomsList(ServerEvent<String> event){
+    private static List<String> returnRoomsList(ServerEvent<String> event){
         List<String> roomList = new ArrayList<>();
         Set<?> roomSet = SerializationUtil.deserializeString(event.getMessage(), Set.class);
         for (Object o : roomSet) {
@@ -103,106 +100,109 @@ public class ProcessServerMessage {
         return roomList;
     }
 
-    public static String returnRegistered(ServerEvent<String> event){
+    private static String returnRegistered(ServerEvent<String> event){
         return event.getMessage();
     }
 
-    public static String returnCountdown(ServerEvent<String> event){
+    private static String returnCountdown(ServerEvent<String> event){
         return event.getMessage();
     }
 
-    public static String returnUpdate(ServerEvent<String> event){
+    private static String returnUpdate(ServerEvent<String> event){
         return event.getMessage();
     }
 
-    public static String returnStoodUp(ServerEvent<String> event){
+    private static String returnStoodUp(ServerEvent<String> event){
         return event.getMessage();
     }
 
-    public static String returnStarting(ServerEvent<String> event){
+    private static String returnStarting(ServerEvent<String> event){
         return event.getMessage();
     }
 
-    public static String returnDeal(ServerEvent<String> event){
+    private static String returnDeal(ServerEvent<String> event){
         return event.getMessage();
     }
 
-    public static PlayerBetData returnBet(ServerEvent<String> event){
+    private static PlayerBetData returnBet(ServerEvent<String> event){
         PlayerBetData pbd = SerializationUtil.deserializeString(event.getMessage(), PlayerBetData.class);
+        // format: (amtbet, playerMoney)
         return pbd;
     }
 
-    public static String returnJoined(ServerEvent<String> event){
+    private static String returnJoined(ServerEvent<String> event){
         return event.getMessage();
     }
 
-    public static String returnPlayerLeft(ServerEvent<String> event){
+    private static String returnPlayerLeft(ServerEvent<String> event){
         //returns player ID
         return event.getMessage();
     }
 
-    public static String returnPlayerSat(ServerEvent<String> event){
+    private static String returnPlayerSat(ServerEvent<String> event){
         //returns player sat message
         return event.getMessage();
     }
 
-    public static Actor dealCardMethod(ServerEvent<String> event) throws InvalidObjectException {
+    private static void dealCardMethod(ServerEvent<String> event) throws InvalidObjectException {
         Card card = null;
         EntityTarget entity = event.getTarget();
         switch (event.getType()) {
             case PLAYER_DRAW:
                 card = SerializationUtil.deserializeString(event.getMessage(), Card.class);
                 if (card != null) {
-                    return GameScreen.deal(entity, card.getRank() + "_" + card.getSuit());
+                    GameScreen.deal(entity, card.getRank() + "_" + card.getSuit());
                 }
+                break;
             case DEALER_DRAW:
                 card = SerializationUtil.deserializeString(event.getMessage(), Card.class);
                 if (card==null) {
-                    return GameScreen.deal(entity, "BACK_CARD");
+                    GameScreen.deal(entity, "BACK_CARD");
                 } else {
-                    return GameScreen.deal(entity, card.getRank() + "_" + card.getSuit());
+                    GameScreen.deal(entity, card.getRank() + "_" + card.getSuit());
                 }
+                break;
             default:
                 throw new InvalidObjectException("Not Player/Dealer draw event");
         }
     }
 
-    public static EntityTarget playerTurn(ServerEvent<String> event){
+    private static EntityTarget playerTurn(ServerEvent<String> event){
         EntityTarget whichPlayerTurn = event.getTarget();
         return whichPlayerTurn;
     }
 
-    public static PlayerResultData playerPRD(ServerEvent<String> event){
+    private static PlayerResultData playerPRD(ServerEvent<String> event){
         EntityTarget target = event.getTarget();
         PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
         return null;
     }
 
-    public static PlayerResultData playerWin(ServerEvent<String> event){
+    private static PlayerResultData playerWin(ServerEvent<String> event){
         EntityTarget target = event.getTarget();
         PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
         return null;
     }
 
-    public static PlayerResultData playerLost(ServerEvent<String> event){
+    private static PlayerResultData playerLost(ServerEvent<String> event){
         EntityTarget target = event.getTarget();
         PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
         return null;
     }
 
-    public static PlayerResultData playerPush(ServerEvent<String> event){
+    private static PlayerResultData playerPush(ServerEvent<String> event){
         EntityTarget target = event.getTarget();
         PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
         return null;
     }
 
-    public static PlayerResultData playerBust(ServerEvent<String> event){
+    private static PlayerResultData playerBust(ServerEvent<String> event){
         EntityTarget target = event.getTarget();
         PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
         return null;
     }
 
-    public static EntityTarget playerStand(ServerEvent<String> event){
+    private static EntityTarget playerStand(ServerEvent<String> event){
         EntityTarget whichPlayerStand = event.getTarget();
         return whichPlayerStand;
     }
