@@ -1,5 +1,6 @@
 package com.goeey.game.screen;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -13,6 +14,7 @@ import com.goeey.game.GameManager;
 import com.goeey.game.socket.SocketHandler;
 import com.goeey.game.socket.WebSocket;
 
+import javax.swing.plaf.TableHeaderUI;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -24,14 +26,16 @@ public class GameCreationScreen extends ScreenAdapter {
     private TextField nameTextfield;
     private Skin skin;
 
+    public static boolean playerSat = false;
+
+    private boolean isConnected;
+
     public GameCreationScreen (GameManager game) {
         this.game = game;
         this.skin = game.getSkin();
+        GameManager.socketHandler.setGS(this);
     }
 
-    public void registerUser (String playerName) {
-
-    }
     public Table uiTableFactory() {
 
         // Label
@@ -44,14 +48,36 @@ public class GameCreationScreen extends ScreenAdapter {
         TextButton startButton = new TextButton("Start Game", skin);
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                int seatNum = 0;
                 game.setPlayerName(nameTextfield.getText());
+
+                //Registering Player to Server
                 GameManager.socketHandler.register(game.getPlayerName());
+
+                //Connecting Player to Server
                 GameManager.socketHandler.connect(game.getPlayerName());
+
+                //Player Creating & Joining a Room
                 GameManager.socketHandler.createandjoin(game.getPlayerName());
-                GameManager.socketHandler.sit(game.getPlayerName());
-                GameManager.socketHandler.bet(game.getPlayerName());
+
+                do {
+                    try{
+                        GameManager.socketHandler.resetLatch(1);
+                        GameManager.socketHandler.sit(game.getPlayerName(), ++seatNum);
+                        GameManager.socketHandler.awaitPlayer();
+                    }catch (InterruptedException ex){
+                        ex.printStackTrace();
+                    }
+
+                }while (!playerSat);
+
+
+                System.out.println(seatNum);
+                game.setEntityType(seatNum);
                 game.setScreen(new GameScreen(game));
+
             }
+
         });
 
         TextButton backButton = new TextButton("Back to Main Menu", skin);
@@ -89,11 +115,14 @@ public class GameCreationScreen extends ScreenAdapter {
         stage.draw();
     }
 
+
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
     public void hide() {
         dispose();
     }
-    public void dispose() { stage.dispose(); }
+    public void dispose() {
+        stage.dispose();
+    }
 }
