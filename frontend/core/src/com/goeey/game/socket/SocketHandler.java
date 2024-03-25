@@ -52,82 +52,89 @@ public class SocketHandler {
                 while (ws.isOpen()){
                     if(ws.getMessageQueue() != null){
                         String message = ws.getMessageQueue().take();
-                        var severEvent =  SerializationUtil.deserializeString(message, ServerEvent.class);
-                        //System.out.println(severEvent.getType());
-                        //System.out.println(severEvent.getMessage());
-                        if (severEvent.getType() == ServerEvent.Type.ERROR && severEvent.getMessage().equals("You are already sitting.")) {
-                            System.out.println("SUCCESS!!");
-                            GameCreationScreen.playerSat = true;
-                            this.latch.countDown();
-
-                        } else if (severEvent.getType() == ServerEvent.Type.ERROR && severEvent.getMessage().equals("Seat is already taken.")) {
-                            System.out.println("FAILED!!");
-                            GameCreationScreen.playerSat = false;
-                            this.latch.countDown();
-
-                        } else if (severEvent.getType() == ServerEvent.Type.PLAYER_SAT) {
-                            System.out.println("SUCCESS!!");
-                            GameCreationScreen.playerSat = true;
-                            this.latch.countDown();
-
-                        } else if (severEvent.getType() == ServerEvent.Type.COUNTDOWN) {
-                            System.out.println(severEvent.getMessage());
-                        } else if(severEvent.getType() == ServerEvent.Type.DEAL){
-                            System.out.println(severEvent.getMessage());
-                        } else if (severEvent.getType() == ServerEvent.Type.DEALER_DRAW) {
-                            System.out.println(severEvent.getMessage());
-                            System.out.println(severEvent.getTarget());
-                            String targetPlayer = String.valueOf(severEvent.getTarget());
-
-                            if(severEvent.getMessage() != null){
-                                // Convert the LinkedHashMap to a JSON string
-                                String jsonString =  gson.toJson(severEvent.getMessage());
-                                Card card = SerializationUtil.deserializeString(jsonString, Card.class);
-                                System.out.println(card.getRank());
-                                System.out.println(card.getSuit());
-                                System.out.println(targetPlayer);
-                                if(gs instanceof GameScreen gs1){
-                                    Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
-                                 }
-                            }else{
-                                if(gs instanceof GameScreen gs1){
-                                    Gdx.app.postRunnable(() -> gs1.updateUI(null, targetPlayer, false));
+                        var serverEvent =  SerializationUtil.deserializeString(message, ServerEvent.class);
+                        //System.out.println(serverEvent.getType());
+                        //System.out.println(serverEvent.getMessage());
+                        switch(serverEvent.getType()){
+                            case ERROR:
+                                if(serverEvent.getMessage().equals("You are already sitting.")){
+                                    System.out.println("SUCCESS!!");
+                                    GameCreationScreen.playerSat = true;
+                                    this.latch.countDown();
+                                } else if (serverEvent.getMessage().equals("Seat is already taken.")) {
+                                    System.out.println("FAILED!!");
+                                    GameCreationScreen.playerSat = false;
+                                    this.latch.countDown();
                                 }
-                            }
-
-                        } else if (severEvent.getType() == ServerEvent.Type.DEALER_REVEAL) {
-                            System.out.println(severEvent.getMessage());
-                            System.out.println(severEvent.getTarget());
-                            String targetPlayer = String.valueOf(severEvent.getTarget());
-
-                            if(severEvent.getMessage() != null && severEvent.getTarget() != null){
-                                // Convert the LinkedHashMap to a JSON string
-                                String jsonString =  gson.toJson(severEvent.getMessage());
-                                Card card = SerializationUtil.deserializeString(jsonString, Card.class);
-                                System.out.println(card.getRank());
-                                System.out.println(card.getSuit());
-                                System.out.println(targetPlayer);
-                                if(gs instanceof GameScreen gs1){
-                                    Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, true));
+                                break;
+                            case PLAYER_SAT:
+                                System.out.println("SUCCESS!!");
+                                GameCreationScreen.playerSat = true;
+                                this.latch.countDown();
+                                break;
+                            case COUNTDOWN:
+                                System.out.println(serverEvent.getMessage());
+                                break;
+                            case DEAL:
+                                System.out.println(serverEvent.getMessage());
+                                break;
+                            case DEALER_DRAW:
+                                System.out.println(serverEvent.getMessage());
+                                System.out.println(serverEvent.getTarget());
+                                String targetPlayer = String.valueOf(serverEvent.getTarget());
+                                if(serverEvent.getMessage() != null){
+                                    // Convert the LinkedHashMap to a JSON string
+                                    String jsonString =  gson.toJson(serverEvent.getMessage());
+                                    Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+                                    System.out.println(card.getRank());
+                                    System.out.println(card.getSuit());
+                                    System.out.println(targetPlayer);
+                                    if(gs instanceof GameScreen gs1){
+                                        Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
+                                    }
+                                }else{
+                                    if(gs instanceof GameScreen gs1){
+                                        Gdx.app.postRunnable(() -> gs1.updateUI(null, targetPlayer, false));
+                                    }
                                 }
-                            }
+                                break;
+                            case DEALER_REVEAL:
+                                System.out.println(serverEvent.getMessage());
+                                System.out.println(serverEvent.getTarget());
+                                String targetPlayer1 = String.valueOf(serverEvent.getTarget());
 
-                        } else if (severEvent.getType() == ServerEvent.Type.PLAYER_DRAW){
-                            System.out.println(severEvent.getMessage());
-                            if(severEvent.getMessage() != null){
-                                // Convert the LinkedHashMap to a JSON string
-                                String jsonString =  gson.toJson(severEvent.getMessage());
-                                Card card = SerializationUtil.deserializeString(jsonString, Card.class);
-                                String targetPlayer = String.valueOf(severEvent.getTarget());
-                                System.out.println(card.getRank());
-                                System.out.println(card.getSuit());
-                                System.out.println(targetPlayer);
-                                if(gs instanceof GameScreen gs1){
-                                    Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
+                                if(serverEvent.getMessage() != null && serverEvent.getTarget() != null){
+                                    // Convert the LinkedHashMap to a JSON string
+                                    String jsonString =  gson.toJson(serverEvent.getMessage());
+                                    Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+                                    System.out.println(card.getRank());
+                                    System.out.println(card.getSuit());
+                                    System.out.println(targetPlayer1);
+                                    if(gs instanceof GameScreen gs1){
+                                        Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer1, true));
+                                    }
                                 }
-                            }
-                        }else if(severEvent.getType() == ServerEvent.Type.PLAYER_TURN){
-                            System.out.println(severEvent.getMessage());
+                                break;
+                            case PLAYER_DRAW:
+                                System.out.println(serverEvent.getMessage());
+                                if(serverEvent.getMessage() != null){
+                                    // Convert the LinkedHashMap to a JSON string
+                                    String jsonString =  gson.toJson(serverEvent.getMessage());
+                                    Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+                                    String targetPlayer2 = String.valueOf(serverEvent.getTarget());
+                                    System.out.println(card.getRank());
+                                    System.out.println(card.getSuit());
+                                    System.out.println(targetPlayer2);
+                                    if(gs instanceof GameScreen gs1){
+                                        Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer2, false));
+                                    }
+                                }
+                                break;
+                            case PLAYER_TURN:
+                                System.out.println(serverEvent.getMessage());
+                                break;
+                            default:
+                                System.out.println("Not a ServerEvent object/Not implemented yet");
                         }
                     }
                 }
