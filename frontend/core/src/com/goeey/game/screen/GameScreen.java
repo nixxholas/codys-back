@@ -62,7 +62,7 @@ public class GameScreen extends ScreenAdapter {
         if(isCurrentPlayer){
             lbName.setColor(Color.YELLOW);
             //Player Amount
-            Label lblAmt = new Label("Amount: $1000" , skin);
+            Label lblAmt = new Label("Amount: $1000", skin);
             lblAmt.setFontScale(1);
             lblAmt.setColor(Color.YELLOW);
 
@@ -72,6 +72,7 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
                         System.out.println("Clicked Hit!!");
+                        // GameManager.socketHandler.hit(game.getPlayerName(), 1);
                         hitButton.setDisabled(true);
                     }
                 }
@@ -83,6 +84,7 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!standButton.isDisabled()){
                         System.out.println("Clicked Stand!!");
+                        // GameManager.socketHandler.stand(game.getPlayerName(), 1);
                         standButton.setDisabled(true);
                     }
                 }
@@ -94,6 +96,7 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!doubleDownButton.isDisabled()){
                         System.out.println("Clicked Double Down!!");
+                        // GameManager.socketHandler.doubleDown(game.getPlayerName(), 1.0);
                         doubleDownButton.setDisabled(true);
                     }
                 }
@@ -105,7 +108,10 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!betButton.isDisabled()){
                         System.out.println("Clicked Bet!!");
-                        GameManager.socketHandler.bet(game.getPlayerName(), 1.0);
+                        startGame();
+                        hitButton.setDisabled(false);
+                        standButton.setDisabled(false);
+                        doubleDownButton.setDisabled(false);
                         betButton.setDisabled(true);
                     }
                 }

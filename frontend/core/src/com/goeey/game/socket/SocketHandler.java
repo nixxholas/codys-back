@@ -126,6 +126,38 @@ public class SocketHandler {
         }
     }
 
+    public void hit(String clientId, int seatNum){
+        ClientEvent hitEvent = new ClientEvent(clientId, ClientEvent.Type.HIT, Integer.toString(seatNum));
+        try{
+            ws.send(SerializationUtil.serializeString(hitEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void stand(String clientId, int seatNum){
+        ClientEvent standEvent = new ClientEvent(clientId, ClientEvent.Type.STAND, Integer.toString(seatNum));
+        try{
+            ws.send(SerializationUtil.serializeString(standEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void doubleDown(String clientId, double amount){
+        DecimalFormat df = new DecimalFormat("#.#");
+        String amt = df.format(amount);
+        ClientEvent doubleDownEvent = new ClientEvent(clientId, ClientEvent.Type.DOUBLE, amt);
+        try{
+            ws.send(SerializationUtil.serializeString(doubleDownEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
     public void closeWebSocket() {
         if(ws.isOpen()){
             ws.close();
