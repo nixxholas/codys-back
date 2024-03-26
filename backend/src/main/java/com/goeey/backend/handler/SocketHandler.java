@@ -323,7 +323,8 @@ public class SocketHandler implements WebSocketHandler {
                 Player leftPlayer = room.playerLeave(event.getClientId());
                 // Bring the player back to the lobby
                 lobbySessions.put(leftPlayer.getId(), leftPlayer);
-                responseEvent = new ServerEvent(ServerEvent.Type.LEAVE, "You have left room " + room.getRoomId());
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(
+                        new ServerEvent(ServerEvent.Type.LEAVE, "You have left room " + room.getRoomId())))));
             case SIT:
                 // Sit the player in a seat;
                 return session.send(Mono.just(session.textMessage(
