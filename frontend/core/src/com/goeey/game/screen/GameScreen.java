@@ -73,6 +73,7 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
                         System.out.println("Clicked Hit!!");
+                        hitButton.setDisabled(true);
                     }
                 }
             });
@@ -83,8 +84,20 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!standButton.isDisabled()){
                         System.out.println("Clicked Stand!!");
+                        standButton.setDisabled(true);
                     }
 
+                }
+            });
+
+            //Double Down Button
+            TextButton doubleDownButton = new TextButton("Double Down", skin);
+            doubleDownButton.addListener(new ClickListener() {
+                public void clicked(InputEvent event, float x, float y){
+                    if(!doubleDownButton.isDisabled()){
+                        System.out.println("Clicked Double Down!!");
+                        doubleDownButton.setDisabled(true);
+                    }
                 }
             });
 
@@ -102,16 +115,18 @@ public class GameScreen extends ScreenAdapter {
 
             hitButton.setDisabled(true);
             standButton.setDisabled(true);
+            doubleDownButton.setDisabled(true);
             betButton.setDisabled(false);
 
             buttonContainer.add(lbName);
             buttonContainer.add(lblAmt).padLeft(5);
             buttonContainer.row().width(150).height(40);
-            buttonContainer.add(hitButton).left().padTop(10);
-            buttonContainer.add(standButton).center().padTop(10);
-            buttonContainer.add(betButton).right().padTop(10);
+            buttonContainer.add(hitButton).padTop(10);
+            buttonContainer.add(standButton).padTop(10);
+            buttonContainer.add(doubleDownButton).padTop(10);
+            buttonContainer.add(betButton).padTop(10);
         }else{
-            buttonContainer.add(lbName).center();
+            buttonContainer.add(lbName);
         }
 
         //buttonContainer.setOrigin(50, 25);
