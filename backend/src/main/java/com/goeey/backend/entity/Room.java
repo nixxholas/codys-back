@@ -346,10 +346,10 @@ public class Room {
 
     public ServerEvent hit(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to hit.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to hit.");
         }
         if (!noMoreBets) {
-            throw new IllegalStateException("Game not started.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Game not started.");
         }
         Player player = players.get(seatNumber);
         if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(player.getId())) {
@@ -386,10 +386,10 @@ public class Room {
 
     public ServerEvent stand(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to hit.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to hit.");
         }
         if (!noMoreBets) {
-            throw new IllegalStateException("Game not started.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Game not started.");
         }
         Player player = players.get(seatNumber);
         if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(player.getId())) {
@@ -410,14 +410,18 @@ public class Room {
     }
 
     // Double down method
-    public void doubleDown(int seatNumber) {
+    public ServerEvent doubleDown(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to double down.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to hit.");
         }
         if (!noMoreBets) {
-            throw new IllegalStateException("Game not started.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Game not started.");
         }
         Player player = players.get(seatNumber);
+        if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(player.getId())) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not your turn.");
+        }
+
         if (player != null && !player.isStanding()) {
             player.setDoubleDown(true);
             player.placeBet(player.getCurrentBet()); // Additional bet
