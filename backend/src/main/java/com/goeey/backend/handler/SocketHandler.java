@@ -342,6 +342,8 @@ public class SocketHandler implements WebSocketHandler {
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.hit(room.getPlayerSeatNumber(player.getId()))))));
             case STAND:
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.stand(room.getPlayerSeatNumber(player.getId()))))));
+            case DOUBLE:
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.doubleDown(room.getPlayerSeatNumber(player.getId()))))));
             default:
                 responseEvent = new ServerEvent(ServerEvent.Type.ERROR, "Invalid event");
         }

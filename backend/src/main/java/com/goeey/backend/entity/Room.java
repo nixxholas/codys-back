@@ -358,6 +358,9 @@ public class Room {
         if (player.isSettled()) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Player has already settled.");
         }
+        if (player.getCurrentBet() <= 0) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "You're not in this round.");
+        }
 
         Card card;
         if (!player.isStanding()) {
@@ -398,6 +401,9 @@ public class Room {
         if (player.isSettled()) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Player has already settled.");
         }
+        if (player.getCurrentBet() <= 0) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "You're not in this round.");
+        }
 
         if (!player.isStanding()) {
             player.setStanding(true);
@@ -411,27 +417,58 @@ public class Room {
 
     // Double down method
     public ServerEvent doubleDown(int seatNumber) {
+        // If game state is not player turn, return an error, wrong time to double down
         if (gameState != GameState.PLAYER_TURN) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to hit.");
         }
+        // If the game has not started, return an error, game not started
         if (!noMoreBets) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Game not started.");
         }
+        // Retrieve the player from the seat number
         Player player = players.get(seatNumber);
+        // If the current turn player is not the player, return an error, not your turn
         if (currentTurnPlayerId == null || !currentTurnPlayerId.equals(player.getId())) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Not your turn.");
         }
+        if (player.getCurrentBet() <= 0) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "You're not in this round.");
+        }
+        if (player.isSettled()) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Player has already settled.");
+        }
+        if (player.getNumCards() > 2) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Can only double down on the first two cards.");
+        }
 
-        if (player != null && !player.isStanding()) {
+        if (!player.isStanding()) {
             player.setDoubleDown(true);
             player.placeBet(player.getCurrentBet()); // Additional bet
-            player.addCard(deck.remove(0));
+            Card card = deck.remove(0);
+            player.addCard(card);
+            // Broadcast the card to all players
+            ServerEvent<Card> cardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DOUBLE, card, getEntityTarget(player.getId()));
+            broadcastSink.tryEmitNext(cardEvent);
+
+            player.setStanding(true); // Player is forced to stand as he can only take one card after doubling down
+
+            if (player.calculateHandValue() > 21) {
+                // Settle with the player
+                int lossAmount = player.loseBet();
+                ServerEvent bustEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_BUST, player.getBalance(),
+                        getEntityTarget(player.getId()));
+                broadcastSink.tryEmitNext(bustEvent);
+                player.setSettled(true); // Player has settled
+
+                return new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE,
+                        new PlayerResultData(lossAmount, player.getBalance()), getEntityTarget(player.getId()));
+            } else {
+                // Wait for verdict
+                return new ServerEvent<>(ServerEvent.Type.PLAYER_STAND, null, getEntityTarget(player.getId()));
+            }
         }
-        if (player.calculateHandValue() > 21) {
-            player.setStanding(false); // Player busts
-        } else {
-            player.setStanding(true); // Player is forced to stand as he can only take one additional card
-        }
+
+        return new ServerEvent<>(ServerEvent.Type.ERROR, "Player is standing.");
     }
 
     /*
