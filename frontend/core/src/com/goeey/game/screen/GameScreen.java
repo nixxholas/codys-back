@@ -21,6 +21,7 @@ import com.goeey.game.socket.SocketHandler;
 import com.goeey.game.socket.WebSocket;
 import com.goeey.game.utils.PlayerXY;
 import com.goeey.game.utils.PlayerUtils;
+import com.goeey.game.utils.ProcessServerMessage;
 import com.gooey.base.Card;
 import com.gooey.base.EntityTarget;
 import com.gooey.base.socket.ServerEvent;
@@ -135,7 +136,7 @@ public class GameScreen extends ScreenAdapter {
     public GameScreen(GameManager game) {
         this.game = game;
         this.skin = game.getSkin();
-        GameManager.socketHandler.setGS(this);
+        ProcessServerMessage.setGS(this);
     }
 
     @Override
@@ -212,28 +213,6 @@ public class GameScreen extends ScreenAdapter {
         int count = xy.getCount();
         xy.setCount(count+1);
         return CardAnimation.dealCards(count, x, y, card);
-    }
-
-    public Actor parseServerMsg(ServerEvent<?> event) throws InvalidObjectException {
-        Card card = null;
-        if(event.getMessage() instanceof Card) {
-            card = (Card) event.getMessage();
-        }
-        EntityTarget entity = event.getTarget();
-        switch (event.getType()) {
-            case PLAYER_DRAW:
-                if (card != null) {
-                    return deal(entity, card.getRank() + "_" + card.getSuit());
-                }
-            case DEALER_DRAW:
-                if (card==null) {
-                    return deal(entity, "BACK_CARD");
-                } else {
-                    return deal(entity, card.getRank() + "_" + card.getSuit());
-                }
-            default:
-                throw new InvalidObjectException("Not Player/Dealer draw event");
-        }
     }
 
     public void updateUI(Card c, String target, boolean dealerReveal){

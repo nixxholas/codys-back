@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
+import com.goeey.game.utils.ProcessServerMessage;
 
 public class GameCreationScreen extends ScreenAdapter {
     private final GameManager game;
@@ -26,7 +27,7 @@ public class GameCreationScreen extends ScreenAdapter {
     public GameCreationScreen (GameManager game) {
         this.game = game;
         this.skin = game.getSkin();
-        GameManager.socketHandler.setGS(this);
+        ProcessServerMessage.setGS(this);
     }
 
     public Table uiTableFactory() {
@@ -61,6 +62,11 @@ public class GameCreationScreen extends ScreenAdapter {
                     }catch (InterruptedException ex){
                         ex.printStackTrace();
                     }
+//                    try {
+//                        Thread.sleep(500);
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
 
                 }while (!playerSat);
 

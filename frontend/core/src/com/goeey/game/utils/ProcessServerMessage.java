@@ -1,209 +1,293 @@
 package com.goeey.game.utils;
 
-import com.goeey.backend.entity.PlayerBetData;
-import com.goeey.backend.entity.PlayerResultData;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ScreenAdapter;
 import com.goeey.backend.util.SerializationUtil;
+import com.goeey.game.screen.GameCreationScreen;
 import com.goeey.game.screen.GameScreen;
 import com.gooey.base.Card;
-import com.gooey.base.EntityTarget;
 import com.gooey.base.socket.ServerEvent;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import java.io.InvalidObjectException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class ProcessServerMessage {
-    public static void callMethod(ServerEvent<String> event){
+    //Creating GSON Instance
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static ScreenAdapter gs;
+    public static void setGS(ScreenAdapter gs){
+        ProcessServerMessage.gs = gs;
+    }
+    public static void callMethod(ServerEvent<?> event){
         switch (event.getType()){
-            case CONNECT:
-
-            case DISCONNECT:
-
-            case ROOM_LIST:// most likely deprecated OR not used
-                //targetType List<String>
-                returnRoomsList(event);
-            case ROOM_PLAYERS:
-
-            case REGISTERED:
-                //targetType String
-                returnRegistered(event);
             case ERROR:
-
-            case COUNTDOWN:
-                //targetType String
-                returnCountdown(event);
-            case UPDATE:
-                //targetType String
-                returnUpdate(event);
-            case STOOD_UP:
-                //targetType String
-                returnStoodUp(event);
-            case STARTING:
-                //targetType String
-                returnStarting(event);
-            case DEAL:
-                //targetType String
-                returnDeal(event);
-            case DEALER_REVEAL:
+                processError(event);
                 break;
-            case DEALER_DRAW, PLAYER_DRAW, PLAYER_HIT:
-                try {
-                    dealCardMethod(event);
-                } catch (InvalidObjectException e) {
-                    System.out.println(e.getMessage());
-                }
-                break;
-            //            case PLAYER_HIT:
-//                //targetType Actor
-//                try {
-//                    return targetType.cast(dealCardMethod(event));
-//                } catch (InvalidObjectException e) {
-//                    System.out.println(e.getMessage());
-//                }
-            case PLAYER_TURN:
-                //targetType EntityTarget
-                playerTurn(event);
-            case PLAYER_WIN, PLAYER_LOSE, PLAYER_PUSH, PLAYER_BUST:
-                //typeType PlayerResultData
-                playerPRD(event);
-            case PLAYER_STAND:
-                //typeType EntityTarget
-                playerStand(event);
-            case PLAYER_BET:
-                //TargetType PlayerBetData
-                returnBet(event);
-            case PLAYER_JOINED:
-                //targetType String
-                returnJoined(event);
-            case PLAYER_LEFT:
-                //targetType String
-                returnPlayerLeft(event);
             case PLAYER_SAT:
-                //targetType String
-                returnPlayerSat(event);
-            case PLAYER_DISCONNECTED:
-
-            case PONG:
-                //targetType
-            default:
-                System.out.println("Not a Server Event object");
-        }
-    }
-
-    private static List<String> returnRoomsList(ServerEvent<String> event){
-        List<String> roomList = new ArrayList<>();
-        Set<?> roomSet = SerializationUtil.deserializeString(event.getMessage(), Set.class);
-        for (Object o : roomSet) {
-            roomList.add(o.toString());
-        }
-        return roomList;
-    }
-
-    private static String returnRegistered(ServerEvent<String> event){
-        return event.getMessage();
-    }
-
-    private static String returnCountdown(ServerEvent<String> event){
-        return event.getMessage();
-    }
-
-    private static String returnUpdate(ServerEvent<String> event){
-        return event.getMessage();
-    }
-
-    private static String returnStoodUp(ServerEvent<String> event){
-        return event.getMessage();
-    }
-
-    private static String returnStarting(ServerEvent<String> event){
-        return event.getMessage();
-    }
-
-    private static String returnDeal(ServerEvent<String> event){
-        return event.getMessage();
-    }
-
-    private static PlayerBetData returnBet(ServerEvent<String> event){
-        PlayerBetData pbd = SerializationUtil.deserializeString(event.getMessage(), PlayerBetData.class);
-        // format: (amtbet, playerMoney)
-        return pbd;
-    }
-
-    private static String returnJoined(ServerEvent<String> event){
-        return event.getMessage();
-    }
-
-    private static String returnPlayerLeft(ServerEvent<String> event){
-        //returns player ID
-        return event.getMessage();
-    }
-
-    private static String returnPlayerSat(ServerEvent<String> event){
-        //returns player sat message
-        return event.getMessage();
-    }
-
-    private static void dealCardMethod(ServerEvent<String> event) throws InvalidObjectException {
-        Card card = null;
-        EntityTarget entity = event.getTarget();
-        switch (event.getType()) {
-            case PLAYER_DRAW:
-                card = SerializationUtil.deserializeString(event.getMessage(), Card.class);
-                if (card != null) {
-                    GameScreen.deal(entity, card.getRank() + "_" + card.getSuit());
-                }
+                processPlayerSat(event);
+                break;
+            case COUNTDOWN:
+                processCountdown(event);
+                break;
+            case DEAL:
+                processDeal(event);
                 break;
             case DEALER_DRAW:
-                card = SerializationUtil.deserializeString(event.getMessage(), Card.class);
-                if (card==null) {
-                    GameScreen.deal(entity, "BACK_CARD");
-                } else {
-                    GameScreen.deal(entity, card.getRank() + "_" + card.getSuit());
-                }
+                processDealerDraw(event);
+                break;
+            case DEALER_REVEAL:
+                processDealerReveal(event);
+                break;
+            case PLAYER_DRAW:
+                processPlayerDraw(event);
+                break;
+            case PLAYER_TURN:
+                //not implemented yet
+                processPlayerTurn(event);
+                break;
+            case CONNECT:
+                //not implemented yet
+                processConnect(event);
+                break;
+            case DISCONNECT:
+                //not implemented yet
+                processDisconnect(event);
+                break;
+            case ROOM_LIST:
+                //not implemented yet
+                processRoomList(event);
+                break;
+            case ROOM_PLAYERS:
+                //not implemented yet
+                processRoomPlayers(event);
+                break;
+            case REGISTERED:
+                //not implemented yet
+                processRegistered(event);
+                break;
+            case UPDATE:
+                //not implemented yet
+                processUpdate(event);
+                break;
+            case STOOD_UP:
+                //not implemented yet
+                processStoodUp(event);
+                break;
+            case STARTING:
+                //not implemented yet
+                processStarting(event);
+                break;
+            case PLAYER_HIT:
+                //not implemented yet
+                processPlayerHit(event);
+                break;
+            case PLAYER_WIN:
+                //not implemented yet
+                processPlayerWin(event);
+                break;
+            case PLAYER_LOSE:
+                //not implemented yet
+                processPlayerLose(event);
+                break;
+            case PLAYER_PUSH:
+                //not implemented yet
+                processPlayerPush(event);
+                break;
+            case PLAYER_BUST:
+                //not implemented yet
+                processPlayerBust(event);
+                break;
+            case PLAYER_STAND:
+                //not implemented yet
+                processPlayerStand(event);
+                break;
+            case PLAYER_BET:
+                //not implemented yet
+                processPlayerBet(event);
+                break;
+            case PLAYER_JOINED:
+                //not implemented yet
+                processPlayerJoined(event);
+                break;
+            case PLAYER_LEFT:
+                //not implemented yet
+                processPlayerLeft(event);
+                break;
+            case PLAYER_DISCONNECTED:
+                //not implemented yet
+                processPlayerDisconnected(event);
+                break;
+            case PONG:
+                //not implemented yet
+                processPong(event);
                 break;
             default:
-                throw new InvalidObjectException("Not Player/Dealer draw event");
+                System.out.println("Not a ServerEvent object/Not implemented yet");
         }
     }
 
-    private static EntityTarget playerTurn(ServerEvent<String> event){
-        EntityTarget whichPlayerTurn = event.getTarget();
-        return whichPlayerTurn;
+    private static void processError(ServerEvent<?> event){
+        if(event.getMessage().equals("You are already sitting.")){
+            System.out.println("SUCCESS!!");
+            GameCreationScreen.playerSat = true;
+
+        } else if (event.getMessage().equals("Seat is already taken.")) {
+            System.out.println("FAILED!!");
+            GameCreationScreen.playerSat = false;
+        }
     }
 
-    private static PlayerResultData playerPRD(ServerEvent<String> event){
-        EntityTarget target = event.getTarget();
-        PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
-        return null;
+    private static void processPlayerSat(ServerEvent<?> event){
+        System.out.println("SUCCESS!!");
+        GameCreationScreen.playerSat = true;
     }
 
-    private static PlayerResultData playerWin(ServerEvent<String> event){
-        EntityTarget target = event.getTarget();
-        PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
-        return null;
+    private static void processCountdown(ServerEvent<?> event){
+        System.out.println(event.getMessage());
     }
 
-    private static PlayerResultData playerLost(ServerEvent<String> event){
-        EntityTarget target = event.getTarget();
-        PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
-        return null;
+    private static void processDeal(ServerEvent<?> event){
+        System.out.println(event.getMessage());
     }
 
-    private static PlayerResultData playerPush(ServerEvent<String> event){
-        EntityTarget target = event.getTarget();
-        PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
-        return null;
+    private static void processDealerDraw(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+        System.out.println(event.getTarget());
+        String targetPlayer = String.valueOf(event.getTarget());
+        if(event.getMessage() != null){
+            // Convert the LinkedHashMap to a JSON string
+            String jsonString =  gson.toJson(event.getMessage());
+            Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+            System.out.println(card.getRank());
+            System.out.println(card.getSuit());
+            System.out.println(targetPlayer);
+            System.out.println("test1");
+            if(gs instanceof GameScreen gs1){
+                System.out.println("test2");
+                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
+                System.out.println("test3");
+            }
+        }else{
+            if(gs instanceof GameScreen gs1){
+                System.out.println("test4");
+                Gdx.app.postRunnable(() -> gs1.updateUI(null, targetPlayer, false));
+                System.out.println("test5");
+            }
+        }
+        System.out.println("testout");
     }
 
-    private static PlayerResultData playerBust(ServerEvent<String> event){
-        EntityTarget target = event.getTarget();
-        PlayerResultData prd = SerializationUtil.deserializeString(event.getMessage(), PlayerResultData.class);
-        return null;
+    private static void processDealerReveal(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+        System.out.println(event.getTarget());
+        String targetPlayer = String.valueOf(event.getTarget());
+        if(event.getMessage() != null && event.getTarget() != null){
+            // Convert the LinkedHashMap to a JSON string
+            String jsonString =  gson.toJson(event.getMessage());
+            Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+            System.out.println(card.getRank());
+            System.out.println(card.getSuit());
+            System.out.println(targetPlayer);
+            if(gs instanceof GameScreen gs1){
+                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, true));
+            }
+        }
     }
 
-    private static EntityTarget playerStand(ServerEvent<String> event){
-        EntityTarget whichPlayerStand = event.getTarget();
-        return whichPlayerStand;
+    private static void processPlayerDraw(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+        if(event.getMessage() != null){
+            // Convert the LinkedHashMap to a JSON string
+            String jsonString =  gson.toJson(event.getMessage());
+            Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+            String targetPlayer2 = String.valueOf(event.getTarget());
+            System.out.println(card.getRank());
+            System.out.println(card.getSuit());
+            System.out.println(targetPlayer2);
+            if(gs instanceof GameScreen gs1){
+                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer2, false));
+            }
+        }
     }
+
+    private static void processPlayerTurn(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processConnect(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processDisconnect(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processRoomList(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processRoomPlayers(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processRegistered(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processUpdate(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processStoodUp(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processStarting(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerHit(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerWin(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerLose(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerPush(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerBust(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerStand(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerBet(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerJoined(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerLeft(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerDisconnected(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPong(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
 }
