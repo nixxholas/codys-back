@@ -72,7 +72,7 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
                         System.out.println("Clicked Hit!!");
-                        // GameManager.socketHandler.hit(game.getPlayerName(), 1);
+                        GameManager.socketHandler.hit(game.getPlayerName(), 1);
                         hitButton.setDisabled(true);
                     }
                 }
@@ -84,7 +84,7 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!standButton.isDisabled()){
                         System.out.println("Clicked Stand!!");
-                        // GameManager.socketHandler.stand(game.getPlayerName(), 1);
+                        GameManager.socketHandler.stand(game.getPlayerName(), 1);
                         standButton.setDisabled(true);
                     }
                 }

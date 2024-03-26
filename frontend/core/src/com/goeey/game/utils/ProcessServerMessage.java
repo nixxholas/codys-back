@@ -78,7 +78,6 @@ public class ProcessServerMessage {
                 processStarting(event);
                 break;
             case PLAYER_HIT:
-                //not implemented yet
                 processPlayerHit(event);
                 break;
             case PLAYER_WIN:
@@ -242,6 +241,18 @@ public class ProcessServerMessage {
 
     private static void processPlayerHit(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(event.getMessage() != null){
+            // Convert the LinkedHashMap to a JSON string
+            String jsonString =  gson.toJson(event.getMessage());
+            Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+            String targetPlayer2 = String.valueOf(event.getTarget());
+            System.out.println(card.getRank());
+            System.out.println(card.getSuit());
+            System.out.println(targetPlayer2);
+            if(gs instanceof GameScreen gs1){
+                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer2, false));
+            }
+        }
     }
 
     private static void processPlayerWin(ServerEvent<?> event){
