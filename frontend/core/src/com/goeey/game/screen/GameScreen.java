@@ -45,9 +45,7 @@ public class GameScreen extends ScreenAdapter {
     private int scrWidth = Gdx.graphics.getWidth();
     private int scrHeight= Gdx.graphics.getHeight();
     private static Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
-
     private SocketHandler socketHandler;
-
     private Boolean gameStarted = false;
 
 
@@ -86,7 +84,6 @@ public class GameScreen extends ScreenAdapter {
                         System.out.println("Clicked Stand!!");
                         standButton.setDisabled(true);
                     }
-
                 }
             });
 
@@ -160,7 +157,6 @@ public class GameScreen extends ScreenAdapter {
         final CardAnimation cardBACK = new CardAnimation(backImage);
         cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
         stage.addActor(cardBACK);
-
 
         // generate clean hashmap of all Entity targets, X and Y coords and card count
         playerMap = PlayerXY.refreshMap();
@@ -287,7 +283,6 @@ public class GameScreen extends ScreenAdapter {
                 // Handle the default case if needed
                 break;
         }
-
     }
 
     @Override
