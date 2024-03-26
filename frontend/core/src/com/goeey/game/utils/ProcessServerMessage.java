@@ -122,7 +122,7 @@ public class ProcessServerMessage {
                 processPong(event);
                 break;
             default:
-                System.out.println("Not a ServerEvent object/Not implemented yet");
+                System.out.println("" + event.getType() +  " not implemented yet");
         }
     }
 
@@ -161,20 +161,14 @@ public class ProcessServerMessage {
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
-            System.out.println("test1");
             if(gs instanceof GameScreen gs1){
-                System.out.println("test2");
                 Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
-                System.out.println("test3");
             }
         }else{
             if(gs instanceof GameScreen gs1){
-                System.out.println("test4");
                 Gdx.app.postRunnable(() -> gs1.updateUI(null, targetPlayer, false));
-                System.out.println("test5");
             }
         }
-        System.out.println("testout");
     }
 
     private static void processDealerReveal(ServerEvent<?> event){
