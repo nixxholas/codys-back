@@ -10,9 +10,9 @@ import java.util.List;
 
 public class Player extends BasePlayer {
     private List<Card> hand = new ArrayList<>();
-    private boolean standing = false;
-    private boolean settled = false;
-    private boolean doubleDown = false;
+    private volatile boolean standing = false;
+    private volatile boolean settled = false;
+    private volatile boolean doubleDown = false;
     private boolean split = false;
     private boolean insurance = false;
     private int balance;
@@ -89,31 +89,31 @@ public class Player extends BasePlayer {
         return false;
     }
 
-    public boolean shouldStillDraw() {
+    public synchronized boolean shouldStillDraw() {
         return (calculateHandValue() < 21 && !isStanding() && !isDoubleDown()) && !settled;
     }
 
-    public boolean isSettled() {
+    public synchronized boolean isSettled() {
         return settled;
     }
 
-    public void setSettled(boolean settled) {
+    public synchronized void setSettled(boolean settled) {
         this.settled = settled;
     }
 
-    public void setStanding(boolean standing) {
+    public synchronized void setStanding(boolean standing) {
         this.standing = standing;
     }
 
-    public boolean isStanding() {
+    public synchronized boolean isStanding() {
         return standing;
     }
 
-    public void setDoubleDown(boolean doubleDown) {
+    public synchronized void setDoubleDown(boolean doubleDown) {
         this.doubleDown = doubleDown;
     }
 
-    public boolean isDoubleDown() {
+    public synchronized boolean isDoubleDown() {
         return doubleDown;
     }
 
