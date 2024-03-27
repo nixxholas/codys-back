@@ -96,7 +96,7 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!doubleDownButton.isDisabled()){
                         System.out.println("Clicked Double Down!!");
-                        // GameManager.socketHandler.doubleDown(game.getPlayerName(), 1.0);
+                        GameManager.socketHandler.doubleDown(game.getPlayerName(), 1.0);
                         doubleDownButton.setDisabled(true);
                     }
                 }
