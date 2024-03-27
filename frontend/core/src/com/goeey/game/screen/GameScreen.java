@@ -68,6 +68,8 @@ public class GameScreen extends ScreenAdapter {
 
     private int playerAmt = 1000;
 
+    private String playerMessage = null;
+
     public Table createButtonsNLabels(Skin skin, int posX, int posY, String entity, boolean isCurrentPlayer) {
         //Create table
         Table buttonContainer = new Table(skin);
@@ -142,8 +144,6 @@ public class GameScreen extends ScreenAdapter {
             buttonContainer.add(doubleDownButton).padTop(3).left();
             buttonContainer.add(betButton).padTop(3).right();
 
-
-
         }else{
             buttonContainer.add(lblName);
         }
@@ -196,6 +196,7 @@ public class GameScreen extends ScreenAdapter {
                 // Y position differs for the current players to create room for UI elements
                 // Username will be generated of Current player whereas
                 // for other player it would be just PLAYER_(SEAT NUMBER)
+                // Parameters skin, X coordinate, Y coordinate,
                 stage.addActor(createButtonsNLabels(
                         skin,
                         xy.getPlayerX(),
@@ -221,7 +222,7 @@ public class GameScreen extends ScreenAdapter {
         return CardAnimation.dealCards(count, x, y, card);
     }
 
-    public void updateUI(Card c, String eventType, boolean dealerReveal, int amount){
+    public void updateUI(Card c, String eventType, boolean dealerReveal, int earnings){
         String cardName;
         int seatNum = eventType.charAt(eventType.length() - 1) - '0';
 
@@ -275,40 +276,55 @@ public class GameScreen extends ScreenAdapter {
 
             case "PLAYER_TURN_PLAYER_1", "PLAYER_TURN_PLAYER_2", "PLAYER_TURN_PLAYER_3",
                     "PLAYER_TURN_PLAYER_4", "PLAYER_TURN_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum())
+                if(seatNum == game.getPlayerSeatNum()){
                     enableButtons();
+                    Gdx.app.postRunnable(() -> this.updateGameState("Your turn"));
+                }else{
+                    Gdx.app.postRunnable(() -> this.updateGameState("Player " + seatNum + " turn"));
+                }
+
                 break;
 
             case "PLAYER_STAND_PLAYER_1", "PLAYER_STAND_PLAYER_2", "PLAYER_STAND_PLAYER_3",
                     "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum())
                     disableButtons();
+                this.updateGameState("Turn over");
                 break;
             case "PLAYER_LOSE_PLAYER_1", "PLAYER_LOSE_PLAYER_2", "PLAYER_LOSE_PLAYER_3",
-                    "PLAYER_LOSE_PLAYER_4", "PLAYER_LOSE_PLAYER_5", "PLAYER_WIN_PLAYER_1",
-                    "PLAYER_WIN_PLAYER_2", "PLAYER_WIN_PLAYER_3", "PLAYER_WIN_PLAYER_4",
-                    "PLAYER_WIN_PLAYER_5":
+                    "PLAYER_LOSE_PLAYER_4", "PLAYER_LOSE_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum()){
-                    this.playerAmt = amount;
+                    this.playerAmt -= earnings;
+                    this.playerMessage = "You lost $" + earnings;
+                }
+                break;
+            case "PLAYER_WIN_PLAYER_1", "PLAYER_WIN_PLAYER_2", "PLAYER_WIN_PLAYER_3",
+                    "PLAYER_WIN_PLAYER_4", "PLAYER_WIN_PLAYER_5":
+                if(seatNum == game.getPlayerSeatNum()){
+                    this.playerAmt += earnings;
+                    this.playerMessage = "You won $" + earnings;
                 }
                 break;
             case "COUNTDOWN":
                 break;
             case "UPDATE":
+                this.updateGameState(playerMessage);
                 this.lblAmt.setText("Amount: $" + this.playerAmt);
+                this.disableButtons();
+                betButton.setDisabled(true);
                 break;
             default:
                 // Handle the default case if needed
                 break;
         }
     }
+
     private void enableButtons(){
         //betButton.setDisabled(false);
         hitButton.setDisabled(false);
         standButton.setDisabled(false);
         doubleDownButton.setDisabled(false);
     }
-
 
     private void disableButtons(){
         //betButton.setDisabled(true);
@@ -327,7 +343,7 @@ public class GameScreen extends ScreenAdapter {
         table.add(gameStateLabel).pad(10);
 
         // Increase font size
-        //gameStateLabel.setFontScale(1.5f);
+        gameStateLabel.setFontScale(1.5f);
 
         // Position the table at the bottom of the screen
         table.top().right();

@@ -87,11 +87,8 @@ public class ProcessServerMessage {
             case PLAYER_DOUBLE:
                 processPlayerDouble(event);
                 break;
-            case PLAYER_WIN:
-                processPlayerWin(event);
-                break;
-            case PLAYER_LOSE:
-                processPlayerLose(event);
+            case PLAYER_WIN, PLAYER_LOSE:
+                processPlayerWinorLose(event);
                 break;
             case PLAYER_PUSH:
                 processPlayerPush(event);
@@ -109,7 +106,6 @@ public class ProcessServerMessage {
             case BET:
                 break;
             case PLAYER_JOINED:
-                //not implemented yet
                 processPlayerJoined(event);
                 break;
             case PLAYER_LEFT:
@@ -242,10 +238,14 @@ public class ProcessServerMessage {
     private static void processPlayerTurn(ServerEvent<?> event){
         System.out.println(event.getMessage());
         if(gs instanceof  GameScreen gs){
+            String target = event.getTarget().toString();
+            int seatNum = target.charAt(target.length() - 1) - '0';
             Gdx.app.postRunnable(() -> gs.updateUI(null,
                     "PLAYER_TURN_" + event.getTarget(),
                     false,
                     0));
+
+
         }
     }
 
@@ -275,7 +275,7 @@ public class ProcessServerMessage {
                 gcs.setRoomList(roomStrArr);
             }
 
-            GameManager.socketHandler.getLatch().countDown();
+            //GameManager.socketHandler.getLatch().countDown();
 
         }
     }
@@ -320,7 +320,11 @@ public class ProcessServerMessage {
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
             if(gs instanceof GameScreen gs){
-                Gdx.app.postRunnable(() -> gs.updateUI(card, targetPlayer, false, 0));
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "DRAW_" + targetPlayer,
+                        false,
+                        0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }
     }
@@ -341,26 +345,7 @@ public class ProcessServerMessage {
         }
     }
 
-    private static void processPlayerWin(ServerEvent<?> event){
-        System.out.println(event.getMessage());
-        String message = event.getMessage().toString();
-        JsonObject messageObject = JsonParser.parseString(message).getAsJsonObject();
-        double balance = messageObject.getAsJsonPrimitive("balance").getAsDouble();
-        double earnings = messageObject.getAsJsonPrimitive("earnings").getAsDouble();
-        System.out.println("Balance: " + balance);
-        System.out.println("Earnings: " + earnings);
-        if(gs instanceof GameScreen gs){
-            //PLAYER_LOSE_PLAYER_1
-            Gdx.app.postRunnable(() -> gs.updateUI(null,
-                    event.getType().toString() +
-                            "_" + event.getTarget(),
-                    false,
-                    (int)balance));
-        }
-
-    }
-
-    private static void processPlayerLose(ServerEvent<?> event){
+    private static void processPlayerWinorLose(ServerEvent<?> event){
         System.out.println(event.getMessage());
         String message = event.getMessage().toString();
         JsonObject messageObject = JsonParser.parseString(message).getAsJsonObject();
@@ -373,7 +358,7 @@ public class ProcessServerMessage {
                     event.getType().toString() +
                             "_" + event.getTarget(),
                     false,
-                    (int)balance));
+                    (int)earnings));
         }
     }
 
@@ -383,6 +368,36 @@ public class ProcessServerMessage {
 
     private static void processPlayerBust(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        boolean error = false;
+        String message = event.getMessage().toString();
+        JsonObject messageObject = JsonParser.parseString(message).getAsJsonObject();
+        try{
+            double earnings = messageObject.getAsJsonPrimitive("earnings").getAsDouble();
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(null,
+                        "PLAYER_LOSE_" + event.getTarget(),
+                        false,
+                        (int)earnings));
+            }
+        }catch (NullPointerException ex){
+            //Event does not return amount and earnings
+            error = true;
+
+        }
+
+        if(error){
+            //Event returns card type
+            String targetPlayer = String.valueOf(event.getTarget());
+            String jsonString = gson.toJson(event.getMessage());
+            Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "DRAW_" + targetPlayer,
+                        false,
+                        0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
+            }
+        }
     }
 
     private static void processPlayerStand(ServerEvent<?> event){
