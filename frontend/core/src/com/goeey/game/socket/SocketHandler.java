@@ -43,12 +43,17 @@ public class SocketHandler {
                     if(ws.getMessageQueue() != null){
                         String message = ws.getMessageQueue().take();
                         ServerEvent<?> serverEvent =  SerializationUtil.deserializeString(message, ServerEvent.class);
-                        //System.out.println(serverEvent.getType());
-                        //System.out.println(serverEvent.getMessage());
                         ProcessServerMessage.callMethod(serverEvent);
-                        if (serverEvent.getType() == ServerEvent.Type.ERROR || serverEvent.getType() == ServerEvent.Type.PLAYER_SAT) {
+                        if (serverEvent.getType() == ServerEvent.Type.ERROR ||
+                                serverEvent.getType() == ServerEvent.Type.PLAYER_SAT ||
+                                serverEvent.getType() == ServerEvent.Type.ROOM_LIST ||
+                                serverEvent.getType() == ServerEvent.Type.ROOM_PLAYERS ||
+                                serverEvent.getType() == ServerEvent.Type.JOINED ||
+                                serverEvent.getType() == ServerEvent.Type.CONNECT ||
+                                serverEvent.getType() == ServerEvent.Type.REGISTERED) {
                             this.latch.countDown();
                         }
+
                     }
                 }
             } catch (InterruptedException e) {
@@ -69,6 +74,10 @@ public class SocketHandler {
     public void resetLatch(int num){
         this.latch = new CountDownLatch(num);
    }
+
+    public CountDownLatch getLatch(){
+        return this.latch;
+    }
 
     public void awaitPlayer() throws InterruptedException {
         latch.await(); // Wait until the latch count becomes zero
@@ -152,6 +161,36 @@ public class SocketHandler {
         ClientEvent doubleDownEvent = new ClientEvent(clientId, ClientEvent.Type.DOUBLE, amt);
         try{
             ws.send(SerializationUtil.serializeString(doubleDownEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void joinRoom(String clientId, String roomId){
+        ClientEvent joinRoomEvent = new ClientEvent(clientId, ClientEvent.Type.JOIN, roomId);
+        try{
+            ws.send(SerializationUtil.serializeString(joinRoomEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void listRooms(String clientId){
+        ClientEvent listRoomEvent = new ClientEvent(clientId, ClientEvent.Type.LIST_ROOMS, "");
+        try{
+            ws.send(SerializationUtil.serializeString(listRoomEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void roomPlayers(String clientId, String roomId){
+        ClientEvent roomPlayersEvent = new ClientEvent(clientId, ClientEvent.Type.ROOM_PLAYERS, roomId);
+        try{
+            ws.send(SerializationUtil.serializeString(roomPlayersEvent));
             ws.getLatch().await();
         }catch (InterruptedException ex){
             ex.printStackTrace();

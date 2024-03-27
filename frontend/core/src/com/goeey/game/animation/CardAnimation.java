@@ -13,8 +13,6 @@ public class CardAnimation extends Actor {
     final static Texture backImage = new Texture("cards/BACK_CARD.png");
     private Texture texture;
 
-    private static float totalDelay = 2f;
-
     private static int scrWidth = Gdx.graphics.getWidth();
     private static int scrHeight= Gdx.graphics.getHeight();
 
@@ -39,7 +37,7 @@ public class CardAnimation extends Actor {
         SequenceAction sequence = Actions.sequence(moveToAction); // Move first, then Rotate
 
         SequenceAction finalSequence = Actions.sequence(Actions.delay(afterDelay), sequence,
-                Actions.delay(0.5f), Actions.run(new Runnable() {
+                Actions.delay(0.2f), Actions.run(new Runnable() {
             @Override
             public void run() {
                 // Change texture to frontImage
@@ -60,11 +58,11 @@ public class CardAnimation extends Actor {
         newC.setPosition(startXPos, startYPos);
         SequenceAction sa;
         if (cardNum <=4){
-            sa = newC.cardAnimation(totalDelay++, (int) (endXPos - cWidth + (cWidth / 5) * (cardNum + 1))
-                    , endYPos, 0.5f, frontImage);
+            sa = newC.cardAnimation(0f, (int) (endXPos - cWidth + (cWidth / 5) * (cardNum + 1))
+                    , endYPos, 0.3f, frontImage);
         }else{
-            sa = newC.cardAnimation(totalDelay++, (int) (endXPos - 160 + (cWidth / 5) * (cardNum - 4)),
-                    (int) (endYPos - (cHeight / 4)), 0.5f, frontImage);
+            sa = newC.cardAnimation(0f, (int) (endXPos - 160 + (cWidth / 5) * (cardNum - 4)),
+                    (int) (endYPos - (cHeight / 4)), 0.3f, frontImage);
         }
         newC.addAction(sa);
         return newC;

@@ -17,6 +17,8 @@ public class GameManager extends Game {
     public static final int screen_height = 1080;
     private String playerName;
     private EntityTarget currentPlayer;
+
+    private int playerSeatNum;
     public FitViewport gameViewPort;
     private Skin skin;
     public static SocketHandler socketHandler;
@@ -55,25 +57,31 @@ public class GameManager extends Game {
         switch (num){
             case 1:
                 this.currentPlayer = EntityTarget.PLAYER_1;
+                this.playerSeatNum = 1;
                 break;
             case 2:
                 this.currentPlayer = EntityTarget.PLAYER_2;
+                this.playerSeatNum = 2;
                 break;
             case 3:
                 this.currentPlayer = EntityTarget.PLAYER_3;
+                this.playerSeatNum = 3;
                 break;
             case 4:
                 this.currentPlayer = EntityTarget.PLAYER_4;
+                this.playerSeatNum = 4;
                 break;
             case 5:
                 this.currentPlayer = EntityTarget.PLAYER_5;
-                break;
-            case 6:
-                this.currentPlayer = EntityTarget.PLAYER_6;
+                this.playerSeatNum = 5;
                 break;
             default:
                 break;
         }
+    }
+
+    public int getPlayerSeatNum(){
+        return this.playerSeatNum;
     }
 
     public Skin getSkin() {

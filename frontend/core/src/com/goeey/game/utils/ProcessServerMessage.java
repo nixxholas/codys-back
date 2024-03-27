@@ -3,18 +3,25 @@ package com.goeey.game.utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.goeey.backend.util.SerializationUtil;
+import com.goeey.game.GameManager;
 import com.goeey.game.screen.GameCreationScreen;
 import com.goeey.game.screen.GameScreen;
+import com.goeey.game.socket.SocketHandler;
 import com.gooey.base.Card;
 import com.gooey.base.socket.ServerEvent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 
 public class ProcessServerMessage {
     //Creating GSON Instance
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static ScreenAdapter gs;
+
+
+
     public static void setGS(ScreenAdapter gs){
         ProcessServerMessage.gs = gs;
     }
@@ -101,6 +108,8 @@ public class ProcessServerMessage {
                 //not implemented yet
                 processPlayerBet(event);
                 break;
+            case BET:
+                break;
             case PLAYER_JOINED:
                 //not implemented yet
                 processPlayerJoined(event);
@@ -118,24 +127,33 @@ public class ProcessServerMessage {
                 processPong(event);
                 break;
             default:
-                System.out.println("" + event.getType() +  " not implemented yet");
+                System.out.println(event.getType() + " not implemented yet.");
         }
     }
 
     private static void processError(ServerEvent<?> event){
         if(event.getMessage().equals("You are already sitting.")){
             System.out.println("SUCCESS!!");
-            GameCreationScreen.playerSat = true;
+            if(gs instanceof  GameCreationScreen gsc){
+                gsc.setPlayerSat(true);
+            }
+            //GameCreationScreen.playerSat = true;
 
         } else if (event.getMessage().equals("Seat is already taken.")) {
             System.out.println("FAILED!!");
-            GameCreationScreen.playerSat = false;
+            if(gs instanceof  GameCreationScreen gsc){
+                gsc.setPlayerSat(false);
+            }
+            //GameCreationScreen.playerSat = false;
         }
     }
 
     private static void processPlayerSat(ServerEvent<?> event){
         System.out.println("SUCCESS!!");
-        GameCreationScreen.playerSat = true;
+        if(gs instanceof  GameCreationScreen gsc){
+            gsc.setPlayerSat(true);
+        }
+        //GameCreationScreen.playerSat = true;
     }
 
     private static void processCountdown(ServerEvent<?> event){
@@ -157,12 +175,18 @@ public class ProcessServerMessage {
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
-            if(gs instanceof GameScreen gs1){
-                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, false));
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "DRAW_" + targetPlayer + "_0",
+                        false,
+                        0));
             }
         }else{
-            if(gs instanceof GameScreen gs1){
-                Gdx.app.postRunnable(() -> gs1.updateUI(null, targetPlayer, false));
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(null,
+                        "DRAW_" + targetPlayer + "_0",
+                        false,
+                        0));
             }
         }
     }
@@ -178,8 +202,11 @@ public class ProcessServerMessage {
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
-            if(gs instanceof GameScreen gs1){
-                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer, true));
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "DRAW_" + targetPlayer + "_0",
+                        true,
+                        0));
             }
         }
     }
@@ -190,18 +217,27 @@ public class ProcessServerMessage {
             // Convert the LinkedHashMap to a JSON string
             String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
-            String targetPlayer2 = String.valueOf(event.getTarget());
+            String targetPlayer = String.valueOf(event.getTarget());
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
-            System.out.println(targetPlayer2);
-            if(gs instanceof GameScreen gs1){
-                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer2, false));
+            System.out.println(targetPlayer);
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "DRAW_" + targetPlayer,
+                        false,
+                        0));
             }
         }
     }
 
     private static void processPlayerTurn(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(gs instanceof  GameScreen gs){
+            Gdx.app.postRunnable(() -> gs.updateUI(null,
+                    "PLAYER_TURN_" + event.getTarget(),
+                    false,
+                    0));
+        }
     }
 
     private static void processConnect(ServerEvent<?> event){
@@ -214,10 +250,32 @@ public class ProcessServerMessage {
 
     private static void processRoomList(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(gs instanceof  GameCreationScreen gcs){
+            String roomsStr = event.getMessage().toString().substring(1,
+                    event.getMessage().toString().length() - 1);
+            System.out.println(roomsStr.isBlank());
+            System.out.println(roomsStr.isEmpty());
+            if(roomsStr.isBlank() || roomsStr.isEmpty()){
+                gcs.setRoomList(null);
+            }else{
+                String[] roomStrArr = roomsStr.split(",");
+                for (int i = 0; i < roomStrArr.length; i++) {
+                    roomStrArr[i] = roomStrArr[i].strip();
+                    System.out.println(roomStrArr[i]);
+                }
+                gcs.setRoomList(roomStrArr);
+            }
+
+            GameManager.socketHandler.getLatch().countDown();
+
+        }
     }
 
     private static void processRoomPlayers(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(gs instanceof GameCreationScreen gsc){
+            gsc.setNumPlayers((int)Double.parseDouble(event.getMessage().toString()));
+        }
     }
 
     private static void processRegistered(ServerEvent<?> event){
@@ -226,6 +284,12 @@ public class ProcessServerMessage {
 
     private static void processUpdate(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(gs instanceof GameScreen gs){
+            Gdx.app.postRunnable(() -> gs.updateUI(null,
+                    "UPDATE",
+                    false,
+                    0));
+        }
     }
 
     private static void processStoodUp(ServerEvent<?> event){
@@ -242,12 +306,12 @@ public class ProcessServerMessage {
             // Convert the LinkedHashMap to a JSON string
             String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
-            String targetPlayer2 = String.valueOf(event.getTarget());
+            String targetPlayer = String.valueOf(event.getTarget());
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
-            System.out.println(targetPlayer2);
-            if(gs instanceof GameScreen gs1){
-                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer2, false));
+            System.out.println(targetPlayer);
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(card, targetPlayer, false, 0));
             }
         }
     }
@@ -258,22 +322,50 @@ public class ProcessServerMessage {
             // Convert the LinkedHashMap to a JSON string
             String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
-            String targetPlayer2 = String.valueOf(event.getTarget());
+            String targetPlayer = String.valueOf(event.getTarget());
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
-            System.out.println(targetPlayer2);
-            if(gs instanceof GameScreen gs1){
-                Gdx.app.postRunnable(() -> gs1.updateUI(card, targetPlayer2, false));
+            System.out.println(targetPlayer);
+            if(gs instanceof GameScreen gs){
+                Gdx.app.postRunnable(() -> gs.updateUI(card, targetPlayer, false, 0));
             }
         }
     }
 
     private static void processPlayerWin(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        String message = event.getMessage().toString();
+        JsonObject messageObject = JsonParser.parseString(message).getAsJsonObject();
+        double balance = messageObject.getAsJsonPrimitive("balance").getAsDouble();
+        double earnings = messageObject.getAsJsonPrimitive("earnings").getAsDouble();
+        System.out.println("Balance: " + balance);
+        System.out.println("Earnings: " + earnings);
+        if(gs instanceof GameScreen gs){
+            //PLAYER_LOSE_PLAYER_1
+            Gdx.app.postRunnable(() -> gs.updateUI(null,
+                    event.getType().toString() +
+                            "_" + event.getTarget(),
+                    false,
+                    (int)balance));
+        }
+
     }
 
     private static void processPlayerLose(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        String message = event.getMessage().toString();
+        JsonObject messageObject = JsonParser.parseString(message).getAsJsonObject();
+        double balance = messageObject.getAsJsonPrimitive("balance").getAsDouble();
+        double earnings = messageObject.getAsJsonPrimitive("earnings").getAsDouble();
+        System.out.println("Balance: " + balance);
+        System.out.println("Earnings: " + earnings);
+        if(gs instanceof GameScreen gs){
+            Gdx.app.postRunnable(() -> gs.updateUI(null,
+                    event.getType().toString() +
+                            "_" + event.getTarget(),
+                    false,
+                    (int)balance));
+        }
     }
 
     private static void processPlayerPush(ServerEvent<?> event){
@@ -286,6 +378,12 @@ public class ProcessServerMessage {
 
     private static void processPlayerStand(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(gs instanceof  GameScreen gs){
+            Gdx.app.postRunnable(() -> gs.updateUI(null,
+                    "PLAYER_STAND_" + event.getTarget(),
+                    false,
+                    0));
+        }
     }
 
     private static void processPlayerBet(ServerEvent<?> event){

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -32,6 +33,7 @@ import java.io.InvalidObjectException;
 import java.lang.annotation.Target;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class GameScreen extends ScreenAdapter {
     final GameManager game;
@@ -46,9 +48,20 @@ public class GameScreen extends ScreenAdapter {
     private int scrWidth = Gdx.graphics.getWidth();
     private int scrHeight= Gdx.graphics.getHeight();
     private static Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
-    private SocketHandler socketHandler;
-    private Boolean gameStarted = false;
 
+    private boolean gameRunning = false;
+
+    private TextButton hitButton;
+
+    private TextButton standButton;
+
+    private TextButton betButton;
+
+    private TextButton doubleDownButton;
+
+    private Label lblAmt;
+
+    private int playerAmt = 1000;
 
     public Table createButtonsNLabels(Skin skin, int posX, int posY, String entity, boolean isCurrentPlayer) {
         //Create table
@@ -56,18 +69,18 @@ public class GameScreen extends ScreenAdapter {
         buttonContainer.setTransform(true);
 
         //Player Name
-        Label lbName = new Label(entity, skin);
-        lbName.setFontScale(1);
+        Label lblName = new Label(entity, skin);
+        lblName.setFontScale(1);
 
         if(isCurrentPlayer){
-            lbName.setColor(Color.YELLOW);
+            lblName.setColor(Color.YELLOW);
             //Player Amount
-            Label lblAmt = new Label("Amount: $1000", skin);
+            lblAmt = new Label("Amount: $1000", skin);
             lblAmt.setFontScale(1);
             lblAmt.setColor(Color.YELLOW);
 
             //Hit Button
-            TextButton hitButton = new TextButton("Hit", skin);
+            hitButton = new TextButton("Hit", skin);
             hitButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
@@ -79,7 +92,7 @@ public class GameScreen extends ScreenAdapter {
             });
 
             //Stand Button
-            TextButton standButton = new TextButton("Stand", skin);
+            standButton = new TextButton("Stand", skin);
             standButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!standButton.isDisabled()){
@@ -91,7 +104,7 @@ public class GameScreen extends ScreenAdapter {
             });
 
             //Double Down Button
-            TextButton doubleDownButton = new TextButton("Double Down", skin);
+            doubleDownButton = new TextButton("Double Down", skin);
             doubleDownButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!doubleDownButton.isDisabled()){
@@ -103,15 +116,12 @@ public class GameScreen extends ScreenAdapter {
             });
 
             //Bet Button
-            TextButton betButton = new TextButton("Bet", skin);
+            betButton = new TextButton("Bet", skin);
             betButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!betButton.isDisabled()){
                         System.out.println("Clicked Bet!!");
-                        startGame();
-                        hitButton.setDisabled(false);
-                        standButton.setDisabled(false);
-                        doubleDownButton.setDisabled(false);
+                        GameManager.socketHandler.bet(game.getPlayerName(), 10.0);
                         betButton.setDisabled(true);
                     }
                 }
@@ -122,15 +132,34 @@ public class GameScreen extends ScreenAdapter {
             doubleDownButton.setDisabled(true);
             betButton.setDisabled(false);
 
-            buttonContainer.add(lbName);
+            float buttonWidth = 110f;
+            float buttonHeight = 40f;
+
+            hitButton.setWidth(buttonWidth);
+            hitButton.setHeight(buttonHeight);
+
+            standButton.setWidth(buttonWidth);
+            standButton.setHeight(buttonHeight);
+
+            doubleDownButton.setWidth(buttonWidth);
+            doubleDownButton.setHeight(buttonHeight);
+
+            betButton.setWidth(buttonWidth);
+            betButton.setHeight(buttonHeight);
+
+            buttonContainer.add(lblName);
             buttonContainer.add(lblAmt).padLeft(5);
-            buttonContainer.row().width(150).height(40);
-            buttonContainer.add(hitButton).padTop(10);
-            buttonContainer.add(standButton).padTop(10);
-            buttonContainer.add(doubleDownButton).padTop(10);
-            buttonContainer.add(betButton).padTop(10);
+            buttonContainer.row().width(110).height(30);
+            buttonContainer.add(hitButton).padTop(3).left();
+            buttonContainer.add(standButton).padTop(3).right();
+            buttonContainer.row().width(110).height(30);
+            buttonContainer.add(doubleDownButton).padTop(3).left();
+            buttonContainer.add(betButton).padTop(3).right();
+
+
+
         }else{
-            buttonContainer.add(lbName);
+            buttonContainer.add(lblName);
         }
 
         //buttonContainer.setOrigin(50, 25);
@@ -177,11 +206,19 @@ public class GameScreen extends ScreenAdapter {
 
                 //Check if value equals to seatNumber and set isCurrentPlayer to true
                 //Create player name tag for each player position
+                // X position is fixed for all players
+                // Y position differs for the current players to create room for UI elements
+                // Username will be generated of Current player whereas
+                // for other player it would be just PLAYER_(SEAT NUMBER)
                 stage.addActor(createButtonsNLabels(
-                        skin, xy.getPlayerX(),
-                        xy.getPlayerY() + cHeight + 40,
-                         mapElement.getKey() == game.getPlayerEntityType() ? game.getPlayerName() : name,
-                        mapElement.getKey() == game.getPlayerEntityType()));
+                        skin,
+                        xy.getPlayerX(),
+                        mapElement.getKey() == game.getPlayerEntityType() ?
+                                xy.getPlayerY() + cHeight + 50 : xy.getPlayerY() + cHeight + 20,
+                        mapElement.getKey() == game.getPlayerEntityType() ?
+                                game.getPlayerName() : name,
+                        mapElement.getKey() == game.getPlayerEntityType())
+                );
             }
         }
 
@@ -221,10 +258,12 @@ public class GameScreen extends ScreenAdapter {
         return CardAnimation.dealCards(count, x, y, card);
     }
 
-    public void updateUI(Card c, String target, boolean dealerReveal){
+    public void updateUI(Card c, String eventType, boolean dealerReveal, int amount){
         String cardName;
-        switch (target) {
-            case "DEALER":
+        int seatNum = eventType.charAt(eventType.length() - 1) - '0';
+
+        switch (eventType) {
+            case "DRAW_DEALER_0":
                 if (dealerReveal) {
                     cardName = c.getRank() + "_" + c.getSuit();
                     Texture cardBack = new Texture("cards/BACK_CARD.png");
@@ -236,44 +275,92 @@ public class GameScreen extends ScreenAdapter {
                     dReveal.setPosition(x, y);
                     stage.addActor(dReveal);
                 } else {
-                    if (c != null) {
-                        cardName = c.getRank() + "_" + c.getSuit();
-                    } else {
-                        cardName = "BACK_CARD";
-                    }
+                    cardName =  (c == null) ? "BACK_CARD": c.getRank() + "_" + c.getSuit();
                     stage.addActor(deal(EntityTarget.DEALER, cardName));
                 }
                 break;
-            case "PLAYER_1":
+
+            case "DRAW_PLAYER_1":
+                disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_1, cardName));
                 break;
-            case "PLAYER_2":
+
+            case "DRAW_PLAYER_2":
+                disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_2, cardName));
                 break;
-            case "PLAYER_3":
+
+            case "DRAW_PLAYER_3":
+                disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_3, cardName));
                 break;
-            case "PLAYER_4":
+
+            case "DRAW_PLAYER_4":
+                disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_4, cardName));
                 break;
-            case "PLAYER_5":
+
+            case "DRAW_PLAYER_5":
+                disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_5, cardName));
+                break;
+
+            case "PLAYER_TURN_PLAYER_1", "PLAYER_TURN_PLAYER_2", "PLAYER_TURN_PLAYER_3",
+                    "PLAYER_TURN_PLAYER_4", "PLAYER_TURN_PLAYER_5":
+                if(seatNum == game.getPlayerSeatNum())
+                    enableButtons();
+                break;
+
+            case "PLAYER_STAND_PLAYER_1", "PLAYER_STAND_PLAYER_2", "PLAYER_STAND_PLAYER_3",
+                    "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5":
+                if(seatNum == game.getPlayerSeatNum())
+                    disableButtons();
+                break;
+            case "PLAYER_LOSE_PLAYER_1", "PLAYER_LOSE_PLAYER_2", "PLAYER_LOSE_PLAYER_3",
+                    "PLAYER_LOSE_PLAYER_4", "PLAYER_LOSE_PLAYER_5", "PLAYER_WIN_PLAYER_1",
+                    "PLAYER_WIN_PLAYER_2", "PLAYER_WIN_PLAYER_3", "PLAYER_WIN_PLAYER_4",
+                    "PLAYER_WIN_PLAYER_5":
+                if(seatNum == game.getPlayerSeatNum()){
+                    this.playerAmt = amount;
+                }
+                break;
+            case "COUNTDOWN":
+                break;
+            case "UPDATE":
+                this.lblAmt.setText("Amount: $" + this.playerAmt);
                 break;
             default:
                 // Handle the default case if needed
                 break;
         }
     }
+    private void enableButtons(){
+        //betButton.setDisabled(false);
+        hitButton.setDisabled(false);
+        standButton.setDisabled(false);
+        doubleDownButton.setDisabled(false);
+    }
+
+
+    private void disableButtons(){
+        //betButton.setDisabled(true);
+        hitButton.setDisabled(true);
+        standButton.setDisabled(true);
+        doubleDownButton.setDisabled(true);
+    }
+
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0.3f, 0, 1);
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
+
+
 
         stage.act(delta);
         stage.draw();

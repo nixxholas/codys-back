@@ -1,5 +1,6 @@
 package com.goeey.game.screen;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -12,6 +13,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
 import com.goeey.game.utils.ProcessServerMessage;
 
+import java.util.Arrays;
+
 public class GameCreationScreen extends ScreenAdapter {
     private final GameManager game;
     private Stage stage;
@@ -20,7 +23,12 @@ public class GameCreationScreen extends ScreenAdapter {
     private TextField nameTextfield;
     private Skin skin;
 
-    public static boolean playerSat = false;
+    private String[] roomsList;
+
+    private boolean playerSat = false;
+
+    public int numPlayers = 0;
+
 
     private boolean isConnected;
 
@@ -28,6 +36,20 @@ public class GameCreationScreen extends ScreenAdapter {
         this.game = game;
         this.skin = game.getSkin();
         ProcessServerMessage.setGS(this);
+    }
+
+    public void setRoomList(String[] roomsList) {
+        if(roomsList != null){
+            this.roomsList  = Arrays.copyOf(roomsList, roomsList.length);
+        }
+    }
+
+    public  void setPlayerSat(boolean playerSat) {
+        this.playerSat = playerSat;
+    }
+
+    public void setNumPlayers(int numPlayers) {
+        this.numPlayers = numPlayers;
     }
 
     public Table uiTableFactory() {
@@ -42,38 +64,73 @@ public class GameCreationScreen extends ScreenAdapter {
         TextButton startButton = new TextButton("Start Game", skin);
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                int seatNum = 0;
                 game.setPlayerName(nameTextfield.getText());
 
                 //Registering Player to Server
-                GameManager.socketHandler.register(game.getPlayerName());
+                try{
+                    GameManager.socketHandler.resetLatch(1);
+                    GameManager.socketHandler.register(game.getPlayerName());
+                    GameManager.socketHandler.awaitPlayer();
+                }catch (InterruptedException ex){
+                    ex.printStackTrace();
+                }
 
                 //Connecting Player to Server
-                GameManager.socketHandler.connect(game.getPlayerName());
+                try{
+                    GameManager.socketHandler.resetLatch(1);
+                    GameManager.socketHandler.connect(game.getPlayerName());
+                    GameManager.socketHandler.awaitPlayer();
+                }catch (InterruptedException ex){
+                    ex.printStackTrace();
+                }
 
                 //Player Creating & Joining a Room
-                GameManager.socketHandler.createAndJoin(game.getPlayerName());
+                //GameManager.socketHandler.createAndJoin(game.getPlayerName());
 
-                do {
-                    try{
-                        GameManager.socketHandler.resetLatch(1);
-                        GameManager.socketHandler.sit(game.getPlayerName(), ++seatNum);
-                        GameManager.socketHandler.awaitPlayer();
-                    }catch (InterruptedException ex){
-                        ex.printStackTrace();
+                try {
+                    //Getting all Rooms from Backend
+                    GameManager.socketHandler.resetLatch(1);
+                    GameManager.socketHandler.listRooms(game.getPlayerName());
+                    GameManager.socketHandler.awaitPlayer();
+
+                    //Checking if Rooms are Empty Or Else Loop Through Them and Get Counts
+                    if(roomsList == null || roomsList.length == 0){
+                        System.out.println("ROOMS NULL");
+                        GameManager.socketHandler.createAndJoin(game.getPlayerName());
+                        GameManager.socketHandler.sit(game.getPlayerName(), 1);
+                        game.setEntityType(1);
+                    }else{
+                        System.out.println("ROOMS NOT NULL");
+                        System.out.println(Arrays.toString(roomsList));
+                        for (int i = 0; i < roomsList.length; i++) {
+                            System.out.println(roomsList[i]);
+
+                            //For now let all players join one room
+                            GameManager.socketHandler.resetLatch(1);
+                            GameManager.socketHandler.joinRoom(game.getPlayerName(), roomsList[i]);
+                            GameManager.socketHandler.awaitPlayer();
+
+
+                            //find the available seat for each player in the room
+                            int seatNum = 0;
+                            do {
+                                try{
+                                    GameManager.socketHandler.resetLatch(1);
+                                    GameManager.socketHandler.sit(game.getPlayerName(), ++seatNum);
+                                    GameManager.socketHandler.awaitPlayer();
+                                }catch (InterruptedException ex){
+                                    ex.printStackTrace();
+                                }
+                            }while (!playerSat);
+                            game.setEntityType(seatNum);
+
+                        }
                     }
-//                    try {
-//                        Thread.sleep(500);
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-
-                }while (!playerSat);
-
-
-                System.out.println(seatNum);
-                game.setEntityType(seatNum);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
                 game.setScreen(new GameScreen(game));
+
 
             }
 

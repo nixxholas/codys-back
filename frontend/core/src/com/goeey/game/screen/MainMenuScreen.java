@@ -11,10 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
-import com.goeey.game.socket.SocketHandler;
 import org.java_websocket.enums.ReadyState;
-
-import java.net.Socket;
 
 public class MainMenuScreen extends ScreenAdapter {
     private final GameManager game;
