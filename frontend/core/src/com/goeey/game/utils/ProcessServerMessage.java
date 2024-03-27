@@ -49,7 +49,6 @@ public class ProcessServerMessage {
                 processPlayerDraw(event);
                 break;
             case PLAYER_TURN:
-                //not implemented yet
                 processPlayerTurn(event);
                 break;
             case CONNECT:
@@ -72,7 +71,6 @@ public class ProcessServerMessage {
                 processRegistered(event);
                 break;
             case UPDATE:
-                //not implemented yet
                 processUpdate(event);
                 break;
             case STOOD_UP:
