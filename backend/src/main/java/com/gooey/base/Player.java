@@ -168,7 +168,7 @@ public class Player extends BasePlayer {
     public int loseBet() {
         int loss = currentBet;
         this.currentBet = 0; // Loss already accounted for when bet was placed
-        this.balance -= loss;
+        // this.balance -= loss; // Balance is already deducted at the start.
         return loss;
     }
 
