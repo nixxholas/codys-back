@@ -62,7 +62,6 @@ public class ProcessServerMessage {
                 processRoomPlayers(event);
                 break;
             case REGISTERED:
-                //not implemented yet
                 processRegistered(event);
                 break;
             case UPDATE:
@@ -84,23 +83,18 @@ public class ProcessServerMessage {
                 processPlayerDouble(event);
                 break;
             case PLAYER_WIN:
-                //not implemented yet
                 processPlayerWin(event);
                 break;
             case PLAYER_LOSE:
-                //not implemented yet
                 processPlayerLose(event);
                 break;
             case PLAYER_PUSH:
-                //not implemented yet
                 processPlayerPush(event);
                 break;
             case PLAYER_BUST:
-                //not implemented yet
                 processPlayerBust(event);
                 break;
             case PLAYER_STAND:
-                //not implemented yet
                 processPlayerStand(event);
                 break;
             case PLAYER_BET:
@@ -158,7 +152,7 @@ public class ProcessServerMessage {
         String targetPlayer = String.valueOf(event.getTarget());
         if(event.getMessage() != null){
             // Convert the LinkedHashMap to a JSON string
-            String jsonString =  gson.toJson(event.getMessage());
+            String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
@@ -179,7 +173,7 @@ public class ProcessServerMessage {
         String targetPlayer = String.valueOf(event.getTarget());
         if(event.getMessage() != null && event.getTarget() != null){
             // Convert the LinkedHashMap to a JSON string
-            String jsonString =  gson.toJson(event.getMessage());
+            String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
             System.out.println(card.getRank());
             System.out.println(card.getSuit());
@@ -194,7 +188,7 @@ public class ProcessServerMessage {
         System.out.println(event.getMessage());
         if(event.getMessage() != null){
             // Convert the LinkedHashMap to a JSON string
-            String jsonString =  gson.toJson(event.getMessage());
+            String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
             String targetPlayer2 = String.valueOf(event.getTarget());
             System.out.println(card.getRank());
@@ -246,7 +240,7 @@ public class ProcessServerMessage {
         System.out.println(event.getMessage());
         if(event.getMessage() != null){
             // Convert the LinkedHashMap to a JSON string
-            String jsonString =  gson.toJson(event.getMessage());
+            String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
             String targetPlayer2 = String.valueOf(event.getTarget());
             System.out.println(card.getRank());
@@ -262,7 +256,7 @@ public class ProcessServerMessage {
         System.out.println(event.getMessage());
         if(event.getMessage() != null){
             // Convert the LinkedHashMap to a JSON string
-            String jsonString =  gson.toJson(event.getMessage());
+            String jsonString = gson.toJson(event.getMessage());
             Card card = SerializationUtil.deserializeString(jsonString, Card.class);
             String targetPlayer2 = String.valueOf(event.getTarget());
             System.out.println(card.getRank());
