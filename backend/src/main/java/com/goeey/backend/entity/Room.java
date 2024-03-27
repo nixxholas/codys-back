@@ -366,6 +366,11 @@ public class Room {
         if (!player.isStanding()) {
             card = deck.remove(0);
             player.addCard(card);
+
+            // Broadcast the card to all players
+            ServerEvent<Card> cardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DRAW, card, getEntityTarget(player.getId()));
+            broadcastSink.tryEmitNext(cardEvent);
+
             // Check if the player busts
             if (player.calculateHandValue() > 21) {
                 player.setStanding(false); // Player busts
