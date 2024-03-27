@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -31,6 +32,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.enums.ReadyState;
 import java.io.InvalidObjectException;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -49,6 +51,9 @@ public class GameScreen extends ScreenAdapter {
     private int scrHeight= Gdx.graphics.getHeight();
     private static Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
 
+    private Label gameStateLabel;
+    private ArrayList<Label> actionsLabelList = new ArrayList<>();
+    private Table actionsTable;
     private boolean gameRunning = false;
 
     private TextButton hitButton;
@@ -202,6 +207,8 @@ public class GameScreen extends ScreenAdapter {
                 );
             }
         }
+        // Display Game State
+        createGameState();
 
     }
 
@@ -310,6 +317,72 @@ public class GameScreen extends ScreenAdapter {
         doubleDownButton.setDisabled(true);
     }
 
+    public void createGameState(){
+        // Create label for the message
+        gameStateLabel = new Label("Place bet to start game", skin);
+        Table table = new Table(skin);
+
+        table.setBackground("default-pane");
+        // Add padding around the text for the box effect
+        table.add(gameStateLabel).pad(10);
+
+        // Increase font size
+        //gameStateLabel.setFontScale(1.5f);
+
+        // Position the table at the bottom of the screen
+        table.top().right();
+        table.setPosition(scrWidth -table.getPrefWidth(), scrHeight - table.getPrefHeight());
+
+        // Add the table to the stage for rendering
+        stage.addActor(table);
+
+    }
+
+    public void updateGameState(String message) {
+        gameStateLabel.setText(message);
+    }
+    public void displayActions(String text) {
+        float slideDistance = 20;
+        Label label = new Label(text, skin);
+        actionsLabelList.add(label);
+
+        // Create or initialize table if it's null
+        if (actionsTable == null) {
+            actionsTable = new Table(skin);
+            actionsTable.setBackground("default-pane");
+            actionsTable.setPosition((float) (scrWidth / 2.25), (float) scrHeight / 7);
+            actionsTable.setWidth(stage.getWidth());
+            stage.addActor(actionsTable);
+        }
+
+        // Add the new label to the table
+        actionsTable.add(label).pad(10).row();
+
+        // Limit the number of labels to 3
+        if (actionsLabelList.size() > 3) {
+            // Remove the oldest label from both table and labelList
+            Label oldestLabel = actionsLabelList.remove(0);
+            oldestLabel.remove();
+            // Shift the remaining labels up
+            actionsTable.getCell(actionsTable.getChildren().first()).setActor(label);
+        }
+
+        // Apply fade out and slide up animation to the new label
+        label.addAction(Actions.sequence(
+                Actions.alpha(0),
+                Actions.delay(1),
+                Actions.parallel(
+                        Actions.fadeIn(1),
+                        Actions.moveBy(0, slideDistance, 1)
+                ),
+                Actions.delay(2),
+                Actions.fadeOut(1),
+                Actions.run(() -> {
+                    actionsLabelList.remove(label);
+                    label.remove();
+                })
+        ));
+    }
 
     @Override
     public void render(float delta) {

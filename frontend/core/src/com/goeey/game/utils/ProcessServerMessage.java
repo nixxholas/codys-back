@@ -156,10 +156,17 @@ public class ProcessServerMessage {
 
     private static void processCountdown(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(gs instanceof GameScreen gs1){
+            Gdx.app.postRunnable(() -> gs1.updateGameState("Countdown: " + event.getMessage()));
+        }
+
     }
 
     private static void processDeal(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        if(gs instanceof GameScreen gs1){
+            Gdx.app.postRunnable(() -> gs1.updateGameState("Game has started"));
+        }
     }
 
     private static void processDealerDraw(ServerEvent<?> event){
@@ -178,6 +185,7 @@ public class ProcessServerMessage {
                         "DRAW_" + targetPlayer + "_0",
                         false,
                         0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }else{
             if(gs instanceof GameScreen gs){
@@ -185,6 +193,7 @@ public class ProcessServerMessage {
                         "DRAW_" + targetPlayer + "_0",
                         false,
                         0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }
     }
@@ -205,6 +214,7 @@ public class ProcessServerMessage {
                         "DRAW_" + targetPlayer + "_0",
                         true,
                         0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }
     }
@@ -224,6 +234,7 @@ public class ProcessServerMessage {
                         "DRAW_" + targetPlayer,
                         false,
                         0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }
     }
