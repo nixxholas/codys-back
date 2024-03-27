@@ -64,30 +64,21 @@ public class GameCreationScreen extends ScreenAdapter {
         TextButton startButton = new TextButton("Start Game", skin);
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+
+                //Setting player username
                 game.setPlayerName(nameTextfield.getText());
 
-                //Registering Player to Server
                 try{
+                    //Registering Player to Server
                     GameManager.socketHandler.resetLatch(1);
                     GameManager.socketHandler.register(game.getPlayerName());
                     GameManager.socketHandler.awaitPlayer();
-                }catch (InterruptedException ex){
-                    ex.printStackTrace();
-                }
 
-                //Connecting Player to Server
-                try{
+                    //Connecting Player to Server
                     GameManager.socketHandler.resetLatch(1);
                     GameManager.socketHandler.connect(game.getPlayerName());
                     GameManager.socketHandler.awaitPlayer();
-                }catch (InterruptedException ex){
-                    ex.printStackTrace();
-                }
 
-                //Player Creating & Joining a Room
-                //GameManager.socketHandler.createAndJoin(game.getPlayerName());
-
-                try {
                     //Getting all Rooms from Backend
                     GameManager.socketHandler.resetLatch(1);
                     GameManager.socketHandler.listRooms(game.getPlayerName());
@@ -114,24 +105,17 @@ public class GameCreationScreen extends ScreenAdapter {
                             //find the available seat for each player in the room
                             int seatNum = 0;
                             do {
-                                try{
-                                    GameManager.socketHandler.resetLatch(1);
-                                    GameManager.socketHandler.sit(game.getPlayerName(), ++seatNum);
-                                    GameManager.socketHandler.awaitPlayer();
-                                }catch (InterruptedException ex){
-                                    ex.printStackTrace();
-                                }
+                                GameManager.socketHandler.resetLatch(1);
+                                GameManager.socketHandler.sit(game.getPlayerName(), ++seatNum);
+                                GameManager.socketHandler.awaitPlayer();
                             }while (!playerSat);
                             game.setEntityType(seatNum);
-
                         }
                     }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                }catch (InterruptedException ex){
+                    ex.printStackTrace();
                 }
                 game.setScreen(new GameScreen(game));
-
-
             }
 
         });

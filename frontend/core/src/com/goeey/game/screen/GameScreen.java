@@ -84,7 +84,6 @@ public class GameScreen extends ScreenAdapter {
             hitButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
-                        System.out.println("Clicked Hit!!");
                         GameManager.socketHandler.hit(game.getPlayerName(), 1);
                         hitButton.setDisabled(true);
                     }
@@ -96,7 +95,6 @@ public class GameScreen extends ScreenAdapter {
             standButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!standButton.isDisabled()){
-                        System.out.println("Clicked Stand!!");
                         GameManager.socketHandler.stand(game.getPlayerName(), 1);
                         standButton.setDisabled(true);
                     }
@@ -108,7 +106,6 @@ public class GameScreen extends ScreenAdapter {
             doubleDownButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!doubleDownButton.isDisabled()){
-                        System.out.println("Clicked Double Down!!");
                         GameManager.socketHandler.doubleDown(game.getPlayerName(), 1.0);
                         doubleDownButton.setDisabled(true);
                     }
@@ -120,7 +117,6 @@ public class GameScreen extends ScreenAdapter {
             betButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!betButton.isDisabled()){
-                        System.out.println("Clicked Bet!!");
                         GameManager.socketHandler.bet(game.getPlayerName(), 10.0);
                         betButton.setDisabled(true);
                     }
@@ -131,21 +127,6 @@ public class GameScreen extends ScreenAdapter {
             standButton.setDisabled(true);
             doubleDownButton.setDisabled(true);
             betButton.setDisabled(false);
-
-            float buttonWidth = 110f;
-            float buttonHeight = 40f;
-
-            hitButton.setWidth(buttonWidth);
-            hitButton.setHeight(buttonHeight);
-
-            standButton.setWidth(buttonWidth);
-            standButton.setHeight(buttonHeight);
-
-            doubleDownButton.setWidth(buttonWidth);
-            doubleDownButton.setHeight(buttonHeight);
-
-            betButton.setWidth(buttonWidth);
-            betButton.setHeight(buttonHeight);
 
             buttonContainer.add(lblName);
             buttonContainer.add(lblAmt).padLeft(5);
@@ -222,31 +203,6 @@ public class GameScreen extends ScreenAdapter {
             }
         }
 
-        // single line code to deal card to players
-//        stage.addActor(deal(EntityTarget.DEALER, "TWO_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.DEALER, "THREE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.DEALER, "KING_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.DEALER, "QUEEN_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.DEALER, "ACE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.DEALER, "THREE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.DEALER, "KING_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.DEALER, "QUEEN_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_1, "THREE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_1, "KING_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_1, "QUEEN_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_1, "ACE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_1, "THREE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_1, "KING_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_1, "QUEEN_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_2, "KING_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_2, "QUEEN_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_2, "THREE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_2, "KING_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_2, "QUEEN_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_3, "QUEEN_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_4, "THREE_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_5, "KING_DIAMONDS"));
-//        stage.addActor(deal(EntityTarget.PLAYER_5, "QUEEN_DIAMONDS"));
     }
 
     public static Actor deal(EntityTarget entity, String card){
@@ -359,8 +315,6 @@ public class GameScreen extends ScreenAdapter {
     public void render(float delta) {
         ScreenUtils.clear(0, 0.3f, 0, 1);
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
-
-
 
         stage.act(delta);
         stage.draw();
