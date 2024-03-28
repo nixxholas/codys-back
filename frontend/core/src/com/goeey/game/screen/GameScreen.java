@@ -164,7 +164,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             buttonContainer.add(lblName);
         }
 
-        //buttonContainer.setOrigin(50, 25);
 
         buttonContainer.setPosition(posX, posY);
         return buttonContainer;
@@ -180,7 +179,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
         stage = new Stage();
         stage.setViewport(game.gameViewPort);
-        //hud = new Hud(game.batch, 65000, game.getPlayerName(), skin);
 
         Gdx.input.setInputProcessor(stage);
 
@@ -389,7 +387,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
         // Position the table at the bottom of the screen
         table.top().right();
-        table.setPosition(scrWidth -table.getPrefWidth(), scrHeight - table.getPrefHeight());
+        table.setPosition(scrWidth - table.getPrefWidth(), scrHeight - table.getPrefHeight());
 
         // Add the table to the stage for rendering
         stage.addActor(table);
@@ -470,12 +468,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
         stage.act(delta);
         stage.draw();
-
-        /*
-         *   1. Render the HUD details
-         *   2. TODO update the balance on the HUD as it changes
-         * */
-        //hud.hudStage.draw();
     }
 
 
@@ -514,6 +506,5 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         backImage.dispose();
         frontImage.dispose();
         stage.dispose();
-        //hud.dispose();
     }
 }

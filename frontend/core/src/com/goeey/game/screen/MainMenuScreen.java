@@ -54,7 +54,7 @@ public class MainMenuScreen extends ScreenAdapter {
 
     public void show() {
         stage = new Stage();
-        stage.setViewport(game.gameViewPort); // can i public static final this?
+        stage.setViewport(game.gameViewPort);
         Gdx.input.setInputProcessor(stage);
 
         stage.addActor(uiTableFactory());
