@@ -93,7 +93,7 @@ public class GameManager extends Game {
 
         //Handle the case where user abruptly closes the window
         //Check if player is still seated and remove them from the seat
-        if(!GameScreen.playerLeaveSeat){
+        if(GameScreen.playerSitting){
             if(GameManager.socketHandler.getWebSocket().isOpen()){
                 System.out.println("HELLO PLAYER STANDING");
                 try {
@@ -104,26 +104,25 @@ public class GameManager extends Game {
                     throw new RuntimeException(e);
                 }
                 System.out.println("PLAYER STOOD UP");
-                GameScreen.playerLeaveSeat = true;
+                GameScreen.playerSitting = false;
             }
         }
 
         //Check if player is still in the room and remove them from the room
-        if(!GameScreen.playerExitRoom){
-            if(GameManager.socketHandler.getWebSocket().isOpen()){
-                System.out.println("HELLO PLAYER LEAVING");
-                try {
-                    GameManager.socketHandler.resetLatch(1);
-                    GameManager.socketHandler.leaveroom(getPlayerName());
-                    GameManager.socketHandler.awaitPlayer();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                System.out.println("PLAYER LEFT");
-                GameScreen.playerExitRoom = true;
-            }
-        }
-
+//        if(GameScreen.playerInRoom){
+//            if(GameManager.socketHandler.getWebSocket().isOpen()){
+//                System.out.println("HELLO PLAYER LEAVING");
+//                try {
+//                    GameManager.socketHandler.resetLatch(1);
+//                    GameManager.socketHandler.leaveroom(getPlayerName());
+//                    GameManager.socketHandler.awaitPlayer();
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                System.out.println("PLAYER LEFT");
+//                GameScreen.playerInRoom = false;
+//            }
+//        }
         isDisposed = true;
         socketHandler.closeWebSocket();
     }
