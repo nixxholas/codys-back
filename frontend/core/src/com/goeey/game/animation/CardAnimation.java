@@ -72,5 +72,4 @@ public class CardAnimation extends Actor {
     public void draw(Batch batch, float parentAlpha) {
         batch.draw(texture, getX(), getY(), getOriginX(), getOriginY(), getWidth(), getHeight(), getScaleX(), getScaleY(), getRotation(), 0, 0, texture.getWidth(), texture.getHeight(), false, false);
     }
-
 }

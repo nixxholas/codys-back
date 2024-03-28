@@ -64,52 +64,39 @@ public class GameCreationScreen extends ScreenAdapter {
                 //Setting player username
                 game.setPlayerName(nameTextfield.getText());
 
-                try{
-                    //Registering Player to Server
-                    GameManager.socketHandler.resetLatch(1);
-                    GameManager.socketHandler.register(game.getPlayerName());
-                    GameManager.socketHandler.awaitPlayer();
+                //Registering Player to Server
+                GameManager.socketHandler.register(game.getPlayerName());
 
-                    //Connecting Player to Server
-                    GameManager.socketHandler.resetLatch(1);
-                    GameManager.socketHandler.connect(game.getPlayerName());
-                    GameManager.socketHandler.awaitPlayer();
+                //Connecting Player to Server
+                GameManager.socketHandler.connect(game.getPlayerName());
 
-                    //Getting all Rooms from Backend
-                    GameManager.socketHandler.resetLatch(1);
-                    GameManager.socketHandler.listRooms(game.getPlayerName());
-                    GameManager.socketHandler.awaitPlayer();
+                //Getting all Rooms from Backend
+                GameManager.socketHandler.listRooms(game.getPlayerName());
 
-                    //Checking if Rooms are Empty Or Else Loop Through Them and Get Counts
-                    if(roomsList == null || roomsList.length == 0){
-                        System.out.println("ROOMS NULL");
-                        GameManager.socketHandler.createAndJoin(game.getPlayerName());
-                        GameManager.socketHandler.sit(game.getPlayerName(), 1);
-                        game.setEntityType(1);
-                    }else{
-                        System.out.println("ROOMS NOT NULL");
-                        System.out.println(Arrays.toString(roomsList));
-                        for (int i = 0; i < roomsList.length; i++) {
-                            System.out.println(roomsList[i]);
+                //Checking if Rooms are Empty Or Else Loop Through Them and Get Counts
+                if(roomsList == null || roomsList.length == 0){
+                    System.out.println("ROOMS NULL");
+                    GameManager.socketHandler.createAndJoin(game.getPlayerName());
+                    GameManager.socketHandler.sit(game.getPlayerName(), 1);
+                    game.setEntityType(1);
+                }else{
+                    System.out.println("ROOMS NOT NULL");
+                    System.out.println(Arrays.toString(roomsList));
+                    for (int i = 0; i < roomsList.length; i++) {
+                        System.out.println(roomsList[i]);
 
-                            //For now let all players join one room
-                            GameManager.socketHandler.resetLatch(1);
-                            GameManager.socketHandler.joinRoom(game.getPlayerName(), roomsList[i]);
-                            GameManager.socketHandler.awaitPlayer();
+                        //For now let all players join one room
+                        GameManager.socketHandler.joinRoom(game.getPlayerName(), roomsList[i]);
 
-                            //find the available seat for each player in the room
-                            int seatNum = 0;
-                            do {
-                                GameManager.socketHandler.resetLatch(1);
-                                GameManager.socketHandler.sit(game.getPlayerName(), ++seatNum);
-                                GameManager.socketHandler.awaitPlayer();
-                            }while (!playerSat);
-                            game.setEntityType(seatNum);
-                        }
+                        //find the available seat for each player in the room
+                        int seatNum = 0;
+                        do {
+                            GameManager.socketHandler.sit(game.getPlayerName(), ++seatNum);
+                        }while (!playerSat);
+                        game.setEntityType(seatNum);
                     }
-                }catch (InterruptedException ex){
-                    ex.printStackTrace();
                 }
+
                 GameScreen.playerInRoom = true;
                 GameScreen.playerSitting = true;
                 game.setScreen(new GameScreen(game, 1000));
