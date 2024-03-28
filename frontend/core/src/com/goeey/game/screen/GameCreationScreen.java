@@ -28,8 +28,6 @@ public class GameCreationScreen extends ScreenAdapter {
     public int numPlayers = 0;
 
 
-    private boolean isConnected;
-
     public GameCreationScreen (GameManager game) {
         this.game = game;
         this.skin = game.getSkin();
@@ -99,7 +97,6 @@ public class GameCreationScreen extends ScreenAdapter {
                             GameManager.socketHandler.joinRoom(game.getPlayerName(), roomsList[i]);
                             GameManager.socketHandler.awaitPlayer();
 
-
                             //find the available seat for each player in the room
                             int seatNum = 0;
                             do {
@@ -113,6 +110,8 @@ public class GameCreationScreen extends ScreenAdapter {
                 }catch (InterruptedException ex){
                     ex.printStackTrace();
                 }
+                GameScreen.playerInRoom = true;
+                GameScreen.playerSitting = true;
                 game.setScreen(new GameScreen(game, 1000));
             }
 
@@ -124,7 +123,6 @@ public class GameCreationScreen extends ScreenAdapter {
                 game.setScreen(new MainMenuScreen(game));
             }
         });
-
 
         // Prepare Table
         Table uiTable = new Table();
@@ -141,7 +139,7 @@ public class GameCreationScreen extends ScreenAdapter {
 
     public void show() {
         stage = new Stage();
-        stage.setViewport(game.gameViewPort); // can i public static final this?
+        stage.setViewport(game.gameViewPort);
         Gdx.input.setInputProcessor(stage);
 
         stage.addActor(uiTableFactory());
@@ -152,7 +150,6 @@ public class GameCreationScreen extends ScreenAdapter {
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
         stage.draw();
     }
-
 
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);

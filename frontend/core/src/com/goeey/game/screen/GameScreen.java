@@ -1,14 +1,12 @@
 package com.goeey.game.screen;
 
 import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -18,26 +16,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.Timer;
 import com.goeey.game.GameManager;
 import com.goeey.game.animation.CardAnimation;
-import com.goeey.game.socket.SocketHandler;
-import com.goeey.game.socket.WebSocket;
 import com.goeey.game.utils.PlayerXY;
-import com.goeey.game.utils.PlayerUtils;
 import com.goeey.game.utils.ProcessServerMessage;
 import com.gooey.base.Card;
 import com.gooey.base.EntityTarget;
-import com.gooey.base.socket.ServerEvent;
-import com.google.gson.*;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.enums.ReadyState;
-import java.io.InvalidObjectException;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GameScreen extends ScreenAdapter implements ApplicationListener {
     final GameManager game;
@@ -72,13 +61,15 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
     private String playerMessage = null;
 
-    public static boolean playerLeaveSeat = false;
+    public static boolean playerSitting;
 
-    public static boolean playerExitRoom = false;
+    public static boolean playerInRoom;
 
     private boolean gameEnded = false;
 
-    private int countdownSeconds = 8000;
+    private boolean gameRestCalled = false;
+
+    private int countdownSeconds = 10;
 
 
 
@@ -178,8 +169,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         buttonContainer.setPosition(posX, posY);
         return buttonContainer;
     }
-
-
 
     @Override
     public void show() {
@@ -302,6 +291,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                     "PLAYER_BUST_PLAYER_2", "PLAYER_BUST_PLAYER_3", "PLAYER_BUST_PLAYER_4",
                     "PLAYER_BUST_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum()){
+                    playerSitting = false;
                     disableButtons();
                 }
                 this.updateGameState("Turn over");
@@ -425,8 +415,12 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     @Override
     public void create() {
 
-    }
+        // Register a shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Hello");
 
+        }));
+    }
 
     @Override
     public void render() {
@@ -438,9 +432,12 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         ScreenUtils.clear(0, 0.3f, 0, 1);
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
 
-        if(gameEnded){
-            //resetGame();
+        if(gameEnded && !gameRestCalled){
+            System.out.println("Game Ended Here!!!");
+            gameRestCalled = true;
+            resetGame();
         }
+
         stage.act(delta);
         stage.draw();
 
@@ -452,33 +449,27 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
 
-//    private void resetGame(){
-//        // Schedule a task to update countdown seconds and execute code after 8 seconds
-//        Timer.schedule(new Timer.Task() {
-//            @Override
-//            public void run() {
-//                if(countdownSeconds % 1000 == 0){
-//                    updateGameState("Game restarting in " + (countdownSeconds / 1000)  + " seconds.");
-//                }
-//
-//                // Update countdown seconds
-//                countdownSeconds--;
-//
-//                // If countdown reaches 0 and code hasn't been executed yet
-//                if (countdownSeconds <= 0 ) {
-//                    // Execute code here after 8 seconds
-//                    this.cancel();
-//                    game.setScreen(new GameScreen(game, playerAmt));
-//                }
-//            }
-//        }, 1, 1, 8);
-//    }
+    private void resetGame(){
 
-    private boolean isWebSocketOpen() {
-        WebSocket ws = GameManager.socketHandler.getWebSocket();
-        return ws != null && ws.isOpen() && ws.getReadyState() == ReadyState.OPEN;
+        // Schedule a task to update countdown seconds and execute code after 8 seconds
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Gdx.app.postRunnable(() -> {
+                    if (countdownSeconds > 0) {
+                        System.out.println(countdownSeconds);
+                        updateGameState("Game restarting in " + countdownSeconds + " seconds");
+                        countdownSeconds--;
+                    } else {
+                        timer.cancel();
+                        game.setScreen(new GameScreen(game, playerAmt));
+                    }
+                });
+            }
+        },2000, 1000);
+
     }
-
 
     @Override
     public void resize(int width, int height) {
