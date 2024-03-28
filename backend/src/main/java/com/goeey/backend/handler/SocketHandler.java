@@ -328,6 +328,8 @@ public class SocketHandler implements WebSocketHandler {
                 session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(
                         new ServerEvent<>(ServerEvent.Type.LEFT, "You have left the room")
                 ))));
+                // Add the player back to the main game unified state
+                players.put(leftPlayer.getId(), leftPlayer);
                 // Bring the player back to the lobby
                 return joinLobby(session, leftPlayer.getId());
             case SIT:

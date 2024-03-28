@@ -214,7 +214,8 @@ public class Room {
         int seatNumber = getPlayerSeatNumber(playerId);
         // Stand up the player if they are sitting
         if (seatNumber > 0) {
-            standUp(getPlayerById(playerId));
+            ServerEvent serverEvent = standUp(getPlayerById(playerId));
+            broadcastSink.tryEmitNext(serverEvent);
         }
 
         // Remove the player from the room
