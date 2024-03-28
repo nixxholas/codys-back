@@ -227,8 +227,8 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         PlayerXY xy = playerMap.get(entity);
         int x = xy.getPlayerX();
         int y = xy.getPlayerY();
-        int count = xy.getCount();
-        xy.setCount(count+1);
+        int count = xy.getNumCardInHand();
+        xy.setNumCardInHand(count+1);
         return CardAnimation.dealCards(count, x, y, card);
     }
 

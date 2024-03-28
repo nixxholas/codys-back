@@ -12,13 +12,13 @@ import java.util.Map;
 public class PlayerXY {
     private int playerX;
     private int playerY;
-    private int count;
+    private int numCardInHand;
     private Actor[] cards;
 
     public PlayerXY(int playerX, int playerY) {
         this.playerX = playerX;
         this.playerY = playerY;
-        this.count = 0;
+        this.numCardInHand = 0;
     }
 
     public int getPlayerX() {
@@ -27,11 +27,11 @@ public class PlayerXY {
     public int getPlayerY() {
         return playerY;
     }
-    public int getCount() {
-        return count;
+    public int getNumCardInHand() {
+        return numCardInHand;
     }
-    public void setCount(int count) {
-        this.count = count;
+    public void setNumCardInHand(int numCardInHand) {
+        this.numCardInHand = numCardInHand;
     }
 
     // Returns a clean Map that consists of a Key (Dealer, Player_1, Player_2 etc),
