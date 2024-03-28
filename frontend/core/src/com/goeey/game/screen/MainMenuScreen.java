@@ -30,7 +30,6 @@ public class MainMenuScreen extends ScreenAdapter {
         TextButton exitButton = new TextButton("Exit to Desktop", game.getSkin());
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                connectToServer();
                 game.setScreen(new GameCreationScreen(game));
             }
         });
@@ -59,17 +58,6 @@ public class MainMenuScreen extends ScreenAdapter {
         Gdx.input.setInputProcessor(stage);
 
         stage.addActor(uiTableFactory());
-    }
-
-    public void connectToServer() {
-        while(GameManager.socketHandler.getState() != ReadyState.OPEN) {
-            ScreenUtils.clear(0, 0, 0, 0.7f);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     @Override
