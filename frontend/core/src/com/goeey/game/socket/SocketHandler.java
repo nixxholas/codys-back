@@ -1,6 +1,5 @@
 package com.goeey.game.socket;
 
-import com.badlogic.gdx.ScreenAdapter;
 import com.goeey.backend.util.SerializationUtil;
 import com.goeey.game.utils.ProcessServerMessage;
 import com.gooey.base.socket.ClientEvent;
@@ -14,9 +13,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class SocketHandler {
     private final WebSocket ws;
-
     private CountDownLatch latch = new CountDownLatch(1);
-
     public SocketHandler(String uriStr) {
 
         URI uri = null;
@@ -126,6 +123,16 @@ public class SocketHandler {
         }
     }
 
+    public void leaveSeat(String clientId, int seatNum){
+        ClientEvent sitEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE_SEAT, Integer.toString(seatNum));
+        try{
+            ws.send(SerializationUtil.serializeString(sitEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
     public void bet(String clientId, double amount){
         DecimalFormat df = new DecimalFormat("#.#");
         String amt = df.format(amount);
@@ -223,6 +230,16 @@ public class SocketHandler {
     public void closeWebSocket() {
         if(ws.isOpen()){
             ws.close();
+        }
+    }
+
+    public void leave(String clientId){
+        ClientEvent leaveEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE);
+        try{
+            ws.send(SerializationUtil.serializeString(leaveEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
         }
     }
 }

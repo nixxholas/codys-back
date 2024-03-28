@@ -9,11 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
@@ -164,7 +160,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             buttonContainer.add(lblName);
         }
 
-
         buttonContainer.setPosition(posX, posY);
         return buttonContainer;
     }
@@ -219,6 +214,8 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         // Display Game State
         createGameState();
 
+        // Leave button
+        createLeaveGameButton();
     }
 
     public static Actor deal(EntityTarget entity, String card){
@@ -334,7 +331,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             case "PLAYER_WIN_PLAYER_1", "PLAYER_WIN_PLAYER_2", "PLAYER_WIN_PLAYER_3",
                     "PLAYER_WIN_PLAYER_4", "PLAYER_WIN_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum()){
-                    this.playerAmt += earnings;
+                    playerAmt += earnings;
                     this.playerMessage = "You won $" + earnings;
                 }
                 break;
@@ -347,9 +344,9 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             case "":
                 break;
             case "UPDATE":
-                this.updateGameState(playerMessage);
-                this.lblAmt.setText("Amount: $" + this.playerAmt);
-                this.disableButtons();
+                updateGameState(playerMessage);
+                lblAmt.setText("Amount: $" + this.playerAmt);
+                disableButtons();
                 betButton.setDisabled(true);
                 this.gameEnded = true;
                 break;
@@ -391,13 +388,12 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
         // Add the table to the stage for rendering
         stage.addActor(table);
-
     }
 
     public void updateGameState(String message) {
         gameStateLabel.setText(message);
     }
-    public void displayActions(String text) {
+/*    public void displayActions(String text) {
         float slideDistance = 20;
         Label label = new Label(text, skin);
         actionsLabelList.add(label);
@@ -438,6 +434,22 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                     label.remove();
                 })
         ));
+    }*/
+
+    public void createLeaveGameButton() {
+        // TextButton
+        TextButton leaveButton = new TextButton("Leave Game", game.getSkin());
+        leaveButton.setPosition(20, Gdx.graphics.getHeight() - leaveButton.getHeight() - 20); // Position the button
+
+        leaveButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                //GameManager.socketHandler.leaveSeat(game.getPlayerName(), game.getPlayerSeatNum());
+                GameManager.socketHandler.leave(game.getPlayerName());
+                game.setScreen(new MainMenuScreen(game));
+            }
+        });
+
+        stage.addActor(leaveButton);
     }
 
     @Override
@@ -497,7 +509,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
-
 
 
     @Override

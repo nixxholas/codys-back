@@ -87,7 +87,7 @@ public class GameCreationScreen extends ScreenAdapter {
 
                         //For now let all players join one room
                         GameManager.socketHandler.joinRoom(game.getPlayerName(), roomsList[i]);
-
+                        System.out.println("I am trying to join room:" + roomsList[i]);
                         //find the available seat for each player in the room
                         int seatNum = 0;
                         do {
@@ -96,7 +96,6 @@ public class GameCreationScreen extends ScreenAdapter {
                         game.setEntityType(seatNum);
                     }
                 }
-
                 GameScreen.playerInRoom = true;
                 GameScreen.playerSitting = true;
                 game.setScreen(new GameScreen(game, 1000));
