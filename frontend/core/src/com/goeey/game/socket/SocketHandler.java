@@ -44,15 +44,18 @@ public class SocketHandler {
                         String message = ws.getMessageQueue().take();
                         ServerEvent<?> serverEvent =  SerializationUtil.deserializeString(message, ServerEvent.class);
                         ProcessServerMessage.callMethod(serverEvent);
-                        if (serverEvent.getType() == ServerEvent.Type.ERROR ||
-                                serverEvent.getType() == ServerEvent.Type.PLAYER_SAT ||
-                                serverEvent.getType() == ServerEvent.Type.ROOM_LIST ||
-                                serverEvent.getType() == ServerEvent.Type.ROOM_PLAYERS ||
-                                serverEvent.getType() == ServerEvent.Type.JOINED ||
-                                serverEvent.getType() == ServerEvent.Type.CONNECT ||
-                                serverEvent.getType() == ServerEvent.Type.REGISTERED) {
-                            this.latch.countDown();
-                        }
+                        this.latch.countDown();
+//                        if (serverEvent.getType() == ServerEvent.Type.ERROR ||
+//                                serverEvent.getType() == ServerEvent.Type.PLAYER_SAT ||
+//                                serverEvent.getType() == ServerEvent.Type.ROOM_LIST ||
+//                                serverEvent.getType() == ServerEvent.Type.ROOM_PLAYERS ||
+//                                serverEvent.getType() == ServerEvent.Type.JOINED ||
+//                                serverEvent.getType() == ServerEvent.Type.CONNECT ||
+//                                serverEvent.getType() == ServerEvent.Type.REGISTERED ||
+//                                serverEvent.getType() == ServerEvent.Type.PLAYER_STAND ||
+//                                serverEvent.getType() == ServerEvent.Type.LEAVE) {
+//
+//                        }
 
                     }
                 }
@@ -135,8 +138,8 @@ public class SocketHandler {
         }
     }
 
-    public void hit(String clientId, int seatNum){
-        ClientEvent hitEvent = new ClientEvent(clientId, ClientEvent.Type.HIT, Integer.toString(seatNum));
+    public void hit(String clientId){
+        ClientEvent hitEvent = new ClientEvent(clientId, ClientEvent.Type.HIT, "");
         try{
             ws.send(SerializationUtil.serializeString(hitEvent));
             ws.getLatch().await();
@@ -145,10 +148,30 @@ public class SocketHandler {
         }
     }
 
-    public void stand(String clientId, int seatNum){
-        ClientEvent standEvent = new ClientEvent(clientId, ClientEvent.Type.STAND, Integer.toString(seatNum));
+    public void stand(String clientId){
+        ClientEvent standEvent = new ClientEvent(clientId, ClientEvent.Type.STAND, "");
         try{
             ws.send(SerializationUtil.serializeString(standEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void leaveseat(String clientId){
+        ClientEvent leaveSeatEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE_SEAT);
+        try{
+            ws.send(SerializationUtil.serializeString(leaveSeatEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void leaveroom(String clientId){
+        ClientEvent leaveEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE, "");
+        try{
+            ws.send(SerializationUtil.serializeString(leaveEvent));
             ws.getLatch().await();
         }catch (InterruptedException ex){
             ex.printStackTrace();

@@ -1,5 +1,6 @@
 package com.goeey.game.screen;
 
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -17,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.Timer;
 import com.goeey.game.GameManager;
 import com.goeey.game.animation.CardAnimation;
 import com.goeey.game.socket.SocketHandler;
@@ -37,7 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class GameScreen extends ScreenAdapter {
+public class GameScreen extends ScreenAdapter implements ApplicationListener {
     final GameManager game;
     private Skin skin;
     //private Hud hud;
@@ -66,9 +68,33 @@ public class GameScreen extends ScreenAdapter {
 
     private Label lblAmt;
 
-    private int playerAmt = 1000;
+    private int playerAmt;
 
     private String playerMessage = null;
+
+    public static boolean playerLeaveSeat = false;
+
+    public static boolean playerExitRoom = false;
+
+    private boolean gameEnded = false;
+
+    private int countdownSeconds = 8000;
+
+
+
+    public GameScreen(GameManager game) {
+        this.game = game;
+        this.skin = game.getSkin();
+        ProcessServerMessage.setGS(this);
+    }
+
+    public GameScreen(GameManager game, int playerAmt) {
+        this.game = game;
+        this.skin = game.getSkin();
+        this.playerAmt = playerAmt;
+        ProcessServerMessage.setGS(this);
+    }
+
 
     public Table createButtonsNLabels(Skin skin, int posX, int posY, String entity, boolean isCurrentPlayer) {
         //Create table
@@ -82,7 +108,7 @@ public class GameScreen extends ScreenAdapter {
         if(isCurrentPlayer){
             lblName.setColor(Color.YELLOW);
             //Player Amount
-            lblAmt = new Label("Amount: $1000", skin);
+            lblAmt = new Label("Amount: $" + playerAmt, skin);
             lblAmt.setFontScale(1);
             lblAmt.setColor(Color.YELLOW);
 
@@ -91,7 +117,7 @@ public class GameScreen extends ScreenAdapter {
             hitButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
-                        GameManager.socketHandler.hit(game.getPlayerName(), 1);
+                        GameManager.socketHandler.hit(game.getPlayerName());
                     }
                 }
             });
@@ -101,7 +127,7 @@ public class GameScreen extends ScreenAdapter {
             standButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!standButton.isDisabled()){
-                        GameManager.socketHandler.stand(game.getPlayerName(), 1);
+                        GameManager.socketHandler.stand(game.getPlayerName());
                         standButton.setDisabled(true);
                     }
                 }
@@ -153,11 +179,7 @@ public class GameScreen extends ScreenAdapter {
         return buttonContainer;
     }
 
-    public GameScreen(GameManager game) {
-        this.game = game;
-        this.skin = game.getSkin();
-        ProcessServerMessage.setGS(this);
-    }
+
 
     @Override
     public void show() {
@@ -221,26 +243,25 @@ public class GameScreen extends ScreenAdapter {
         return CardAnimation.dealCards(count, x, y, card);
     }
 
-    public void updateUI(Card c, String eventType, boolean dealerReveal, int earnings){
+    public void updateUI(Card c, String eventType, int earnings){
         String cardName;
         int seatNum = eventType.charAt(eventType.length() - 1) - '0';
 
         switch (eventType) {
             case "DRAW_DEALER_0":
-                if (dealerReveal) {
-                    cardName = c.getRank() + "_" + c.getSuit();
-                    Texture cardBack = new Texture("cards/BACK_CARD.png");
-                    Texture cardFront = new Texture("cards/" + cardName + ".png");
-                    CardAnimation dReveal = new CardAnimation(cardBack);
-                    dReveal.setTexture(cardFront);
-                    int x = 853;
-                    int y = 675;
-                    dReveal.setPosition(x, y);
-                    stage.addActor(dReveal);
-                } else {
-                    cardName =  (c == null) ? "BACK_CARD": c.getRank() + "_" + c.getSuit();
-                    stage.addActor(deal(EntityTarget.DEALER, cardName));
-                }
+                cardName =  (c == null) ? "BACK_CARD": c.getRank() + "_" + c.getSuit();
+                stage.addActor(deal(EntityTarget.DEALER, cardName));
+                break;
+            case "DEALER_REVEAL_DEALER_0":
+                cardName = c.getRank() + "_" + c.getSuit();
+                Texture cardBack = new Texture("cards/BACK_CARD.png");
+                Texture cardFront = new Texture("cards/" + cardName + ".png");
+                CardAnimation dReveal = new CardAnimation(cardBack);
+                dReveal.setTexture(cardFront);
+                int x = 853;
+                int y = 675;
+                dReveal.setPosition(x, y);
+                stage.addActor(dReveal);
                 break;
             case "DRAW_PLAYER_1":
                 doubleDownButton.setDisabled(true);
@@ -280,8 +301,9 @@ public class GameScreen extends ScreenAdapter {
                     "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5", "PLAYER_BUST_PLAYER_1",
                     "PLAYER_BUST_PLAYER_2", "PLAYER_BUST_PLAYER_3", "PLAYER_BUST_PLAYER_4",
                     "PLAYER_BUST_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum())
+                if(seatNum == game.getPlayerSeatNum()){
                     disableButtons();
+                }
                 this.updateGameState("Turn over");
                 break;
             case "PLAYER_LOSE_PLAYER_1", "PLAYER_LOSE_PLAYER_2", "PLAYER_LOSE_PLAYER_3",
@@ -304,13 +326,14 @@ public class GameScreen extends ScreenAdapter {
                     this.playerMessage = "It is a push";
                 }
                 break;
-            case "COUNTDOWN":
+            case "":
                 break;
             case "UPDATE":
                 this.updateGameState(playerMessage);
                 this.lblAmt.setText("Amount: $" + this.playerAmt);
                 this.disableButtons();
                 betButton.setDisabled(true);
+                this.gameEnded = true;
                 break;
             default:
                 // Handle the default case if needed
@@ -400,33 +423,69 @@ public class GameScreen extends ScreenAdapter {
     }
 
     @Override
+    public void create() {
+
+    }
+
+
+    @Override
+    public void render() {
+
+    }
+
+    @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0.3f, 0, 1);
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
 
+        if(gameEnded){
+            //resetGame();
+        }
         stage.act(delta);
         stage.draw();
 
         /*
-        *   1. Render the HUD details
-        *   2. TODO update the balance on the HUD as it changes
-        * */
+         *   1. Render the HUD details
+         *   2. TODO update the balance on the HUD as it changes
+         * */
         //hud.hudStage.draw();
     }
 
-    public void startGame(){
-        GameManager.socketHandler.bet(game.getPlayerName(), 1.0);
-    }
+
+//    private void resetGame(){
+//        // Schedule a task to update countdown seconds and execute code after 8 seconds
+//        Timer.schedule(new Timer.Task() {
+//            @Override
+//            public void run() {
+//                if(countdownSeconds % 1000 == 0){
+//                    updateGameState("Game restarting in " + (countdownSeconds / 1000)  + " seconds.");
+//                }
+//
+//                // Update countdown seconds
+//                countdownSeconds--;
+//
+//                // If countdown reaches 0 and code hasn't been executed yet
+//                if (countdownSeconds <= 0 ) {
+//                    // Execute code here after 8 seconds
+//                    this.cancel();
+//                    game.setScreen(new GameScreen(game, playerAmt));
+//                }
+//            }
+//        }, 1, 1, 8);
+//    }
 
     private boolean isWebSocketOpen() {
         WebSocket ws = GameManager.socketHandler.getWebSocket();
         return ws != null && ws.isOpen() && ws.getReadyState() == ReadyState.OPEN;
     }
 
+
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
+
+
 
     @Override
     public void dispose() {

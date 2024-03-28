@@ -46,7 +46,8 @@ public class ProcessServerMessage {
                 processDealerReveal(event);
                 break;
             case PLAYER_DRAW:
-                processPlayerDraw(event);
+                //PLAYER_HIT
+                processPlayerDraworHit(event);
                 break;
             case PLAYER_TURN:
                 processPlayerTurn(event);
@@ -80,9 +81,6 @@ public class ProcessServerMessage {
             case STARTING:
                 //not implemented yet
                 processStarting(event);
-                break;
-            case PLAYER_HIT:
-                processPlayerHit(event);
                 break;
             case PLAYER_DOUBLE:
                 processPlayerDouble(event);
@@ -176,7 +174,6 @@ public class ProcessServerMessage {
             if(gs instanceof GameScreen gs){
                 Gdx.app.postRunnable(() -> gs.updateUI(card,
                         "DRAW_" + targetPlayer + "_0",
-                        false,
                         0));
                 Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
@@ -184,7 +181,6 @@ public class ProcessServerMessage {
             if(gs instanceof GameScreen gs){
                 Gdx.app.postRunnable(() -> gs.updateUI(null,
                         "DRAW_" + targetPlayer + "_0",
-                        false,
                         0));
                 Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
@@ -204,15 +200,14 @@ public class ProcessServerMessage {
             System.out.println(targetPlayer);
             if(gs instanceof GameScreen gs){
                 Gdx.app.postRunnable(() -> gs.updateUI(card,
-                        "DRAW_" + targetPlayer + "_0",
-                        true,
+                        "DEALER_REVEAL_" + targetPlayer + "_0",
                         0));
                 Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }
     }
 
-    private static void processPlayerDraw(ServerEvent<?> event){
+    private static void processPlayerDraworHit(ServerEvent<?> event){
         System.out.println(event.getMessage());
         if(event.getMessage() != null){
             // Convert the LinkedHashMap to a JSON string
@@ -225,7 +220,6 @@ public class ProcessServerMessage {
             if(gs instanceof GameScreen gs){
                 Gdx.app.postRunnable(() -> gs.updateUI(card,
                         "DRAW_" + targetPlayer,
-                        false,
                         0));
                 Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
@@ -239,7 +233,6 @@ public class ProcessServerMessage {
             int seatNum = target.charAt(target.length() - 1) - '0';
             Gdx.app.postRunnable(() -> gs.updateUI(null,
                     "PLAYER_TURN_" + event.getTarget(),
-                    false,
                     0));
         }
     }
@@ -291,7 +284,6 @@ public class ProcessServerMessage {
         if(gs instanceof GameScreen gs){
             Gdx.app.postRunnable(() -> gs.updateUI(null,
                     "UPDATE",
-                    false,
                     0));
         }
     }
@@ -304,25 +296,24 @@ public class ProcessServerMessage {
         System.out.println(event.getMessage());
     }
 
-    private static void processPlayerHit(ServerEvent<?> event){
-        System.out.println(event.getMessage());
-        if(event.getMessage() != null){
-            // Convert the LinkedHashMap to a JSON string
-            String jsonString = gson.toJson(event.getMessage());
-            Card card = SerializationUtil.deserializeString(jsonString, Card.class);
-            String targetPlayer = String.valueOf(event.getTarget());
-            System.out.println(card.getRank());
-            System.out.println(card.getSuit());
-            System.out.println(targetPlayer);
-            if(gs instanceof GameScreen gs){
-                Gdx.app.postRunnable(() -> gs.updateUI(card,
-                        "DRAW_" + targetPlayer,
-                        false,
-                        0));
-                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
-            }
-        }
-    }
+//    private static void processPlayerHit(ServerEvent<?> event){
+//        System.out.println(event.getMessage());
+//        if(event.getMessage() != null){
+//            // Convert the LinkedHashMap to a JSON string
+//            String jsonString = gson.toJson(event.getMessage());
+//            Card card = SerializationUtil.deserializeString(jsonString, Card.class);
+//            String targetPlayer = String.valueOf(event.getTarget());
+//            System.out.println(card.getRank());
+//            System.out.println(card.getSuit());
+//            System.out.println(targetPlayer);
+//            if(gs instanceof GameScreen gs){
+//                Gdx.app.postRunnable(() -> gs.updateUI(card,
+//                        "DRAW_" + targetPlayer,
+//                        0));
+//                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
+//            }
+//        }
+//    }
 
     private static void processPlayerDouble(ServerEvent<?> event){
         System.out.println(event.getMessage());
@@ -335,10 +326,7 @@ public class ProcessServerMessage {
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
             if(gs instanceof GameScreen gs){
-                Gdx.app.postRunnable(() -> gs.updateUI(card,
-                        "DRAW_" + targetPlayer,
-                        false,
-                        0));
+                Gdx.app.postRunnable(() -> gs.updateUI(card, targetPlayer, 0));
             }
         }
     }
@@ -355,9 +343,12 @@ public class ProcessServerMessage {
             Gdx.app.postRunnable(() -> gs.updateUI(null,
                     event.getType().toString() +
                             "_" + event.getTarget(),
-                    false,
                     (int)earnings));
         }
+    }
+
+    private static void processPlayerPush(ServerEvent<?> event){
+        System.out.println(event.getMessage());
     }
 
     private static void processPlayerBust(ServerEvent<?> event){
@@ -370,11 +361,9 @@ public class ProcessServerMessage {
             if(gs instanceof GameScreen gs){
                 Gdx.app.postRunnable(() -> gs.updateUI(null,
                         "PLAYER_LOSE_" + event.getTarget(),
-                        false,
                         (int)earnings));
                 Gdx.app.postRunnable(() -> gs.updateUI(null,
                         "PLAYER_BUST_" + event.getTarget(),
-                        false,
                         (int)earnings));
             }
         }catch (NullPointerException ex){
@@ -391,7 +380,6 @@ public class ProcessServerMessage {
             if(gs instanceof GameScreen gs){
                 Gdx.app.postRunnable(() -> gs.updateUI(card,
                         "DRAW_" + targetPlayer,
-                        false,
                         0));
                 Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
@@ -403,7 +391,6 @@ public class ProcessServerMessage {
         if(gs instanceof  GameScreen gs){
             Gdx.app.postRunnable(() -> gs.updateUI(null,
                     "PLAYER_STAND_" + event.getTarget(),
-                    false,
                     0));
         }
     }
@@ -417,6 +404,7 @@ public class ProcessServerMessage {
     }
 
     private static void processPlayerLeft(ServerEvent<?> event){
+        System.out.println("SERVER PLAYER LEFT");
         System.out.println(event.getMessage());
     }
 

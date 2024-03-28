@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.goeey.game.screen.GameScreen;
 import com.goeey.game.screen.MainMenuScreen;
 import com.goeey.game.socket.SocketHandler;
 import com.gooey.base.EntityTarget;
@@ -17,7 +18,6 @@ public class GameManager extends Game {
     public static final int screen_height = 1080;
     private String playerName;
     private EntityTarget currentPlayer;
-
     private int playerSeatNum;
     public FitViewport gameViewPort;
     private Skin skin;
@@ -90,6 +90,40 @@ public class GameManager extends Game {
 
     public void dispose() {
         System.out.println("disposing game");
+
+        //Handle the case where user abruptly closes the window
+        //Check if player is still seated and remove them from the seat
+        if(!GameScreen.playerLeaveSeat){
+            if(GameManager.socketHandler.getWebSocket().isOpen()){
+                System.out.println("HELLO PLAYER STANDING");
+                try {
+                    GameManager.socketHandler.resetLatch(1);
+                    GameManager.socketHandler.leaveseat(getPlayerName());
+                    GameManager.socketHandler.awaitPlayer();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("PLAYER STOOD UP");
+                GameScreen.playerLeaveSeat = true;
+            }
+        }
+
+        //Check if player is still in the room and remove them from the room
+        if(!GameScreen.playerExitRoom){
+            if(GameManager.socketHandler.getWebSocket().isOpen()){
+                System.out.println("HELLO PLAYER LEAVING");
+                try {
+                    GameManager.socketHandler.resetLatch(1);
+                    GameManager.socketHandler.leaveroom(getPlayerName());
+                    GameManager.socketHandler.awaitPlayer();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.println("PLAYER LEFT");
+                GameScreen.playerExitRoom = true;
+            }
+        }
+
         isDisposed = true;
         socketHandler.closeWebSocket();
     }
