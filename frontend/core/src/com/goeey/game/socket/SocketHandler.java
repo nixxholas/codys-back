@@ -42,18 +42,6 @@ public class SocketHandler {
                         ServerEvent<?> serverEvent =  SerializationUtil.deserializeString(message, ServerEvent.class);
                         ProcessServerMessage.callMethod(serverEvent);
                         this.latch.countDown();
-//                        if (serverEvent.getType() == ServerEvent.Type.ERROR ||
-//                                serverEvent.getType() == ServerEvent.Type.PLAYER_SAT ||
-//                                serverEvent.getType() == ServerEvent.Type.ROOM_LIST ||
-//                                serverEvent.getType() == ServerEvent.Type.ROOM_PLAYERS ||
-//                                serverEvent.getType() == ServerEvent.Type.JOINED ||
-//                                serverEvent.getType() == ServerEvent.Type.CONNECT ||
-//                                serverEvent.getType() == ServerEvent.Type.REGISTERED ||
-//                                serverEvent.getType() == ServerEvent.Type.PLAYER_STAND ||
-//                                serverEvent.getType() == ServerEvent.Type.LEAVE) {
-//
-//                        }
-
                     }
                 }
             } catch (InterruptedException e) {
