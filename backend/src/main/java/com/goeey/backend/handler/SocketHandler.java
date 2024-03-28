@@ -195,7 +195,7 @@ public class SocketHandler implements WebSocketHandler {
                 .flatMap(event -> {
                     // Process event to determine if it's for the lobby or a specific room
                     switch (event.getType()) {
-                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM, JOIN, LIST_ROOMS:
+                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM, JOIN, LIST_ROOMS, ROOM_PLAYERS:
                             return processLobbyEvent(session, event); // Implement this method for lobby-specific actions
                         case DISCONNECT:
                             return processDisconnectEvent(session, event); // Implement this method for disconnect-specific actions
