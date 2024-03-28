@@ -147,7 +147,6 @@ public class Player extends BasePlayer {
         } else {
         this.currentBet = amount;
         }
-        this.balance -= amount;
         return true;
     }
 
@@ -167,13 +166,12 @@ public class Player extends BasePlayer {
 
     public int loseBet() {
         int loss = currentBet;
+        this.balance -= loss;
         this.currentBet = 0; // Loss already accounted for when bet was placed
-        // this.balance -= loss; // Balance is already deducted at the start.
         return loss;
     }
 
     public void push() { // In case of a tie
-        this.balance += currentBet; // Return the bet to the player
         this.currentBet = 0;
     }
 }
