@@ -95,10 +95,10 @@ public class ProcessServerMessage {
                 processPlayerStand(event);
                 break;
             case PLAYER_BET:
-                //not implemented yet
                 processPlayerBet(event);
                 break;
             case BET:
+                processBet(event);
                 break;
             case PLAYER_JOINED:
                 processPlayerJoined(event);
@@ -305,7 +305,10 @@ public class ProcessServerMessage {
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
             if(gs instanceof GameScreen gs){
-                Gdx.app.postRunnable(() -> gs.updateUI(card, targetPlayer, 0));
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "PLAYER_DOUBLE_" + targetPlayer,
+                        0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }
     }
@@ -360,6 +363,10 @@ public class ProcessServerMessage {
     }
 
     private static void processPlayerBet(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processBet(ServerEvent<?> event){
         System.out.println(event.getMessage());
     }
 

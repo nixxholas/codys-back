@@ -277,6 +277,36 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_5, cardName));
                 break;
+            case "PLAYER_DOUBLE_PLAYER_1":
+                disableButtons();
+                cardName = c.getRank() + "_" + c.getSuit();
+                stage.addActor(deal(EntityTarget.PLAYER_1, cardName));
+                this.updateGameState("Turn over");
+                break;
+            case "PLAYER_DOUBLE_PLAYER_2":
+                disableButtons();
+                cardName = c.getRank() + "_" + c.getSuit();
+                stage.addActor(deal(EntityTarget.PLAYER_2, cardName));
+                this.updateGameState("Turn over");
+                break;
+            case "PLAYER_DOUBLE_PLAYER_3":
+                disableButtons();
+                cardName = c.getRank() + "_" + c.getSuit();
+                stage.addActor(deal(EntityTarget.PLAYER_3, cardName));
+                this.updateGameState("Turn over");
+                break;
+            case "PLAYER_DOUBLE_PLAYER_4":
+                disableButtons();
+                cardName = c.getRank() + "_" + c.getSuit();
+                stage.addActor(deal(EntityTarget.PLAYER_4, cardName));
+                this.updateGameState("Turn over");
+                break;
+            case "PLAYER_DOUBLE_PLAYER_5":
+                disableButtons();
+                cardName = c.getRank() + "_" + c.getSuit();
+                stage.addActor(deal(EntityTarget.PLAYER_5, cardName));
+                this.updateGameState("Turn over");
+                break;
             case "PLAYER_TURN_PLAYER_1", "PLAYER_TURN_PLAYER_2", "PLAYER_TURN_PLAYER_3",
                     "PLAYER_TURN_PLAYER_4", "PLAYER_TURN_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum()){
