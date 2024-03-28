@@ -326,7 +326,10 @@ public class ProcessServerMessage {
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
             if(gs instanceof GameScreen gs){
-                Gdx.app.postRunnable(() -> gs.updateUI(card, targetPlayer, 0));
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "PLAYER_DOUBLE_" + targetPlayer,
+                        0));
+                Gdx.app.postRunnable(() -> gs.updateGameState("Dealing cards"));
             }
         }
     }
