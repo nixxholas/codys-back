@@ -18,8 +18,6 @@ import java.util.Arrays;
 public class GameCreationScreen extends ScreenAdapter {
     private final GameManager game;
     private Stage stage;
-    private TextButton startButton;
-    private TextButton backButton;
     private TextField nameTextfield;
     private Skin skin;
 
@@ -115,7 +113,7 @@ public class GameCreationScreen extends ScreenAdapter {
                 }catch (InterruptedException ex){
                     ex.printStackTrace();
                 }
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new GameScreen(game, 1000));
             }
 
         });
