@@ -68,11 +68,10 @@ public class SocketHandler implements WebSocketHandler {
         return lobbySessions.containsKey(playerId);
     }
 
+    // Assumes the player is in the lobby or is not in any room
     public Mono<Void> joinLobby(WebSocketSession session, String playerId) {
         Player player = getPlayerById(playerId);
         if (player == null)
-            return null;
-        if (rooms.values().stream().anyMatch(r -> r.hasPlayerById(playerId)))
             return null;
 
         // Notify all players in the lobby
