@@ -218,7 +218,7 @@ public class Room {
         }
 
         // Remove the player from the room
-        Player leavingPlayer = players.get(seatNumber);
+        Player leavingPlayer = unseatedPlayers.get(playerId);
         if (leavingPlayer != null) {
             // Broadcast a message to the room indicating that the player has left
             // Assuming you have a method to convert Player object or playerId to a String that identifies the player to other clients
@@ -226,7 +226,6 @@ public class Room {
             broadcastSink.tryEmitNext(leaveEvent);
 
             // Remove the player from the room's player map
-            players.remove(seatNumber);
             playerBroadcastDisposables.get(playerId).dispose();
             playerBroadcastDisposables.remove(playerId);
 

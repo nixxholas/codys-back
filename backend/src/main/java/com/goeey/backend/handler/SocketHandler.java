@@ -322,11 +322,12 @@ public class SocketHandler implements WebSocketHandler {
         ServerEvent responseEvent;
         switch (event.getType()) {
             case LEAVE:
-                // Leave the room
+                // Leave the room, and unseat them if they are seated
                 Player leftPlayer = room.playerLeave(event.getClientId());
                 // Send a message to the player
-                responseEvent = new ServerEvent(ServerEvent.Type.LEFT, leftPlayer.getName());
-                session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(responseEvent))));
+                session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(
+                        new ServerEvent<>(ServerEvent.Type.LEFT, "You have left the room")
+                ))));
                 // Bring the player back to the lobby
                 return joinLobby(session, leftPlayer.getId());
             case SIT:
