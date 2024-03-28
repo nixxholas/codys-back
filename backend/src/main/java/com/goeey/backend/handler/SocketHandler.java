@@ -269,6 +269,9 @@ public class SocketHandler implements WebSocketHandler {
             case REGISTER:
                 // Create a new player
                 Player newPlayer = createPlayer(event.getClientId(), event.getMessage());
+                if (newPlayer == null)
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Player already exists")))));
+
                 // Join the player to the lobby
                 joinLobby(session, event.getClientId());
                 // Register the player
