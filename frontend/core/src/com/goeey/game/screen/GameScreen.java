@@ -276,14 +276,10 @@ public class GameScreen extends ScreenAdapter {
                     Gdx.app.postRunnable(() -> this.updateGameState("Player " + seatNum + " turn"));
                 }
                 break;
-            case "PLAYER_BUST_PLAYER_1", "PLAYER_BUST_PLAYER_2", "PLAYER_BUST_PLAYER_3",
-                    "PLAYER_BUST_PLAYER_4", "PLAYER_BUST_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum())
-                    disableButtons();
-                this.updateGameState("Turn over");
-                break;
             case "PLAYER_STAND_PLAYER_1", "PLAYER_STAND_PLAYER_2", "PLAYER_STAND_PLAYER_3",
-                    "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5":
+                    "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5", "PLAYER_BUST_PLAYER_1",
+                    "PLAYER_BUST_PLAYER_2", "PLAYER_BUST_PLAYER_3", "PLAYER_BUST_PLAYER_4",
+                    "PLAYER_BUST_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum())
                     disableButtons();
                 this.updateGameState("Turn over");
