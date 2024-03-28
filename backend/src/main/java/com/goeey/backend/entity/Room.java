@@ -460,13 +460,12 @@ public class Room {
             if (player.calculateHandValue() > 21) {
                 // Settle with the player
                 int lossAmount = player.loseBet();
-                ServerEvent bustEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_BUST, player.getBalance(),
-                        getEntityTarget(player.getId()));
+                PlayerResultData result = new PlayerResultData(lossAmount, player.getBalance());
+                ServerEvent bustEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_BUST, result, getEntityTarget(player.getId()));
                 broadcastSink.tryEmitNext(bustEvent);
                 player.setSettled(true); // Player has settled
 
-                return new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE,
-                        new PlayerResultData(lossAmount, player.getBalance()), getEntityTarget(player.getId()));
+                return new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE, result, getEntityTarget(player.getId()));
             } else {
                 // Wait for verdict
                 return new ServerEvent<>(ServerEvent.Type.PLAYER_STAND, null, getEntityTarget(player.getId()));
