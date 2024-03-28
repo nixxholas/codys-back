@@ -95,10 +95,10 @@ public class ProcessServerMessage {
                 processPlayerStand(event);
                 break;
             case PLAYER_BET:
-                //not implemented yet
                 processPlayerBet(event);
                 break;
             case BET:
+                processBet(event);
                 break;
             case PLAYER_JOINED:
                 processPlayerJoined(event);
@@ -396,6 +396,10 @@ public class ProcessServerMessage {
     }
 
     private static void processPlayerBet(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processBet(ServerEvent<?> event){
         System.out.println(event.getMessage());
     }
 
