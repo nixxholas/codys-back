@@ -90,7 +90,7 @@ public class Player extends BasePlayer {
     }
 
     public synchronized boolean shouldStillDraw() {
-        return (calculateHandValue() < 21 && !isStanding() && !isDoubleDown()) && !settled;
+        return (calculateHandValue() <= 21 && !isStanding() && !isDoubleDown()) && !settled;
     }
 
     public synchronized boolean isSettled() {
