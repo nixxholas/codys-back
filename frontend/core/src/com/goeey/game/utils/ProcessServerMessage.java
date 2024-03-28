@@ -87,11 +87,8 @@ public class ProcessServerMessage {
             case PLAYER_DOUBLE:
                 processPlayerDouble(event);
                 break;
-            case PLAYER_WIN, PLAYER_LOSE:
-                processPlayerWinorLose(event);
-                break;
-            case PLAYER_PUSH:
-                processPlayerPush(event);
+            case PLAYER_WIN, PLAYER_LOSE, PLAYER_PUSH:
+                processPlayerWinorLoseorPush(event);
                 break;
             case PLAYER_BUST:
                 processPlayerBust(event);
@@ -244,8 +241,6 @@ public class ProcessServerMessage {
                     "PLAYER_TURN_" + event.getTarget(),
                     false,
                     0));
-
-
         }
     }
 
@@ -340,12 +335,15 @@ public class ProcessServerMessage {
             System.out.println(card.getSuit());
             System.out.println(targetPlayer);
             if(gs instanceof GameScreen gs){
-                Gdx.app.postRunnable(() -> gs.updateUI(card, targetPlayer, false, 0));
+                Gdx.app.postRunnable(() -> gs.updateUI(card,
+                        "DRAW_" + targetPlayer,
+                        false,
+                        0));
             }
         }
     }
 
-    private static void processPlayerWinorLose(ServerEvent<?> event){
+    private static void processPlayerWinorLoseorPush(ServerEvent<?> event){
         System.out.println(event.getMessage());
         String message = event.getMessage().toString();
         JsonObject messageObject = JsonParser.parseString(message).getAsJsonObject();
@@ -362,10 +360,6 @@ public class ProcessServerMessage {
         }
     }
 
-    private static void processPlayerPush(ServerEvent<?> event){
-        System.out.println(event.getMessage());
-    }
-
     private static void processPlayerBust(ServerEvent<?> event){
         System.out.println(event.getMessage());
         boolean error = false;
@@ -376,6 +370,10 @@ public class ProcessServerMessage {
             if(gs instanceof GameScreen gs){
                 Gdx.app.postRunnable(() -> gs.updateUI(null,
                         "PLAYER_LOSE_" + event.getTarget(),
+                        false,
+                        (int)earnings));
+                Gdx.app.postRunnable(() -> gs.updateUI(null,
+                        "PLAYER_BUST_" + event.getTarget(),
                         false,
                         (int)earnings));
             }

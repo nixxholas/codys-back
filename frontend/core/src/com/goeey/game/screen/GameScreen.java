@@ -92,7 +92,6 @@ public class GameScreen extends ScreenAdapter {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
                         GameManager.socketHandler.hit(game.getPlayerName(), 1);
-                        hitButton.setDisabled(true);
                     }
                 }
             });
@@ -243,37 +242,31 @@ public class GameScreen extends ScreenAdapter {
                     stage.addActor(deal(EntityTarget.DEALER, cardName));
                 }
                 break;
-
             case "DRAW_PLAYER_1":
-                disableButtons();
+                doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_1, cardName));
                 break;
-
             case "DRAW_PLAYER_2":
-                disableButtons();
+                doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_2, cardName));
                 break;
-
             case "DRAW_PLAYER_3":
-                disableButtons();
+                doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_3, cardName));
                 break;
-
             case "DRAW_PLAYER_4":
-                disableButtons();
+                doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_4, cardName));
                 break;
-
             case "DRAW_PLAYER_5":
-                disableButtons();
+                doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_5, cardName));
                 break;
-
             case "PLAYER_TURN_PLAYER_1", "PLAYER_TURN_PLAYER_2", "PLAYER_TURN_PLAYER_3",
                     "PLAYER_TURN_PLAYER_4", "PLAYER_TURN_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum()){
@@ -282,11 +275,11 @@ public class GameScreen extends ScreenAdapter {
                 }else{
                     Gdx.app.postRunnable(() -> this.updateGameState("Player " + seatNum + " turn"));
                 }
-
                 break;
-
             case "PLAYER_STAND_PLAYER_1", "PLAYER_STAND_PLAYER_2", "PLAYER_STAND_PLAYER_3",
-                    "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5":
+                    "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5", "PLAYER_BUST_PLAYER_1",
+                    "PLAYER_BUST_PLAYER_2", "PLAYER_BUST_PLAYER_3", "PLAYER_BUST_PLAYER_4",
+                    "PLAYER_BUST_PLAYER_5":
                 if(seatNum == game.getPlayerSeatNum())
                     disableButtons();
                 this.updateGameState("Turn over");
@@ -303,6 +296,12 @@ public class GameScreen extends ScreenAdapter {
                 if(seatNum == game.getPlayerSeatNum()){
                     this.playerAmt += earnings;
                     this.playerMessage = "You won $" + earnings;
+                }
+                break;
+            case "PLAYER_PUSH_PLAYER_1", "PLAYER_PUSH_PLAYER_2", "PLAYER_PUSH_PLAYER_3",
+                    "PLAYER_PUSH_PLAYER_4", "PLAYER_PUSH_PLAYER_5":
+                if(seatNum == game.getPlayerSeatNum()){
+                    this.playerMessage = "It is a push";
                 }
                 break;
             case "COUNTDOWN":
