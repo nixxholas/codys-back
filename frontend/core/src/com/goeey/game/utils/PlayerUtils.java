@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class PlayerUtils {
-    public static Table createLabel(Skin skin, int posX , int posY , String entity, boolean isCurentPlayer){
+    public static Table createLabel(Skin skin, int posX , int posY , String entity, boolean isCurrentPlayer){
         //Create table
         Table buttonContainer = new Table(skin);
         buttonContainer.setTransform(true);
@@ -18,7 +18,7 @@ public class PlayerUtils {
         lbName.setFontScale(1);
 
 
-        if(isCurentPlayer){
+        if(isCurrentPlayer){
             //Player Amount
             Label lblAmt = new Label("Amount: $1000" , skin);
             lblAmt.setFontScale(1);
