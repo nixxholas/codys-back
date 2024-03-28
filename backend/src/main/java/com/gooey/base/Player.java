@@ -154,12 +154,12 @@ public class Player extends BasePlayer {
     public int winBet() {
         int winnings = currentBet;
         if (isBlackjack()) {
-            winnings = (int) (currentBet * 2.5);
+            winnings = (int) (currentBet * 1.5);
             this.balance += winnings; // Blackjack pays 3 to 2
             this.currentBet = 0;
         } else {
-            winnings = currentBet * 2;
-            this.balance += winnings; // Winner gets double their bet
+            winnings = currentBet;
+            this.balance += winnings; // Others pay even money
             this.currentBet = 0;
         }
         return winnings;
