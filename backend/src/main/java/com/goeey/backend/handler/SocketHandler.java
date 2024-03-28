@@ -321,10 +321,11 @@ public class SocketHandler implements WebSocketHandler {
             case LEAVE:
                 // Leave the room
                 Player leftPlayer = room.playerLeave(event.getClientId());
+                // Send a message to the player
+                responseEvent = new ServerEvent(ServerEvent.Type.LEFT, leftPlayer.getName());
+                session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(responseEvent))));
                 // Bring the player back to the lobby
-                lobbySessions.put(leftPlayer.getId(), leftPlayer);
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(
-                        new ServerEvent(ServerEvent.Type.LEAVE, "You have left room " + room.getRoomId())))));
+                return joinLobby(session, leftPlayer.getId());
             case SIT:
                 // Sit the player in a seat;
                 return session.send(Mono.just(session.textMessage(
