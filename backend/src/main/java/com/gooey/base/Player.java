@@ -138,14 +138,16 @@ public class Player extends BasePlayer {
     }
 
     public boolean placeBet(int amount) {
-        if (amount > balance) {
-//            throw new IllegalArgumentException("Bet amount exceeds balance.");
-            return false;
-        }
         if (isDoubleDown()) {
             this.currentBet = 2 * amount;
+            // No need to check if bet amount exceeds balance in here
+            // since it is already checked before doubling down
         } else {
-        this.currentBet = amount;
+            if (amount > balance) {
+//                throw new IllegalArgumentException("Bet amount exceeds balance.");
+                return false;
+            }
+            this.currentBet = amount;
         }
         return true;
     }
@@ -153,25 +155,23 @@ public class Player extends BasePlayer {
     public int winBet() {
         int winnings = currentBet;
         if (isBlackjack()) {
-            winnings = (int) (currentBet * 1.5);
-            this.balance += winnings; // Blackjack pays 3 to 2
-            this.currentBet = 0;
+            winnings = (int) (currentBet * 1.5); // Blackjack pays 3 to 2
         } else {
-            winnings = currentBet;
-            this.balance += winnings; // Others pay even money
-            this.currentBet = 0;
+            winnings = currentBet; // Others pay even money
         }
+        this.balance += winnings;
+        this.currentBet = 0; // Reset current bet to 0 once bet is settled
         return winnings;
     }
 
     public int loseBet() {
         int loss = currentBet;
         this.balance -= loss;
-        this.currentBet = 0; // Loss already accounted for when bet was placed
+        this.currentBet = 0; // Reset current bet to 0 once bet is settled
         return loss;
     }
 
     public void push() { // In case of a tie
-        this.currentBet = 0;
+        this.currentBet = 0; // Reset current bet to 0 once bet is settled
     }
 }

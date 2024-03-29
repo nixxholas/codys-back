@@ -394,7 +394,7 @@ public class Room {
 
     public ServerEvent stand(int seatNumber) {
         if (gameState != GameState.PLAYER_TURN) {
-            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to hit.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to stand.");
         }
         if (!noMoreBets) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Game not started.");
@@ -424,7 +424,7 @@ public class Room {
     public ServerEvent doubleDown(int seatNumber) {
         // If game state is not player turn, return an error, wrong time to double down
         if (gameState != GameState.PLAYER_TURN) {
-            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to hit.");
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Not the right time to double down.");
         }
         // If the game has not started, return an error, game not started
         if (!noMoreBets) {
@@ -445,6 +445,9 @@ public class Room {
         if (player.getNumCards() > 2) {
             return new ServerEvent<>(ServerEvent.Type.ERROR, "Can only double down on the first two cards.");
         }
+        if (2 * player.getCurrentBet() > player.getBalance()) {
+            return new ServerEvent<>(ServerEvent.Type.ERROR, "Total bet amount exceeds balance.");
+        }
 
         if (!player.isStanding()) {
             player.setDoubleDown(true);
@@ -454,8 +457,6 @@ public class Room {
             // Broadcast the card to all players
             ServerEvent<Card> cardEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_DOUBLE, card, getEntityTarget(player.getId()));
             broadcastSink.tryEmitNext(cardEvent);
-
-            player.setStanding(true); // Player is forced to stand as he can only take one card after doubling down
 
             if (player.calculateHandValue() > 21) {
                 // Settle with the player
@@ -468,6 +469,7 @@ public class Room {
                 return new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE, result, getEntityTarget(player.getId()));
             } else {
                 // Wait for verdict
+                player.setStanding(true); // Player is forced to stand as he can only take one card after doubling down
                 return new ServerEvent<>(ServerEvent.Type.PLAYER_STAND, null, getEntityTarget(player.getId()));
             }
         }
