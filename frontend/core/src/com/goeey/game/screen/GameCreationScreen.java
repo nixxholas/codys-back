@@ -20,13 +20,8 @@ public class GameCreationScreen extends ScreenAdapter {
     private Stage stage;
     private TextField nameTextfield;
     private Skin skin;
-
     private String[] roomsList;
-
-    private boolean playerSat = false;
-
-    public int numPlayers = 0;
-
+    private int numPlayers = 0;
 
     public GameCreationScreen (GameManager game) {
         this.game = game;
@@ -38,10 +33,6 @@ public class GameCreationScreen extends ScreenAdapter {
         if(roomsList != null){
             this.roomsList  = Arrays.copyOf(roomsList, roomsList.length);
         }
-    }
-
-    public  void setPlayerSat(boolean playerSat) {
-        this.playerSat = playerSat;
     }
 
     public void setNumPlayers(int numPlayers) {
@@ -74,6 +65,9 @@ public class GameCreationScreen extends ScreenAdapter {
                     GameManager.socketHandler.connect(game.getPlayerName());
                     GameManager.socketHandler.awaitPlayer();
 
+                    //Player Connected
+                    GameManager.playerConnected = true;
+
                     //Getting all Rooms from Backend
                     GameManager.socketHandler.resetLatch(1);
                     GameManager.socketHandler.listRooms(game.getPlayerName());
@@ -100,15 +94,26 @@ public class GameCreationScreen extends ScreenAdapter {
                                 GameManager.socketHandler.joinRoom(game.getPlayerName(), roomsList[i]);
                                 GameManager.socketHandler.awaitPlayer();
                                 System.out.println("I am trying to join room:" + roomsList[i]);
-                                //find the available seat for each player in the room
-                                GameManager.socketHandler.resetLatch(1);
-                                GameManager.socketHandler.sit(game.getPlayerName(), ++numPlayers);
-                                GameManager.socketHandler.awaitPlayer();
-                                playerSat = true;
-                                game.setEntityType(numPlayers);
+
+                                //Find the available seat for each player in the room
+                                int count = 0;
+                                while (count < 5 && !GameManager.playerSeated){
+                                    GameManager.socketHandler.resetLatch(1);
+                                    GameManager.socketHandler.sit(game.getPlayerName(), ++numPlayers);
+                                    GameManager.socketHandler.awaitPlayer();
+                                    if(numPlayers == 5){
+                                        numPlayers = 0;
+                                    }
+                                    count++;
+                                }
+
+                                //Setting the player seat number
+                                if(GameManager.playerSeated){
+                                    game.setEntityType(numPlayers);
+                                }
                             }
                         }
-                        if(!playerSat){
+                        if(!GameManager.playerSeated){
                             System.out.println("ALL ROOMS FULL, CREATE NEW ROOM");
                             GameManager.socketHandler.createAndJoin(game.getPlayerName());
                             GameManager.socketHandler.sit(game.getPlayerName(), 1);
@@ -118,8 +123,6 @@ public class GameCreationScreen extends ScreenAdapter {
                 }catch (InterruptedException ex){
                     ex.printStackTrace();
                 }
-                GameScreen.playerInRoom = true;
-                GameScreen.playerSitting = true;
                 game.setScreen(new GameScreen(game, 1000));
             }
         });

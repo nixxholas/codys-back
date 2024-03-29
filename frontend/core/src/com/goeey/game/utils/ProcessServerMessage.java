@@ -1,5 +1,6 @@
 package com.goeey.game.utils;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.goeey.backend.util.SerializationUtil;
@@ -19,8 +20,6 @@ public class ProcessServerMessage {
     //Creating GSON Instance
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static ScreenAdapter gs;
-
-
 
     public static void setGS(ScreenAdapter gs){
         ProcessServerMessage.gs = gs;
@@ -53,19 +52,15 @@ public class ProcessServerMessage {
                 processPlayerTurn(event);
                 break;
             case CONNECT:
-                //not implemented yet
                 processConnect(event);
                 break;
             case DISCONNECT:
-                //not implemented yet
                 processDisconnect(event);
                 break;
             case ROOM_LIST:
-                //not implemented yet
                 processRoomList(event);
                 break;
             case ROOM_PLAYERS:
-                //not implemented yet
                 processRoomPlayers(event);
                 break;
             case REGISTERED:
@@ -100,16 +95,18 @@ public class ProcessServerMessage {
             case BET:
                 processBet(event);
                 break;
-            case PLAYER_JOINED:
+            case JOINED:
                 processPlayerJoined(event);
                 break;
             case PLAYER_LEFT:
-                //not implemented yet
                 processPlayerLeft(event);
                 break;
-            case PLAYER_DISCONNECTED:
+            case LEAVE:
+                processPlayerLeave(event);
+                break;
+            case PLAYER_DISCONNECT:
                 //not implemented yet
-                processPlayerDisconnected(event);
+                processPlayerDisconnect(event);
                 break;
             case PONG:
                 //not implemented yet
@@ -122,36 +119,35 @@ public class ProcessServerMessage {
 
     private static void processError(ServerEvent<?> event){
         if(event.getMessage().equals("You are already sitting.")){
-            System.out.println("SUCCESS!!");
-            if(gs instanceof  GameCreationScreen gsc){
-                gsc.setPlayerSat(true);
-            }
-            //GameCreationScreen.playerSat = true;
+            GameManager.playerSeated = true;
 
         } else if (event.getMessage().equals("Seat is already taken.")) {
-            System.out.println("FAILED!!");
-            if(gs instanceof  GameCreationScreen gsc){
-                gsc.setPlayerSat(false);
-            }
-            //GameCreationScreen.playerSat = false;
+            GameManager.playerSeated = false;
         }
     }
 
     private static void processPlayerSat(ServerEvent<?> event){
-        System.out.println("SUCCESS!!");
-        if(gs instanceof  GameCreationScreen gsc){
-            gsc.setPlayerSat(true);
-        }
-        //GameCreationScreen.playerSat = true;
+        GameManager.playerSeated = true;
     }
 
     private static void processCountdown(ServerEvent<?> event){
         System.out.println(event.getMessage());
         if(gs instanceof GameScreen gs1){
             int num = (int) Double.parseDouble(event.getMessage().toString());
-            Gdx.app.postRunnable(() -> gs1.updateGameState("Countdown: " + num));
-        }
+            //Checking is this is the first countdown to print a different message
+            if(gs1.isFirstCountDown()){
+                Gdx.app.postRunnable(() -> gs1.updateGameState("Please place bets, game starts in : " + num));
+                if(num == 1){
+                    gs1.setFirstCountDown(false);
+                    if(!gs1.hasBet()){
+                        Gdx.app.postRunnable(() -> gs1.unseatPlayer());
+                    }
 
+                }
+            }else{
+                Gdx.app.postRunnable(() -> gs1.updateGameState("Countdown: " + num));
+            }
+        }
     }
 
     private static void processDeal(ServerEvent<?> event){
@@ -372,14 +368,18 @@ public class ProcessServerMessage {
 
     private static void processPlayerJoined(ServerEvent<?> event){
         System.out.println(event.getMessage());
+        GameManager.playerInRoom = true;
     }
 
     private static void processPlayerLeft(ServerEvent<?> event){
-        System.out.println("SERVER PLAYER LEFT");
         System.out.println(event.getMessage());
     }
 
-    private static void processPlayerDisconnected(ServerEvent<?> event){
+    private static void processPlayerLeave(ServerEvent<?> event){
+        System.out.println(event.getMessage());
+    }
+
+    private static void processPlayerDisconnect(ServerEvent<?> event){
         System.out.println(event.getMessage());
     }
 

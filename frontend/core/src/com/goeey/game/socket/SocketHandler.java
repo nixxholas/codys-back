@@ -111,16 +111,6 @@ public class SocketHandler {
         }
     }
 
-    public void leaveSeat(String clientId, int seatNum){
-        ClientEvent sitEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE_SEAT, Integer.toString(seatNum));
-        try{
-            ws.send(SerializationUtil.serializeString(sitEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
-    }
-
     public void bet(String clientId, double amount){
         DecimalFormat df = new DecimalFormat("#.#");
         String amt = df.format(amount);
@@ -153,25 +143,6 @@ public class SocketHandler {
         }
     }
 
-    public void leaveseat(String clientId){
-        ClientEvent leaveSeatEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE_SEAT);
-        try{
-            ws.send(SerializationUtil.serializeString(leaveSeatEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
-    }
-
-    public void leaveroom(String clientId){
-        ClientEvent leaveEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE, "");
-        try{
-            ws.send(SerializationUtil.serializeString(leaveEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
-    }
 
     public void doubleDown(String clientId, double amount){
         DecimalFormat df = new DecimalFormat("#.#");
@@ -215,9 +186,13 @@ public class SocketHandler {
         }
     }
 
-    public void closeWebSocket() {
-        if(ws.isOpen()){
-            ws.close();
+    public void leaveseat(String clientId){
+        ClientEvent leaveSeatEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE_SEAT);
+        try{
+            ws.send(SerializationUtil.serializeString(leaveSeatEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
         }
     }
 
@@ -228,6 +203,22 @@ public class SocketHandler {
             ws.getLatch().await();
         }catch (InterruptedException ex){
             ex.printStackTrace();
+        }
+    }
+
+    public void disconnect(String clientId){
+        ClientEvent disconnectEvent = new ClientEvent(clientId, ClientEvent.Type.DISCONNECT);
+        try{
+            ws.send(SerializationUtil.serializeString(disconnectEvent));
+            ws.getLatch().await();
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public void closeWebSocket() {
+        if(ws.isOpen()){
+            ws.close();
         }
     }
 }

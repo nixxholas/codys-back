@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.goeey.game.screen.GameCreationScreen;
 import com.goeey.game.screen.GameScreen;
 import com.goeey.game.screen.MainMenuScreen;
 import com.goeey.game.socket.SocketHandler;
@@ -23,6 +24,10 @@ public class GameManager extends Game {
     public ExtendViewport gameViewPort;
     private Skin skin;
     public static SocketHandler socketHandler;
+    public static boolean playerConnected = false;
+    public static boolean playerSeated = false;
+    public static boolean playerInRoom = false;
+
 
     public boolean isDisposed() {
         return isDisposed;
@@ -97,38 +102,21 @@ public class GameManager extends Game {
     public void dispose() {
         System.out.println("disposing game");
 
-        //Handle the case where user abruptly closes the window
-        //Check if player is still seated and remove them from the seat
-        if(GameScreen.playerSitting){
+
+        //Remove player from room before disconnecting
+        if(playerInRoom)
+        {
             if(GameManager.socketHandler.getWebSocket().isOpen()){
-                System.out.println("HELLO PLAYER STANDING");
                 try {
                     GameManager.socketHandler.resetLatch(1);
-                    GameManager.socketHandler.leaveseat(getPlayerName());
+                    GameManager.socketHandler.leave(getPlayerName());
                     GameManager.socketHandler.awaitPlayer();
+                    System.out.println("PLAYER DISCONNECTED");
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                System.out.println("PLAYER STOOD UP");
-                GameScreen.playerSitting = false;
             }
         }
-
-        //Check if player is still in the room and remove them from the room
-//        if(GameScreen.playerInRoom){
-//            if(GameManager.socketHandler.getWebSocket().isOpen()){
-//                System.out.println("HELLO PLAYER LEAVING");
-//                try {
-//                    GameManager.socketHandler.resetLatch(1);
-//                    GameManager.socketHandler.leaveroom(getPlayerName());
-//                    GameManager.socketHandler.awaitPlayer();
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                System.out.println("PLAYER LEFT");
-//                GameScreen.playerInRoom = false;
-//            }
-//        }
         isDisposed = true;
         socketHandler.closeWebSocket();
     }
