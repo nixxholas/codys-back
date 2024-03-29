@@ -13,8 +13,8 @@ public class CardAnimation extends Actor {
     final static Texture backImage = new Texture("cards/BACK_CARD.png");
     private Texture texture;
 
-    private static int scrWidth = Gdx.graphics.getWidth();
-    private static int scrHeight= Gdx.graphics.getHeight();
+    private static int scrWidth = 1920;
+    private static int scrHeight= 1080;
 
     public CardAnimation() {
         this.texture = new Texture("cards/BACK_CARD.png");
@@ -56,6 +56,7 @@ public class CardAnimation extends Actor {
         float startXPos = (scrWidth-cWidth) / 2f;
         float startYPos = scrHeight / 1.2f;
         newC.setPosition(startXPos, startYPos);
+        System.out.println(endXPos-cWidth+(cWidth / 5)*2);
         SequenceAction sa;
         if (cardNum <=4){
             sa = newC.cardAnimation(0f, (int) (endXPos - cWidth + (cWidth / 5) * (cardNum + 1))

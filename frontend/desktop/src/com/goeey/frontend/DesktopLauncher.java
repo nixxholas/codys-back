@@ -11,10 +11,11 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setTitle("black-jack-game");
-		config.setWindowedMode(1920, 1080);
+		config.setWindowedMode(1440, 810);
 		config.useVsync(true);
 		config.setForegroundFPS(60);
-		config.setWindowSizeLimits(1920, 1080, 9999, 9999);
+		config.setWindowSizeLimits(960, 540, -1, -1);
+		config.setResizable(true);
 		GameManager gm = new GameManager();
 		config.setWindowListener(new Lwjgl3WindowAdapter() {
 			@Override

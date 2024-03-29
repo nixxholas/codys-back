@@ -34,8 +34,8 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     private Stage stage;
     private int cWidth;
     private int cHeight;
-    private int scrWidth = Gdx.graphics.getWidth();
-    private int scrHeight= Gdx.graphics.getHeight();
+    private static int scrWidth = 1920;
+    private static int scrHeight= 1080;
     private static Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
 
     private Label gameStateLabel;
@@ -242,8 +242,8 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 Texture cardFront = new Texture("cards/" + cardName + ".png");
                 CardAnimation dReveal = new CardAnimation(cardBack);
                 dReveal.setTexture(cardFront);
-                int x = 853;
-                int y = 675;
+                int x = 870;
+                int y = 650;
                 dReveal.setPosition(x, y);
                 stage.addActor(dReveal);
                 break;
@@ -439,7 +439,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     public void createLeaveGameButton() {
         // TextButton
         TextButton leaveButton = new TextButton("Leave Game", game.getSkin());
-        leaveButton.setPosition(20, Gdx.graphics.getHeight() - leaveButton.getHeight() - 20); // Position the button
+        leaveButton.setPosition(20, scrHeight - leaveButton.getHeight() - 20); // Position the button
 
         leaveButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
@@ -510,6 +510,13 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         stage.getViewport().update(width, height, true);
     }
 
+    public static int getScrWidth() {
+        return scrWidth;
+    }
+
+    public static int getScrHeight() {
+        return scrHeight;
+    }
 
     @Override
     public void dispose() {

@@ -9,8 +9,8 @@ public class CalculateXY {
     static float startAngle = -30;
     // The sweep angle of the arc in degrees
     static float sweepAngle = -120;
-    private static float scrWidth = Gdx.graphics.getWidth();
-    private static float scrHeight= Gdx.graphics.getHeight();
+    private static float scrWidth = 1920;
+    private static float scrHeight= 1080;
     public static float calcXPos(float slotNum, int numPlayers){
         float radius = Math.min(scrWidth, scrHeight) / 1.4f;
         // The x coordinate of the arc's center

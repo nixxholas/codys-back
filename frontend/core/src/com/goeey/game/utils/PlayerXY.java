@@ -43,8 +43,8 @@ public class PlayerXY {
         etList.add(EntityTarget.PLAYER_3);etList.add(EntityTarget.PLAYER_4);
         etList.add(EntityTarget.PLAYER_5);
 
-        int dealX = (int) (Gdx.graphics.getWidth()/2.035f);
-        int dealY = (int) (Gdx.graphics.getHeight()/1.6f);
+        int dealX = 960;
+        int dealY = 650;
         playerMap.put(EntityTarget.DEALER, new PlayerXY(dealX, dealY));
 
         //go through etList, put every person as key, and arr as values

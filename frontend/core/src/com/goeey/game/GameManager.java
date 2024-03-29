@@ -3,6 +3,7 @@ package com.goeey.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.goeey.game.screen.GameScreen;
 import com.goeey.game.screen.MainMenuScreen;
@@ -19,7 +20,7 @@ public class GameManager extends Game {
     private String playerName;
     private EntityTarget currentPlayer;
     private int playerSeatNum;
-    public FitViewport gameViewPort;
+    public ExtendViewport gameViewPort;
     private Skin skin;
     public static SocketHandler socketHandler;
 
@@ -36,10 +37,15 @@ public class GameManager extends Game {
     @Override
     public void create() {
         skin = new Skin(Gdx.files.internal("skin/uiskin.json"));
-        gameViewPort = new FitViewport(1920, 1080);
+        gameViewPort = new ExtendViewport(1920, 1080);
         setScreen(new MainMenuScreen(this));
         socketHandler = new SocketHandler("ws://localhost:8080/ws");
     }
+
+    public void resize(int width, int height) {
+        gameViewPort.update(width, height, true);
+    }
+
 
     public void render() {
         super.render();
