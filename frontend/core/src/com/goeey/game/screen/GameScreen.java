@@ -32,7 +32,6 @@ import java.util.TimerTask;
 public class GameScreen extends ScreenAdapter implements ApplicationListener {
     final GameManager game;
     private Skin skin;
-    //private Hud hud;
     private Texture backImage;
     private Texture frontImage;
     private SpriteBatch batch;
@@ -42,36 +41,22 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     private static int scrWidth = 1920;
     private static int scrHeight= 1080;
     private static Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
-
     private Label gameStateLabel;
-
     private Label playerTurnLabel;
     private ArrayList<Label> actionsLabelList = new ArrayList<>();
     private Table actionsTable;
     private boolean gameRunning = false;
-
     private TextButton hitButton;
-
     private TextButton standButton;
-
     private TextButton betButton;
-
     private TextButton doubleDownButton;
-
     private Label lblAmt;
-
     private int playerAmt;
-
     private String playerMessage = null;
-
     private boolean playerLeft = false;
-
     private Timer timer = new Timer();
-
     private boolean gameEnded = false;
-
     private boolean gameRestCalled = false;
-
     private int countdownSeconds = 10;
 
     private boolean firstCountDown = true;
@@ -493,7 +478,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         stage.addActor(table);
     }
 
-
     public void updateGameState(String message) {
         gameStateLabel.setText(message);
     }
@@ -602,11 +586,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
     @Override
-    public void render() {
-
-    }
-
-    @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0.3f, 0, 1);
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
@@ -626,12 +605,9 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         stage.getViewport().update(width, height, true);
     }
 
-    public static int getScrWidth() {
-        return scrWidth;
-    }
+    @Override
+    public void render() {
 
-    public static int getScrHeight() {
-        return scrHeight;
     }
 
     @Override
@@ -639,6 +615,5 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         batch.dispose();
         backImage.dispose();
         frontImage.dispose();
-        stage.dispose();
     }
 }

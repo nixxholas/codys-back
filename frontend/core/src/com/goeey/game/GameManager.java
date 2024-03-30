@@ -16,8 +16,6 @@ import com.gooey.base.socket.ServerEvent;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class GameManager extends Game {
-    public static final int SCREEN_WIDTH = 1920;
-    public static final int screen_height = 1080;
     private String playerName;
     private EntityTarget currentPlayer;
     private int playerSeatNum;
@@ -27,17 +25,6 @@ public class GameManager extends Game {
     public static boolean playerConnected = false;
     public static boolean playerSeated = false;
     public static boolean playerInRoom = false;
-
-
-    public boolean isDisposed() {
-        return isDisposed;
-    }
-
-    public void setDisposed(boolean disposed) {
-        isDisposed = disposed;
-    }
-
-    private boolean isDisposed;
 
     @Override
     public void create() {
@@ -100,9 +87,6 @@ public class GameManager extends Game {
     }
 
     public void dispose() {
-        System.out.println("disposing game");
-
-
         //Remove player from room before disconnecting
         if(playerInRoom)
         {
@@ -117,7 +101,6 @@ public class GameManager extends Game {
                 }
             }
         }
-        isDisposed = true;
         socketHandler.closeWebSocket();
     }
 }

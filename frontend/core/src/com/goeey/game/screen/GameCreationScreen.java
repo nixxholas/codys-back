@@ -136,7 +136,6 @@ public class GameCreationScreen extends ScreenAdapter {
 
         // Prepare Table
         Table uiTable = new Table();
-//        uiTable.setDebug(true);
         uiTable.setFillParent(true);
         uiTable.row().height(40);
         uiTable.add(nameLabel).padRight(10).right();
@@ -163,11 +162,5 @@ public class GameCreationScreen extends ScreenAdapter {
 
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
-    }
-    public void hide() {
-        dispose();
-    }
-    public void dispose() {
-        stage.dispose();
     }
 }

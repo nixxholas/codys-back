@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.goeey.game.GameManager;
-import org.java_websocket.enums.ReadyState;
 
 public class MainMenuScreen extends ScreenAdapter {
     private final GameManager game;
@@ -71,13 +70,4 @@ public class MainMenuScreen extends ScreenAdapter {
         stage.getViewport().update(width, height, true);
     }
 
-    @Override
-    public void hide() {
-        dispose();
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
 }

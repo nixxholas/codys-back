@@ -51,10 +51,6 @@ public class SocketHandler {
         listenerThread.start();
     }
 
-    public ReadyState getState() {
-        return ws.getReadyState();
-    }
-
     public WebSocket getWebSocket(){
         return this.ws;
     }
@@ -62,10 +58,6 @@ public class SocketHandler {
     public void resetLatch(int num){
         this.latch = new CountDownLatch(num);
    }
-
-    public CountDownLatch getLatch(){
-        return this.latch;
-    }
 
     public void awaitPlayer() throws InterruptedException {
         latch.await(); // Wait until the latch count becomes zero
