@@ -51,7 +51,7 @@ public class WebSocket extends WebSocketClient {
 
     public boolean isReplyToClientMessage(ServerEvent.Type eventType) {
         return switch (eventType) {
-            case ROOM_PLAYERS, ROOM_LIST, PLAYER_SAT -> true;
+            case ROOM_PLAYERS, ROOM_LIST, PLAYER_SAT, JOINED_ROOM -> true;
             default -> false;
         };
     }

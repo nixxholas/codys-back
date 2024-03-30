@@ -59,7 +59,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     public void unseatPlayer(){
         System.out.println("Unseat Player");
         betButton.setDisabled(true);
-        GameManager.playerSeated = false;
+        gameState.setSeated(false);
         disableButtons();
         try {
             //Remove player from seat so that card will not be dealt to him
@@ -156,7 +156,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                     if(!betButton.isDisabled()){
                         gameState.setHasBet(true);
                         betButton.setDisabled(true);
-                        if(!GameManager.playerSeated){
+                        if(!gameState.isSeated()){
                             seatPlayer();
                         }
                         try {
@@ -459,8 +459,8 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             public void clicked(InputEvent event, float x, float y) {
                 gameState.setPlayerLeft(true);
                 timer.cancel();
-                GameManager.playerSeated = false;
-                GameManager.playerInRoom = false;
+                gameState.setSeated(false);
+                gameState.setInRoom(false);
                 try {
                     GameManager.socketHandler.resetLatch(1);
                     GameManager.socketHandler.leaveRoom(game.getPlayerName());

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.goeey.game.entity.GameState;
 import com.goeey.game.screen.GameCreationScreen;
 import com.goeey.game.screen.GameScreen;
 import com.goeey.game.screen.MainMenuScreen;
@@ -18,9 +19,6 @@ public class GameManager extends Game {
     public FitViewport gameViewPort;
     private Skin skin;
     public static SocketHandler socketHandler;
-    public static boolean playerConnected = false;
-    public static boolean playerSeated = false;
-    public static boolean playerInRoom = false;
     public GameState gameState;
 
 

@@ -19,6 +19,8 @@ import com.google.gson.JsonParser;
 
 import java.util.Arrays;
 
+import static com.gooey.base.socket.ClientEvent.Type.LEAVE;
+
 
 public class ProcessServerMessage {
     //Creating GSON Instance
@@ -35,7 +37,7 @@ public class ProcessServerMessage {
                 processError(event, gameState);
                 break;
             case PLAYER_SAT:
-                processPlayerSat(event);
+                processPlayerSat(event, gameState);
                 break;
             case COUNTDOWN:
                 processCountdown(event, gameState);
@@ -95,14 +97,11 @@ public class ProcessServerMessage {
             case BET:
                 processBet(event);
                 break;
-            case JOINED:
+            case JOINED_LOBBY:
                 processPlayerJoined(event, gameState);
                 break;
             case PLAYER_LEFT:
                 processPlayerLeft(event);
-                break;
-            case LEAVE:
-                processPlayerLeave(event);
                 break;
             case PLAYER_DISCONNECT:
                 //not implemented yet
@@ -119,7 +118,7 @@ public class ProcessServerMessage {
 
     private static void processError(ServerEvent<?> event, GameState gameState){
         if(event.getMessage().equals("You are already sitting.")){
-            GameManager.playerSeated = true;
+            gameState.setSeated(true);
 
         } else if (event.getMessage().equals("Seat is already taken.")) {
             System.out.println("FAILED!!");
@@ -143,8 +142,8 @@ public class ProcessServerMessage {
         }
     }
 
-    private static void processPlayerSat(ServerEvent<?> event){
-        GameManager.playerSeated = true;
+    private static void processPlayerSat(ServerEvent<?> event, GameState gameState){
+        gameState.setSeated(true);
     }
 
     private static void processCountdown(ServerEvent<?> event, GameState gameState){
@@ -373,7 +372,7 @@ public class ProcessServerMessage {
 
     private static void processPlayerJoined(ServerEvent<?> event, GameState gameState){
         System.out.println(event.getMessage());
-        GameManager.playerInRoom = true;
+        gameState.setInRoom(true);
         gameState.setRegistered(true);
         gameState.setInLobby(true);
         gameState.setSeated(true);
@@ -385,10 +384,6 @@ public class ProcessServerMessage {
     }
 
     private static void processPlayerLeft(ServerEvent<?> event){
-        System.out.println(event.getMessage());
-    }
-
-    private static void processPlayerLeave(ServerEvent<?> event){
         System.out.println(event.getMessage());
     }
 
