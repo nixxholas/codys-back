@@ -17,6 +17,8 @@ public class ServerEvent<E> extends BaseEvent<E> {
         COUNTDOWN,
         UPDATE,
         JOINED,
+        JOINED_LOBBY,
+        JOINED_ROOM,
         LEFT,
         SIT,
         STOOD_UP,

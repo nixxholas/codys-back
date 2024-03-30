@@ -260,10 +260,10 @@ public class SocketHandler implements WebSocketHandler {
                 if (!isPlayerInLobby(event.getClientId())) {
                     joinLobby(session, event.getClientId());
                     // Send a welcome message to the player
-                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_LOBBY, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
                 } else {
                     // Send a warning message to the player
-                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "You are already in the lobby!")))));
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_LOBBY, "You are already in the lobby!")))));
                 }
             case REGISTER:
                 // Create a new player
@@ -282,7 +282,7 @@ public class SocketHandler implements WebSocketHandler {
                 if (isPlayerInLobby(event.getClientId()) && getPlayerRoomByPlayerId(event.getClientId()) == null) {
                     movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
                 }
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, roomToJoin.getRoomId())))));
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_ROOM, roomToJoin.getRoomId())))));
             case LIST_ROOMS:
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ROOM_LIST, rooms.keySet())))));
             case ROOM_PLAYERS: {
@@ -301,7 +301,7 @@ public class SocketHandler implements WebSocketHandler {
                 // Join the player to the room
                 movePlayerToRoom(joiningAndCreatingPlayer, room, session);
                 // Send a welcome message to the player
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to room " + room.getRoomId())))));
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_ROOM, "Welcome to room " + room.getRoomId())))));
             default:
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid event")))));
         }
