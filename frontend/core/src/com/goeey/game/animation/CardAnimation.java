@@ -17,12 +17,12 @@ public class CardAnimation extends Actor {
     private static int scrHeight= 1080;
 
     public CardAnimation() {
-        this.texture = new Texture("cards/BACK_CARD.png");
+        texture = new Texture("cards/BACK_CARD.png");
         setBounds(0, 0, texture.getWidth(), texture.getHeight()); // setBounds should be called here
     }
     public CardAnimation(Texture texture) {
         this.texture = texture;
-        setBounds(0, 0, texture.getWidth(), texture.getHeight()); // setBounds should be called here
+        setBounds(0, 0, this.texture.getWidth(), this.texture.getHeight()); // setBounds should be called here
     }
 
     public void setTexture(Texture t){

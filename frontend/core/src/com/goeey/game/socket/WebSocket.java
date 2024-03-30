@@ -1,15 +1,20 @@
 package com.goeey.game.socket;
 
+import com.goeey.backend.util.SerializationUtil;
+import com.goeey.game.entity.GameState;
+import com.goeey.game.utils.ProcessServerMessage;
+import com.gooey.base.socket.ServerEvent;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
 
-public class WebSocket extends WebSocketClient{
+public class WebSocket extends WebSocketClient {
     private CountDownLatch latch = new CountDownLatch(1);
-    private LinkedBlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private CompletableFuture<ServerEvent<?>> messageFuture;
+
 
     public WebSocket(URI serverUri) {
         super(serverUri);
@@ -17,33 +22,51 @@ public class WebSocket extends WebSocketClient{
 
     @Override
     public void onOpen(ServerHandshake serverHandshake) {
-        System.out.println("Socket is opened");
-        System.out.println(Thread.currentThread());
+        GameState.getGameState().setConnected(true);
+        System.out.println("Socket open:" + Thread.currentThread());
     }
+
     @Override
     public void onMessage(String message) {
-        System.out.println("Received: " + message);
-        try{
-            this.messageQueue.put(message);
-            this.latch.countDown();
-        }catch (Exception ex){
-            ex.printStackTrace();
+        ServerEvent<?> serverEvent =  SerializationUtil.deserializeString(message, ServerEvent.class);
+
+        if (isReplyToClientMessage(serverEvent.getType())) {
+            System.out.println("Reply: " + message + " on " + Thread.currentThread());
+            if(messageFuture != null && !messageFuture.isDone()) {
+                messageFuture.complete(serverEvent);
+            }
+
+        } else {
+            System.out.println("Received: " + message + " on " + Thread.currentThread());
+            ProcessServerMessage.callMethod(serverEvent, GameState.getGameState());
         }
+    }
+
+    public CompletableFuture<ServerEvent<?>> sendAsyncMessage(String message) {
+        messageFuture = new CompletableFuture<>();
+        System.out.println("Sent: " + message + " on " + Thread.currentThread());
+        this.send(message);
+        return messageFuture;
+    }
+
+    public boolean isReplyToClientMessage(ServerEvent.Type eventType) {
+        return switch (eventType) {
+            case ROOM_PLAYERS, ROOM_LIST, PLAYER_SAT -> true;
+            default -> false;
+        };
     }
 
     public CountDownLatch getLatch(){
         return this.latch;
     }
 
-    public LinkedBlockingQueue<String> getMessageQueue(){
-        return this.messageQueue;
-    }
     @Override
     public void onClose(int i, String s, boolean b) {
-        System.out.println("Socket is closed");
+        GameState.getGameState().setConnected(false);
+        System.out.println("Socket closed: " + Thread.currentThread());
     }
     @Override
     public void onError(Exception e) {
-        System.out.println("Socket has an error");
+        e.printStackTrace();
     }
 }

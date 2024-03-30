@@ -1,58 +1,63 @@
 package com.goeey.game.socket;
 
 import com.goeey.backend.util.SerializationUtil;
-import com.goeey.game.utils.ProcessServerMessage;
+import com.goeey.game.GameManager;
+import com.goeey.game.entity.GameState;
 import com.gooey.base.socket.ClientEvent;
 import com.gooey.base.socket.ServerEvent;
-import org.java_websocket.enums.ReadyState;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 
 public class SocketHandler {
-    private final WebSocket ws;
+    private static WebSocket ws;
+    private final GameManager game;
+    private final GameState gameState;
     private CountDownLatch latch = new CountDownLatch(1);
-    public SocketHandler(String uriStr) {
 
-        URI uri = null;
-        try {
-            uri = new URI(uriStr);
-        } catch (URISyntaxException e) {
-            System.out.println("invalid server uri");
+    public SocketHandler(String uriStr, GameManager game) throws URISyntaxException {
+        this.game = game;
+        this.gameState = GameState.getGameState();
+
+        if(ws == null || ws.isClosed()) {
+            ws = new WebSocket(new URI(uriStr));
         }
-
-        ws = new WebSocket(uri);
-        startListening();
     }
 
-    public void startListening(){
-        System.out.println("Starting to Listen");
-        Thread listenerThread = new Thread(() -> {
+    public void establishConnection(){
+        if (!gameState.isConnected()) {
             try {
-                System.out.println(ws.getReadyState());
-                ws.connectBlocking();
-                System.out.println(ws.getReadyState());
+                if(ws.isClosed()) {
+                    ws.reconnectBlocking();
 
-                //Listen to all socket events
-                while (ws.isOpen()){
-                    if(ws.getMessageQueue() != null){
-                        String message = ws.getMessageQueue().take();
-                        ServerEvent<?> serverEvent =  SerializationUtil.deserializeString(message, ServerEvent.class);
-                        ProcessServerMessage.callMethod(serverEvent);
-                        this.latch.countDown();
-                    }
+                } else {
+                    ws.connectBlocking(5, TimeUnit.SECONDS);
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void removePlayerFromRoom() {
+        if(gameState.isInRoom() && ws.isOpen())
+        {
+            try {
+                GameManager.socketHandler.resetLatch(1);
+                GameManager.socketHandler.leaveRoom(game.getPlayerName());
+                GameManager.socketHandler.awaitPlayer();
+                System.out.println("PLAYER DISCONNECTED");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        });
-        listenerThread.start();
-    }
-
-    public WebSocket getWebSocket(){
-        return this.ws;
+        }
     }
 
     public void resetLatch(int num){
@@ -63,44 +68,42 @@ public class SocketHandler {
         latch.await(); // Wait until the latch count becomes zero
     }
 
-    public void register(String clientId){
+    public void register(String clientId) throws InterruptedException{
         ClientEvent registerEvent = new ClientEvent(clientId, ClientEvent.Type.REGISTER, clientId);
-        try{
-            ws.send(SerializationUtil.serializeString(registerEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
+        ws.send(SerializationUtil.serializeString(registerEvent));
     }
 
-    public void connect(String clientId){
+    public void joinLobby(String clientId) throws InterruptedException{
         ClientEvent connectEvent = new ClientEvent(clientId, ClientEvent.Type.CONNECT, clientId);
-        try{
-            ws.send(SerializationUtil.serializeString(connectEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
+        ws.send(SerializationUtil.serializeString(connectEvent));
     }
 
-    public void createAndJoin(String clientId){
+    public void joinRoom(String clientId, String roomId){
+        ClientEvent joinRoomEvent = new ClientEvent(clientId, ClientEvent.Type.JOIN, roomId);
+        CompletableFuture<ServerEvent<?>> futureMessage = ws.sendAsyncMessage(SerializationUtil.serializeString(joinRoomEvent));
+        while(!futureMessage.isDone()) {
+
+        }
+        gameState.setInRoom(true);
+    }
+
+    public String createAndJoin(String clientId) throws ExecutionException, InterruptedException {
         ClientEvent createAndJoinEvent = new ClientEvent(clientId, ClientEvent.Type.CREATE_AND_JOIN_ROOM, clientId);
-        try{
-            ws.send(SerializationUtil.serializeString(createAndJoinEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
+        CompletableFuture<ServerEvent<?>> futureMessage = ws.sendAsyncMessage(SerializationUtil.serializeString(createAndJoinEvent));
+        while(!futureMessage.isDone()) {
+
         }
+        return futureMessage.get().getMessage().toString().split(" ")[3];
     }
 
-    public void sit(String clientId, int seatNum){
+    public void sit(String clientId, int seatNum) {
         ClientEvent sitEvent = new ClientEvent(clientId, ClientEvent.Type.SIT, Integer.toString(seatNum));
-        try{
-            ws.send(SerializationUtil.serializeString(sitEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
+        gameState.setSeatNumber(seatNum);
+        CompletableFuture<ServerEvent<?>> futureMessage = ws.sendAsyncMessage(SerializationUtil.serializeString(sitEvent));
+        while(!futureMessage.isDone()) {
+
         }
+        gameState.setSeated(true);
     }
 
     public void bet(String clientId, double amount){
@@ -148,34 +151,30 @@ public class SocketHandler {
         }
     }
 
-    public void joinRoom(String clientId, String roomId){
-        ClientEvent joinRoomEvent = new ClientEvent(clientId, ClientEvent.Type.JOIN, roomId);
-        try{
-            ws.send(SerializationUtil.serializeString(joinRoomEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
-    }
-
-    public void listRooms(String clientId){
+    public ArrayList<String> listRooms(String clientId) throws InterruptedException, ExecutionException {
         ClientEvent listRoomEvent = new ClientEvent(clientId, ClientEvent.Type.LIST_ROOMS, "");
-        try{
-            ws.send(SerializationUtil.serializeString(listRoomEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
+
+        CompletableFuture<ServerEvent<?>> futureMessage = ws.sendAsyncMessage(SerializationUtil.serializeString(listRoomEvent));
+        while(!futureMessage.isDone()) {
+
         }
+        ArrayList<String> roomIds = new ArrayList<>();
+        System.out.println(futureMessage.get().getMessage());
+        for(Object roomId: (ArrayList<?>)futureMessage.get().getMessage()) {
+            roomIds.add(roomId.toString());
+        }
+
+        return roomIds;
     }
 
-    public void roomPlayers(String clientId, String roomId){
+    public int getNumPlayersInRoom(String clientId, String roomId) throws ExecutionException, InterruptedException {
         ClientEvent roomPlayersEvent = new ClientEvent(clientId, ClientEvent.Type.ROOM_PLAYERS, roomId);
-        try{
-            ws.send(SerializationUtil.serializeString(roomPlayersEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
+
+        CompletableFuture<ServerEvent<?>> futureMessage = ws.sendAsyncMessage(SerializationUtil.serializeString(roomPlayersEvent));
+        while(!futureMessage.isDone()) {
+
         }
+        return (int) Double.parseDouble(futureMessage.get().getMessage().toString());
     }
 
     public void leaveseat(String clientId){
@@ -188,7 +187,7 @@ public class SocketHandler {
         }
     }
 
-    public void leave(String clientId){
+    public void leaveRoom(String clientId){
         ClientEvent leaveEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE);
         try{
             ws.send(SerializationUtil.serializeString(leaveEvent));

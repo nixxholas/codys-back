@@ -4,25 +4,22 @@ import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
+
 import com.goeey.game.GameManager;
 import com.goeey.game.animation.CardAnimation;
+import com.goeey.game.entity.GameState;
 import com.goeey.game.utils.PlayerXY;
 import com.goeey.game.utils.ProcessServerMessage;
 import com.gooey.base.Card;
 import com.gooey.base.EntityTarget;
-import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -30,11 +27,11 @@ import java.util.TimerTask;
 
 
 public class GameScreen extends ScreenAdapter implements ApplicationListener {
-    final GameManager game;
-    private Skin skin;
+    private final GameManager game;
+    private final GameState gameState;
+    private final Skin skin;
     private Texture backImage;
     private Texture frontImage;
-    private SpriteBatch batch;
     private Stage stage;
     private int cWidth;
     private int cHeight;
@@ -43,50 +40,20 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     private static Map<EntityTarget, PlayerXY> playerMap = new HashMap<>();
     private Label gameStateLabel;
     private Label playerTurnLabel;
-    private ArrayList<Label> actionsLabelList = new ArrayList<>();
-    private Table actionsTable;
-    private boolean gameRunning = false;
     private TextButton hitButton;
     private TextButton standButton;
     private TextButton betButton;
     private TextButton doubleDownButton;
     private Label lblAmt;
-    private int playerAmt;
     private String playerMessage = null;
-    private boolean playerLeft = false;
-    private Timer timer = new Timer();
-    private boolean gameEnded = false;
-    private boolean gameRestCalled = false;
+    private final Timer timer = new Timer();
     private int countdownSeconds = 10;
-
-    private boolean firstCountDown = true;
-
-    private boolean hasBetted = false;
 
     public GameScreen(GameManager game) {
         this.game = game;
+        this.gameState = GameState.getGameState();
         this.skin = game.getSkin();
         ProcessServerMessage.setGS(this);
-    }
-
-    public GameScreen(GameManager game, int playerAmt) {
-        this.game = game;
-        this.skin = game.getSkin();
-        this.playerAmt = playerAmt;
-        ProcessServerMessage.setGS(this);
-    }
-
-    public boolean hasBet() {
-        return hasBetted;
-    }
-
-
-    public boolean isFirstCountDown() {
-        return firstCountDown;
-    }
-
-    public void setFirstCountDown(boolean firstCountDown) {
-        this.firstCountDown = firstCountDown;
     }
 
     public void unseatPlayer(){
@@ -109,7 +76,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         try {
             //Remove player from seat so that card will not be dealt to him
             GameManager.socketHandler.resetLatch(1);
-            GameManager.socketHandler.sit(game.getPlayerName(), game.getPlayerSeatNum());
+            GameManager.socketHandler.sit(game.getPlayerName(), game.gameState.getSeatNumber());
             GameManager.socketHandler.awaitPlayer();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -128,7 +95,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         if(isCurrentPlayer){
             lblName.setColor(Color.YELLOW);
             //Player Amount
-            lblAmt = new Label("Amount: $" + playerAmt, skin);
+            lblAmt = new Label("Amount: $" + gameState.getPlayerBalance(), skin);
             lblAmt.setFontScale(1);
             lblAmt.setColor(Color.YELLOW);
 
@@ -187,7 +154,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             betButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!betButton.isDisabled()){
-                        hasBetted = true;
+                        gameState.setHasBet(true);
                         betButton.setDisabled(true);
                         if(!GameManager.playerSeated){
                             seatPlayer();
@@ -225,6 +192,12 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         return buttonContainer;
     }
 
+    public void createDealersCard() {
+        final CardAnimation cardBACK = new CardAnimation(backImage);
+        cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
+        stage.addActor(cardBACK);
+    }
+
     @Override
     public void show() {
         backImage = new Texture("cards/BACK_CARD.png");
@@ -238,24 +211,20 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
         Gdx.input.setInputProcessor(stage);
 
-        // Create dealer's card
-        // cards are dealt from here
-        final CardAnimation cardBACK = new CardAnimation(backImage);
-        cardBACK.setPosition((scrWidth-cWidth) / 2f , scrHeight/1.2f);
-        stage.addActor(cardBACK);
+        createDealersCard();
 
         // generate clean hashmap of all Entity targets, X and Y coords and card count
         playerMap = PlayerXY.refreshMap();
 
         // iterate through all players
         for (Map.Entry<EntityTarget, PlayerXY> mapElement: playerMap.entrySet()) {
-            if(!(mapElement.getKey()==EntityTarget.DEALER)){
+            if(!(mapElement.getKey() == EntityTarget.DEALER)){
                 String name = "" + mapElement.getKey();
                 // Adding some bonus marks to all the students
                 PlayerXY xy = mapElement.getValue();
 
-                //Check if value equals to seatNumber and set isCurrentPlayer to true
-                //Create player name tag for each player position
+                // Check if value equals to seatNumber and set isCurrentPlayer to true
+                // Create player name tag for each player position
                 // X position is fixed for all players
                 // Y position differs for the current players to create room for UI elements
                 // Username will be generated of Current player whereas
@@ -264,11 +233,11 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 stage.addActor(createButtonsNLabels(
                         skin,
                         xy.getPlayerX(),
-                        mapElement.getKey() == game.getPlayerEntityType() ?
+                        mapElement.getKey() == gameState.getPlayerEntityTarget() ?
                                 xy.getPlayerY() + cHeight + 50 : xy.getPlayerY() + cHeight + 20,
-                        mapElement.getKey() == game.getPlayerEntityType() ?
+                        mapElement.getKey() == gameState.getPlayerEntityTarget() ?
                                 game.getPlayerName() : name,
-                        mapElement.getKey() == game.getPlayerEntityType())
+                        mapElement.getKey() == gameState.getPlayerEntityTarget())
                 );
             }
         }
@@ -276,7 +245,8 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         createGameState();
 
         // Leave button
-        createLeaveGameButton();
+        stage.addActor(createLeaveGameButton());
+        stage.setDebugAll(true);
     }
 
     public static Actor deal(EntityTarget entity, String card){
@@ -369,7 +339,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 break;
             case "PLAYER_TURN_PLAYER_1", "PLAYER_TURN_PLAYER_2", "PLAYER_TURN_PLAYER_3",
                     "PLAYER_TURN_PLAYER_4", "PLAYER_TURN_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum()){
+                if(seatNum == game.gameState.getSeatNumber()){
                     enableButtons();
                     Gdx.app.postRunnable(() -> this.updatePlayerTurnLbl("Your turn"));
                 }else{
@@ -381,38 +351,38 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                     "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5", "PLAYER_BUST_PLAYER_1",
                     "PLAYER_BUST_PLAYER_2", "PLAYER_BUST_PLAYER_3", "PLAYER_BUST_PLAYER_4",
                     "PLAYER_BUST_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum()){
+                if(seatNum == game.gameState.getSeatNumber()){
                     disableButtons();
                 }
                 this.updateGameState("Turn over");
                 break;
             case "PLAYER_LOSE_PLAYER_1", "PLAYER_LOSE_PLAYER_2", "PLAYER_LOSE_PLAYER_3",
                     "PLAYER_LOSE_PLAYER_4", "PLAYER_LOSE_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum()){
-                    this.playerAmt -= earnings;
+                if(seatNum == game.gameState.getSeatNumber()){
+                    gameState.deductFromPlayerBalance(earnings);
                     this.playerMessage = "You lost $" + earnings;
                 }
                 break;
             case "PLAYER_WIN_PLAYER_1", "PLAYER_WIN_PLAYER_2", "PLAYER_WIN_PLAYER_3",
                     "PLAYER_WIN_PLAYER_4", "PLAYER_WIN_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum()){
-                    playerAmt += earnings;
+                if(seatNum == game.gameState.getSeatNumber()){
+                    gameState.addToPlayerBalance(earnings);
                     this.playerMessage = "You won $" + earnings;
                 }
                 break;
             case "PLAYER_PUSH_PLAYER_1", "PLAYER_PUSH_PLAYER_2", "PLAYER_PUSH_PLAYER_3",
                     "PLAYER_PUSH_PLAYER_4", "PLAYER_PUSH_PLAYER_5":
-                if(seatNum == game.getPlayerSeatNum()){
+                if(seatNum == game.gameState.getSeatNumber()){
                     this.playerMessage = "It is a push";
                 }
                 break;
             case "UPDATE":
                 updateGameState(playerMessage);
-                lblAmt.setText("Amount: $" + this.playerAmt);
+                lblAmt.setText("Amount: $" + gameState.getPlayerBalance());
                 disableButtons();
                 playerTurnLabel.setText("");
                 betButton.setDisabled(true);
-                this.gameEnded = true;
+                gameState.setGameEnded(true);
                 break;
             default:
                 // Handle the default case if needed
@@ -421,14 +391,12 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
     private void enableButtons(){
-        //betButton.setDisabled(false);
         hitButton.setDisabled(false);
         standButton.setDisabled(false);
         doubleDownButton.setDisabled(false);
     }
 
     private void disableButtons(){
-        //betButton.setDisabled(true);
         hitButton.setDisabled(true);
         standButton.setDisabled(true);
         doubleDownButton.setDisabled(true);
@@ -436,6 +404,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
     public void createGameState(){
         Table table = new Table(skin);
+        table.setFillParent(true);
 
         //Creating table to contain labels
         Table gsTable = new Table();
@@ -457,10 +426,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         //Adding labels to tables
         gsTable.add(gameStateLabel);
         ptTable.add(playerTurnLabel);
-
-        // Add padding around the text for the box effect
-//        table.add(gameStateLabel).left().padRight(100);
-//        table.add(playerTurnLabel).right();
 
         //Applying necessary padding and alignments
         table.add(gsTable).padRight(150);
@@ -486,62 +451,19 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         playerTurnLabel.setText(message);
     }
 
-/*    public void displayActions(String text) {
-        float slideDistance = 20;
-        Label label = new Label(text, skin);
-        actionsLabelList.add(label);
-
-        // Create or initialize table if it's null
-        if (actionsTable == null) {
-            actionsTable = new Table(skin);
-            actionsTable.setBackground("default-pane");
-            actionsTable.setPosition((float) (scrWidth / 2.25), (float) scrHeight / 7);
-            actionsTable.setWidth(stage.getWidth());
-            stage.addActor(actionsTable);
-        }
-
-        // Add the new label to the table
-        actionsTable.add(label).pad(10).row();
-
-        // Limit the number of labels to 3
-        if (actionsLabelList.size() > 3) {
-            // Remove the oldest label from both table and labelList
-            Label oldestLabel = actionsLabelList.remove(0);
-            oldestLabel.remove();
-            // Shift the remaining labels up
-            actionsTable.getCell(actionsTable.getChildren().first()).setActor(label);
-        }
-
-        // Apply fade out and slide up animation to the new label
-        label.addAction(Actions.sequence(
-                Actions.alpha(0),
-                Actions.delay(1),
-                Actions.parallel(
-                        Actions.fadeIn(1),
-                        Actions.moveBy(0, slideDistance, 1)
-                ),
-                Actions.delay(2),
-                Actions.fadeOut(1),
-                Actions.run(() -> {
-                    actionsLabelList.remove(label);
-                    label.remove();
-                })
-        ));
-    }*/
-    public void createLeaveGameButton() {
-        // TextButton
+    public TextButton createLeaveGameButton() {
         TextButton leaveButton = new TextButton("Leave Game", game.getSkin());
         leaveButton.setPosition(20, scrHeight - leaveButton.getHeight() - 20); // Position the button
 
         leaveButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                playerLeft = true;
+                gameState.setPlayerLeft(true);
                 timer.cancel();
                 GameManager.playerSeated = false;
                 GameManager.playerInRoom = false;
                 try {
                     GameManager.socketHandler.resetLatch(1);
-                    GameManager.socketHandler.leave(game.getPlayerName());
+                    GameManager.socketHandler.leaveRoom(game.getPlayerName());
                     GameManager.socketHandler.awaitPlayer();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
@@ -550,7 +472,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             }
         });
 
-        stage.addActor(leaveButton);
+        return leaveButton;
     }
 
     private void resetGame(){
@@ -565,23 +487,20 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                         countdownSeconds--;
                     } else {
                         timer.cancel();
-                        if(!playerLeft){
-                            game.setScreen(new GameScreen(game, playerAmt));
+                        if(!gameState.hasPlayerLeft()){
+                            game.setScreen(new GameScreen(game));
                         }
                     }
                 });
             }
         },5000, 1000);
-
     }
 
     @Override
     public void create() {
-
         // Register a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Hello");
-
         }));
     }
 
@@ -590,9 +509,9 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         ScreenUtils.clear(0, 0.3f, 0, 1);
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
 
-        if(gameEnded && !gameRestCalled){
+        if(gameState.hasGameEnded() && !gameState.isGameRestCalled()){
             System.out.println("Game Ended Here!!!");
-            gameRestCalled = true;
+            gameState.setGameRestCalled(true);
             resetGame();
         }
 
@@ -607,12 +526,10 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
     @Override
     public void render() {
-
     }
 
     @Override
     public void dispose() {
-        batch.dispose();
         backImage.dispose();
         frontImage.dispose();
     }

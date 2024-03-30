@@ -5,8 +5,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.goeey.backend.util.SerializationUtil;
 import com.goeey.game.GameManager;
+import com.goeey.game.entity.GameState;
 import com.goeey.game.screen.GameCreationScreen;
 import com.goeey.game.screen.GameScreen;
+import com.goeey.game.screen.LobbyRoomsScreen;
 import com.goeey.game.socket.SocketHandler;
 import com.gooey.base.Card;
 import com.gooey.base.socket.ServerEvent;
@@ -14,6 +16,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import java.util.Arrays;
 
 
 public class ProcessServerMessage {
@@ -24,16 +28,17 @@ public class ProcessServerMessage {
     public static void setGS(ScreenAdapter gs){
         ProcessServerMessage.gs = gs;
     }
-    public static void callMethod(ServerEvent<?> event){
+
+    public static void callMethod(ServerEvent<?> event, GameState gameState){
         switch (event.getType()){
             case ERROR:
-                processError(event);
+                processError(event, gameState);
                 break;
             case PLAYER_SAT:
                 processPlayerSat(event);
                 break;
             case COUNTDOWN:
-                processCountdown(event);
+                processCountdown(event, gameState);
                 break;
             case DEAL:
                 processDeal(event);
@@ -52,19 +57,14 @@ public class ProcessServerMessage {
                 processPlayerTurn(event);
                 break;
             case CONNECT:
-                processConnect(event);
+                //not implemented yet
+                processConnect(event, gameState);
                 break;
             case DISCONNECT:
                 processDisconnect(event);
                 break;
-            case ROOM_LIST:
-                processRoomList(event);
-                break;
-            case ROOM_PLAYERS:
-                processRoomPlayers(event);
-                break;
             case REGISTERED:
-                processRegistered(event);
+                processRegistered(event, gameState);
                 break;
             case UPDATE:
                 processUpdate(event);
@@ -96,7 +96,7 @@ public class ProcessServerMessage {
                 processBet(event);
                 break;
             case JOINED:
-                processPlayerJoined(event);
+                processPlayerJoined(event, gameState);
                 break;
             case PLAYER_LEFT:
                 processPlayerLeft(event);
@@ -117,12 +117,29 @@ public class ProcessServerMessage {
         }
     }
 
-    private static void processError(ServerEvent<?> event){
+    private static void processError(ServerEvent<?> event, GameState gameState){
         if(event.getMessage().equals("You are already sitting.")){
             GameManager.playerSeated = true;
 
         } else if (event.getMessage().equals("Seat is already taken.")) {
-            GameManager.playerSeated = false;
+            System.out.println("FAILED!!");
+            if(gs instanceof  GameCreationScreen gsc){
+//                gsc.setPlayerSat(false);
+            }
+            //GameCreationScreen.playerSat = false;
+
+        } else if (event.getMessage().equals("Player already exists")) {
+            if(gs instanceof GameCreationScreen) {
+                gameState.setInLobby(true);
+                Gdx.app.postRunnable(() -> {
+                    ((GameCreationScreen) gs).showError("Username already exists! Please enter another name.");
+                });
+            }
+
+        } else if (event.getMessage().equals("Invalid player")){
+            if(gs instanceof GameCreationScreen) {
+                ((GameCreationScreen) gs).showError("Username does not exist! Please register.");
+            }
         }
     }
 
@@ -130,17 +147,17 @@ public class ProcessServerMessage {
         GameManager.playerSeated = true;
     }
 
-    private static void processCountdown(ServerEvent<?> event){
+    private static void processCountdown(ServerEvent<?> event, GameState gameState){
         System.out.println(event.getMessage());
         if(gs instanceof GameScreen gs1){
             int num = (int) Double.parseDouble(event.getMessage().toString());
             //Checking is this is the first countdown to print a different message
-            if(gs1.isFirstCountDown()){
+            if(gameState.isFirstCountDown()){
                 Gdx.app.postRunnable(() -> gs1.updateGameState("Please place bets, game starts in : " + num));
                 if(num == 1){
-                    gs1.setFirstCountDown(false);
-                    if(!gs1.hasBet()){
-                        Gdx.app.postRunnable(() -> gs1.unseatPlayer());
+                    gameState.setFirstCountDown(false);
+                    if(!gameState.getHasBet()){
+                        Gdx.app.postRunnable(gs1::unseatPlayer);
                     }
 
                 }
@@ -234,42 +251,30 @@ public class ProcessServerMessage {
         }
     }
 
-    private static void processConnect(ServerEvent<?> event){
+    private static void processConnect(ServerEvent<?> event, GameState gameState){
+        gameState.setInLobby(true);
+        gameState.setSeated(true);
         System.out.println(event.getMessage());
+        if(gs instanceof GameCreationScreen) {
+            Gdx.app.postRunnable(() -> {
+                ((GameCreationScreen) gs).goToLobbyScreen();
+            });
+        }
     }
 
     private static void processDisconnect(ServerEvent<?> event){
         System.out.println(event.getMessage());
     }
 
-    private static void processRoomList(ServerEvent<?> event){
-        System.out.println(event.getMessage());
-        if(gs instanceof  GameCreationScreen gcs){
-            String roomsStr = event.getMessage().toString().substring(1,
-                    event.getMessage().toString().length() - 1);
-            System.out.println(roomsStr.isBlank());
-            System.out.println(roomsStr.isEmpty());
-            if(roomsStr.isBlank() || roomsStr.isEmpty()){
-                gcs.setRoomList(null);
-            }else{
-                String[] roomStrArr = roomsStr.split(",");
-                for (int i = 0; i < roomStrArr.length; i++) {
-                    roomStrArr[i] = roomStrArr[i].strip();
-                    System.out.println(roomStrArr[i]);
-                }
-                gcs.setRoomList(roomStrArr);
-            }
+    private static void processRegistered(ServerEvent<?> event, GameState gameState){
+        gameState.setRegistered(true);
+        gameState.setInLobby(true);
+        gameState.setSeated(true);
+        if(gs instanceof GameCreationScreen) {
+            Gdx.app.postRunnable(() -> {
+                ((GameCreationScreen) gs).goToLobbyScreen();
+            });
         }
-    }
-
-    private static void processRoomPlayers(ServerEvent<?> event){
-        System.out.println(event.getMessage());
-        if(gs instanceof GameCreationScreen gsc){
-            gsc.setNumPlayers((int)Double.parseDouble(event.getMessage().toString()));
-        }
-    }
-
-    private static void processRegistered(ServerEvent<?> event){
         System.out.println(event.getMessage());
     }
 
@@ -366,9 +371,17 @@ public class ProcessServerMessage {
         System.out.println(event.getMessage());
     }
 
-    private static void processPlayerJoined(ServerEvent<?> event){
+    private static void processPlayerJoined(ServerEvent<?> event, GameState gameState){
         System.out.println(event.getMessage());
         GameManager.playerInRoom = true;
+        gameState.setRegistered(true);
+        gameState.setInLobby(true);
+        gameState.setSeated(true);
+        if(gs instanceof GameCreationScreen) {
+            Gdx.app.postRunnable(() -> {
+                ((GameCreationScreen) gs).goToLobbyScreen();
+            });
+        }
     }
 
     private static void processPlayerLeft(ServerEvent<?> event){
