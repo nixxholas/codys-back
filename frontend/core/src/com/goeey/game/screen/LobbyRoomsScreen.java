@@ -73,14 +73,14 @@ public class LobbyRoomsScreen extends ScreenAdapter {
         refreshButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                try {
-                    String roomId = GameManager.socketHandler.createAndJoin(game.getPlayerName());
-                    GameManager.socketHandler.sit(game.getPlayerName(), getPlayersInRoom(roomId) + 1);
+            try {
+                String roomId = GameManager.socketHandler.createAndJoin(game.getPlayerName());
+                GameManager.socketHandler.sit(game.getPlayerName(), getPlayersInRoom(roomId) + 1);
 
-                } catch (ExecutionException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                game.setScreen(new GameScreen(game));
+            } catch (ExecutionException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            game.setScreen(new GameScreen(game));
             }
         });
 

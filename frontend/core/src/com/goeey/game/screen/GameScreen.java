@@ -54,6 +54,8 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         this.gameState = GameState.getGameState();
         this.skin = game.getSkin();
         ProcessServerMessage.setGS(this);
+        gameState.setGameRestCalled(false);
+        gameState.setGameEnded(false);
     }
 
     public void unseatPlayer(){
@@ -104,13 +106,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             hitButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!hitButton.isDisabled()){
-                        try {
-                            GameManager.socketHandler.resetLatch(1);
-                            GameManager.socketHandler.hit(game.getPlayerName());
-                            GameManager.socketHandler.awaitPlayer();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        GameManager.socketHandler.hit(game.getPlayerName());
                     }
                 }
             });
@@ -121,13 +117,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 public void clicked(InputEvent event, float x, float y){
                     if(!standButton.isDisabled()){
                         standButton.setDisabled(true);
-                        try {
-                            GameManager.socketHandler.resetLatch(1);
-                            GameManager.socketHandler.stand(game.getPlayerName());
-                            GameManager.socketHandler.awaitPlayer();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        GameManager.socketHandler.stand(game.getPlayerName());
                     }
                 }
             });
@@ -138,13 +128,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 public void clicked(InputEvent event, float x, float y){
                     if(!doubleDownButton.isDisabled()){
                         doubleDownButton.setDisabled(true);
-                        try {
-                            GameManager.socketHandler.resetLatch(1);
-                            GameManager.socketHandler.doubleDown(game.getPlayerName(), 1.0);
-                            GameManager.socketHandler.awaitPlayer();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        GameManager.socketHandler.doubleDown(game.getPlayerName(), 1.0);
                     }
                 }
             });
@@ -159,13 +143,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                         if(!gameState.isSeated()){
                             seatPlayer();
                         }
-                        try {
-                            GameManager.socketHandler.resetLatch(1);
-                            GameManager.socketHandler.bet(game.getPlayerName(), 10.0);
-                            GameManager.socketHandler.awaitPlayer();
-                        }catch (InterruptedException e){
-                            e.printStackTrace();
-                        }
+                        GameManager.socketHandler.bet(game.getPlayerName(), 10.0);
                     }
                 }
             });
@@ -359,7 +337,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             case "PLAYER_LOSE_PLAYER_1", "PLAYER_LOSE_PLAYER_2", "PLAYER_LOSE_PLAYER_3",
                     "PLAYER_LOSE_PLAYER_4", "PLAYER_LOSE_PLAYER_5":
                 if(seatNum == game.gameState.getSeatNumber()){
-                    gameState.deductFromPlayerBalance(earnings);
+                    gameState.deductPlayerBalance(earnings);
                     this.playerMessage = "You lost $" + earnings;
                 }
                 break;
@@ -461,13 +439,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 timer.cancel();
                 gameState.setSeated(false);
                 gameState.setInRoom(false);
-                try {
-                    GameManager.socketHandler.resetLatch(1);
-                    GameManager.socketHandler.leaveRoom(game.getPlayerName());
-                    GameManager.socketHandler.awaitPlayer();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                GameManager.socketHandler.leaveRoom(game.getPlayerName());
                 game.setScreen(new MainMenuScreen(game));
             }
         });

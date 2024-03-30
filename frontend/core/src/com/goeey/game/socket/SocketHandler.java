@@ -108,32 +108,17 @@ public class SocketHandler {
         DecimalFormat df = new DecimalFormat("#.#");
         String amt = df.format(amount);
         ClientEvent betEvent = new ClientEvent(clientId, ClientEvent.Type.BET, amt);
-        try{
-            ws.send(SerializationUtil.serializeString(betEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
+        ws.send(SerializationUtil.serializeString(betEvent));
     }
 
     public void hit(String clientId){
         ClientEvent hitEvent = new ClientEvent(clientId, ClientEvent.Type.HIT, "");
-        try{
-            ws.send(SerializationUtil.serializeString(hitEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
+        ws.send(SerializationUtil.serializeString(hitEvent));
     }
 
     public void stand(String clientId){
         ClientEvent standEvent = new ClientEvent(clientId, ClientEvent.Type.STAND, "");
-        try{
-            ws.send(SerializationUtil.serializeString(standEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
+        ws.send(SerializationUtil.serializeString(standEvent));
     }
 
 
@@ -141,12 +126,7 @@ public class SocketHandler {
         DecimalFormat df = new DecimalFormat("#.#");
         String amt = df.format(amount);
         ClientEvent doubleDownEvent = new ClientEvent(clientId, ClientEvent.Type.DOUBLE, amt);
-        try{
-            ws.send(SerializationUtil.serializeString(doubleDownEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
+        ws.send(SerializationUtil.serializeString(doubleDownEvent));
     }
 
     public ArrayList<String> listRooms(String clientId) throws InterruptedException, ExecutionException {

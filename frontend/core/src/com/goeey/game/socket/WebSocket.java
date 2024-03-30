@@ -39,6 +39,7 @@ public class WebSocket extends WebSocketClient {
         } else {
             System.out.println("Received: " + message + " on " + Thread.currentThread());
             ProcessServerMessage.callMethod(serverEvent, GameState.getGameState());
+            this.latch.countDown();
         }
     }
 

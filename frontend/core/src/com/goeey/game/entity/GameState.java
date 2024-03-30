@@ -79,7 +79,7 @@ public class GameState {
         this.playerBalance += winning;
     }
 
-    public void deductFromPlayerBalance(int betAmount) throws ArithmeticException {
+    public void deductPlayerBalance(int betAmount) throws ArithmeticException {
         if(playerBalance < betAmount) {
             throw new ArithmeticException("Insufficient balance");
         }
