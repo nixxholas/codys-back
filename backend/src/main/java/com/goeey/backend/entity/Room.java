@@ -77,6 +77,15 @@ public class Room {
         return false;
     }
 
+    public boolean allPlayersBusted() {
+        for (Player player : players.values()) {
+            if (!player.isSettled()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public int getPlayerSeatNumber(String playerId) {
         for (Map.Entry<Integer, Player> entry : players.entrySet()) {
             if (entry.getValue().getId().equals(playerId)) {
@@ -518,20 +527,22 @@ public class Room {
                 getEntityTarget("dealer"));
         broadcastSink.tryEmitNext(revealEvent);
 
-        // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
-        // Includes soft 17 as well.
-        while (dealer.calculateHandValue() < 17 ||
-                (dealer.calculateHandValue() == 17 && dealer.hasAce() && dealer.getNumCards() == 2)) {
-            Card nextCard = deck.remove(0);
-            dealer.addCard(nextCard);
+        if (!allPlayersBusted()) {
+            // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
+            // Includes soft 17 as well.
+            while (dealer.calculateHandValue() < 17 ||
+                    (dealer.calculateHandValue() == 17 && dealer.hasAce() && dealer.getNumCards() == 2)) {
+                Card nextCard = deck.remove(0);
+                dealer.addCard(nextCard);
 
-            ServerEvent dealerDrawEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, nextCard, getEntityTarget("dealer"));
-            broadcastSink.tryEmitNext(dealerDrawEvent);
+                ServerEvent dealerDrawEvent = new ServerEvent<>(ServerEvent.Type.DEALER_DRAW, nextCard, getEntityTarget("dealer"));
+                broadcastSink.tryEmitNext(dealerDrawEvent);
 
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
