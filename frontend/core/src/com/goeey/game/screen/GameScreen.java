@@ -1,6 +1,7 @@
 package com.goeey.game.screen;
 
 import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -432,8 +433,9 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                     timer.cancel();
                     gameState.setSeated(false);
                     gameState.setInRoom(false);
+                    GameManager.socketHandler.leaveseat(game.getPlayerName());
                     GameManager.socketHandler.leaveRoom(game.getPlayerName());
-                    game.setScreen(new MainMenuScreen(game));
+                    game.setScreen(new LobbyRoomsScreen(game));
                 }
             }
         });

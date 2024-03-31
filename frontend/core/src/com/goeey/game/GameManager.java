@@ -53,7 +53,6 @@ public class GameManager extends Game {
     }
 
     public void dispose() {
-        GameManager.socketHandler.removePlayerFromRoom();
-        socketHandler.closeWebSocket();
+        GameManager.socketHandler.leaveRoom(playerName);
     }
 }

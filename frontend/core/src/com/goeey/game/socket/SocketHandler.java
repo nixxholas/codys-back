@@ -46,20 +46,6 @@ public class SocketHandler {
         }
     }
 
-    public void removePlayerFromRoom() {
-        if(gameState.isInRoom() && ws.isOpen())
-        {
-            try {
-                GameManager.socketHandler.resetLatch(1);
-                GameManager.socketHandler.leaveRoom(game.getPlayerName());
-                GameManager.socketHandler.awaitPlayer();
-                System.out.println("PLAYER DISCONNECTED");
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     public void resetLatch(int num){
         this.latch = new CountDownLatch(num);
    }
@@ -91,6 +77,7 @@ public class SocketHandler {
         while(!futureMessage.isDone()) {
 
         }
+        gameState.setInRoom(true);
         return futureMessage.get().getMessage().toString().split(" ")[3];
     }
 
@@ -157,21 +144,14 @@ public class SocketHandler {
 
     public void leaveseat(String clientId){
         ClientEvent leaveSeatEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE_SEAT);
-        try{
-            ws.send(SerializationUtil.serializeString(leaveSeatEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
-        }
+        ws.send(SerializationUtil.serializeString(leaveSeatEvent));
     }
 
     public void leaveRoom(String clientId){
-        ClientEvent leaveEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE);
-        try{
+        if(gameState.isInRoom()) {
+
+            ClientEvent leaveEvent = new ClientEvent(clientId, ClientEvent.Type.LEAVE);
             ws.send(SerializationUtil.serializeString(leaveEvent));
-            ws.getLatch().await();
-        }catch (InterruptedException ex){
-            ex.printStackTrace();
         }
     }
 

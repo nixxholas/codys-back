@@ -137,6 +137,7 @@ public class LobbyRoomsScreen extends ScreenAdapter {
     }
 
     public void loadRooms() {
+        roomMap.clear();
         for(String roomId : roomsList) {
             roomMap.put(roomId, createJoinButton(roomId));
         }
