@@ -16,7 +16,6 @@ import com.goeey.game.utils.ProcessServerMessage;
 
 public class GameCreationScreen extends ScreenAdapter {
     private final GameManager game;
-    private final GameState gameState;
     private Stage stage;
     private Table uiTable;
     private TextField nameTextfield;
@@ -25,7 +24,6 @@ public class GameCreationScreen extends ScreenAdapter {
     public GameCreationScreen (GameManager game) {
         this.game = game;
         this.skin = game.getSkin();
-        this.gameState = GameState.getGameState();
         ProcessServerMessage.setGS(this);
     }
 
@@ -95,21 +93,22 @@ public class GameCreationScreen extends ScreenAdapter {
         nameTextfield = new TextField("", skin);
         // Prepare Table
         uiTable.setFillParent(true);
-        uiTable.row().height(40);
-        uiTable.add(nameLabel).padRight(10).right();
+        uiTable.defaults().pad(10).height(50);
+        uiTable.row();
+        uiTable.add(nameLabel).padRight(5).right();
         uiTable.add(nameTextfield).width(200).height(40).left();
 
-        Label errorLabel = new Label("TEST", game.getSkin());
+        Label errorLabel = new Label("", skin);
         errorLabel.setName("errorLabel");
         errorLabel.setVisible(false);
         errorLabel.setColor(Color.RED);
 
         uiTable.add(errorLabel);
-        uiTable.row().height(50);
+        uiTable.row();
 
-        uiTable.add(createRegisterButton()).width(200).height(50).pad(20).padLeft(50);
-        uiTable.add(createStartButton()).width(200).height(50).pad(20).padLeft(50);
-        uiTable.add(createBackButton()).width(200).height(50).pad(20).padRight(50);
+        uiTable.add(createRegisterButton()).width(200).height(50);
+        uiTable.add(createStartButton()).width(200).height(50);
+        uiTable.add(createBackButton()).width(200).height(50);
     }
 
     public void showError(String errorMsg) {

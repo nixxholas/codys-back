@@ -67,7 +67,9 @@ public class SocketHandler {
     public void joinRoom(String clientId, String roomId){
         ClientEvent joinRoomEvent = new ClientEvent(clientId, ClientEvent.Type.JOIN, roomId);
         CompletableFuture<ServerEvent<?>> futureMessage = ws.sendAsyncMessage(SerializationUtil.serializeString(joinRoomEvent));
-        while(!futureMessage.isDone()) {}
+        while(!futureMessage.isDone()) {
+
+        }
         gameState.setInRoom(true);
     }
 

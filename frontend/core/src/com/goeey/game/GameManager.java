@@ -30,7 +30,7 @@ public class GameManager extends Game {
 
         gameState = GameState.getGameState();
         try {
-            GameManager.socketHandler = new SocketHandler("ws://localhost:8080/ws", this);
+            GameManager.socketHandler = new SocketHandler("ws://10.0.0.10:8081/ws", this);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
