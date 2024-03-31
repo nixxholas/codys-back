@@ -490,7 +490,7 @@ public class Room implements Disposable {
                 broadcastSink.tryEmitNext(bustEvent);
                 player.setSettled(true); // Player has settled
 
-                return new ServerEvent<>(ServerEvent.Type.PLAYER_LOSE, result, getEntityTarget(player.getId()));
+                return new ServerEvent<>(ServerEvent.Type.PLAYER_BUST, card, getEntityTarget(player.getId()));
             } else {
                 // Wait for verdict
                 player.setStanding(true); // Player is forced to stand as he can only take one card after doubling down
