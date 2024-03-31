@@ -83,6 +83,9 @@ public class SocketHandler implements WebSocketHandler {
         lobbySessions.put(playerId, player);
         playerBroadcastSubscriptions.put(playerId, subscribePlayerToLobbyBroadcasts(session).subscribe());
 
+        ServerEvent joinedLobbyEvent = new ServerEvent<>(ServerEvent.Type.JOINED_LOBBY, "Welcome to the lobby " + player.getName() + "!");
+        session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(joinedLobbyEvent))));
+
         return session.send(broadcastSink.asFlux()
                 .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
     }
