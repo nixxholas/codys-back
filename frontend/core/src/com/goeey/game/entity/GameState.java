@@ -76,6 +76,10 @@ public class GameState {
         this.playerBalance -= betAmount;
     }
 
+    public void setPlayerBalance(int playerBalance) {
+        this.playerBalance = playerBalance;
+    }
+
     public boolean getHasBet() {
         return hasBet;
     }

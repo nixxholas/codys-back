@@ -10,13 +10,11 @@ import java.util.List;
 
 public class Player extends BasePlayer {
     private List<Card> hand = new ArrayList<>();
-    private volatile boolean standing = false;
-    private volatile boolean settled = false;
-    private volatile boolean doubleDown = false;
-    private boolean split = false;
-    private boolean insurance = false;
+    private transient boolean standing = false;
+    private transient boolean settled = false;
+    private transient boolean doubleDown = false;
     private int balance;
-    private int currentBet;
+    private transient int currentBet;
     private Sinks.Many<ServerEvent> sink;
 
     public Player(String id, String name) {
@@ -29,8 +27,6 @@ public class Player extends BasePlayer {
         standing = false;
         settled = false;
         doubleDown = false;
-        split = false;
-        insurance = false;
         currentBet = 0;
     }
 
@@ -125,24 +121,8 @@ public class Player extends BasePlayer {
         return doubleDown;
     }
 
-    public void setSplit(boolean split) {
-        this.split = split;
-    }
-
-    public boolean isSplit() {
-        return split;
-    }
-
-    public void setInsurance(boolean insurance) {
-        this.insurance = insurance;
-    }
-
-    public boolean isInsurance() {
-        return insurance;
-    }
-
     public boolean isBlackjack() {
-        return (this.calculateHandValue() == 21 && this.getNumCards() == 2 && !this.isSplit());
+        return (this.calculateHandValue() == 21 && this.getNumCards() == 2);
     }
 
     public boolean placeBet(int amount) {
