@@ -222,7 +222,7 @@ public class Room {
         }
         unseatedPlayers.put(player.getId(), player);
         playerBroadcastDisposables.put(player.getId(), subscribePlayerToRoomBroadcasts(session).subscribe());
-
+        run(); // Run the thread again, in case the game was previously empty and had its background thread dropped.
         return session.send(broadcastSink.asFlux()
                 .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
     }
