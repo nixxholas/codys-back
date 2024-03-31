@@ -15,7 +15,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-
 public class SocketHandler {
     private static WebSocket ws;
     private final GameManager game;

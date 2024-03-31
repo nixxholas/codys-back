@@ -11,6 +11,7 @@ import com.goeey.game.screen.GameScreen;
 import com.goeey.game.screen.LobbyRoomsScreen;
 import com.goeey.game.socket.SocketHandler;
 import com.gooey.base.Card;
+import com.gooey.base.Player;
 import com.gooey.base.socket.ServerEvent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -18,6 +19,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 import static com.gooey.base.socket.ClientEvent.Type.LEAVE;
 
@@ -51,8 +53,10 @@ public class ProcessServerMessage {
             case DEALER_REVEAL:
                 processDealerReveal(event);
                 break;
+            case PLAYER_HIT:
+                // HIT already handled by PLAYER_DRAW
+                break;
             case PLAYER_DRAW:
-                //PLAYER_HIT
                 processPlayerDraworHit(event);
                 break;
             case PLAYER_TURN:
@@ -371,7 +375,7 @@ public class ProcessServerMessage {
     }
 
     private static void processPlayerJoined(ServerEvent<?> event, GameState gameState){
-        System.out.println(event.getMessage());
+        gameState.setPlayerBalance((int) Double.parseDouble(event.getMessage().toString()));
         gameState.setInRoom(true);
         gameState.setRegistered(true);
         gameState.setInLobby(true);

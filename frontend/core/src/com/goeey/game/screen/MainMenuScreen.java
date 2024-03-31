@@ -20,6 +20,7 @@ public class MainMenuScreen extends ScreenAdapter {
     }
 
     public TextButton createStartButton() {
+        // Start Button
         TextButton startButton = new TextButton("Start Game", game.getSkin());
         startButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
@@ -48,6 +49,7 @@ public class MainMenuScreen extends ScreenAdapter {
     }
 
     public TextButton createExitButton() {
+        // Exit Button
         TextButton exitButton = new TextButton("Exit to Desktop", game.getSkin());
         exitButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
@@ -84,6 +86,7 @@ public class MainMenuScreen extends ScreenAdapter {
     }
 
     private TextButton createOkAndCloseButton(String dialogName) {
+        // Ok and Close Button
         TextButton okAndCloseButton = new TextButton("Ok", game.getSkin());
         okAndCloseButton.addListener(new ClickListener() {
             @Override

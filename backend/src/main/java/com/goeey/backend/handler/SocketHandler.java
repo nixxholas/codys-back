@@ -24,7 +24,7 @@ public class SocketHandler implements WebSocketHandler {
     // broadcast messages to all players within a specific room.
     private final Map<String, Sinks.Many<ServerEvent>> roomSinkMap = new ConcurrentHashMap<>();
     // Runtime datastore for player data
-    private final Map<String, BasePlayer> players = new ConcurrentHashMap<>();
+    private final Map<String, Player> players = new ConcurrentHashMap<>();
     // Runtime datastore for rooms
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
@@ -48,12 +48,12 @@ public class SocketHandler implements WebSocketHandler {
         }
 
         // Finally, by player
-        BasePlayer playerData = players.get(id);
+        Player playerData = players.get(id);
         if (playerData == null) {
             return null;
         }
 
-        return new Player(playerData.getId(), playerData.getName());
+        return playerData;
     }
 
     public Player createPlayer(String id, String name) {
@@ -83,7 +83,7 @@ public class SocketHandler implements WebSocketHandler {
         lobbySessions.put(playerId, player);
         playerBroadcastSubscriptions.put(playerId, subscribePlayerToLobbyBroadcasts(session).subscribe());
 
-        ServerEvent joinedLobbyEvent = new ServerEvent<>(ServerEvent.Type.JOINED_LOBBY, "Welcome to the lobby " + player.getName() + "!");
+        ServerEvent joinedLobbyEvent = new ServerEvent<>(ServerEvent.Type.JOINED_LOBBY, player.getBalance());
         session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(joinedLobbyEvent))));
 
         return session.send(broadcastSink.asFlux()
@@ -256,14 +256,9 @@ public class SocketHandler implements WebSocketHandler {
                     return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid player")))));
 
                 // Join the player to the lobby
-                if (!isPlayerInLobby(event.getClientId())) {
+                if (!isPlayerInLobby(event.getClientId()))
                     joinLobby(session, event.getClientId());
-                    // Send a welcome message to the player
-                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_LOBBY, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
-                } else {
-                    // Send a warning message to the player
-                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_LOBBY, "You are already in the lobby!")))));
-                }
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_LOBBY, connectingPlayer.getBalance())))));
             case REGISTER:
                 // Create a new player
                 Player newPlayer = createPlayer(event.getClientId(), event.getMessage());
@@ -328,6 +323,14 @@ public class SocketHandler implements WebSocketHandler {
                 ))));
                 // Add the player back to the main game unified state
                 players.put(leftPlayer.getId(), leftPlayer);
+
+                if (room.isEmpty()) {
+                    // Remove the room if it's empty
+                    room.dispose();
+                    rooms.remove(room.getRoomId());
+                    roomSinkMap.remove(room.getRoomId());
+                }
+
                 // Bring the player back to the lobby
                 return joinLobby(session, leftPlayer.getId());
             case SIT:

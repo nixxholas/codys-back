@@ -85,6 +85,10 @@ public class Room implements Disposable {
         return false;
     }
 
+    public boolean isEmpty() {
+        return players.isEmpty() && unseatedPlayers.isEmpty();
+    }
+
     public boolean allPlayersBusted() {
         for (Player player : players.values()) {
             if (!player.isSettled()) {
@@ -354,13 +358,6 @@ public class Room implements Disposable {
         }
     }
 
-    public void removePlayer(int seatNumber) throws NullPointerException {
-        Player player = players.get(seatNumber);
-        if (player == null)
-            throw new NullPointerException("Player not found.");
-        players.remove(seatNumber);
-    }
-
     private void initializeDeck() {
         deck.clear();
         for (Suit suit : Suit.values()) {
@@ -504,40 +501,6 @@ public class Room implements Disposable {
         return new ServerEvent<>(ServerEvent.Type.ERROR, "Player is standing.");
     }
 
-    /*
-    // Split method
-    public void split(int seatNumber) {
-        if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to split.");
-        }
-        if (!gameStarted) {
-            throw new IllegalStateException("Game not started.");
-        }
-        Player player = players.get(seatNumber);
-        if (player != null && !player.isStanding()) {
-            player.setSplit(true);
-            // TODO
-        }
-    }
-    */
-
-    /*
-    // Insurance method
-    public void insurance(int seatNumber) {
-        if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to take insurance.");
-        }
-        if (!gameStarted) {
-            throw new IllegalStateException("Game not started.");
-        }
-        Player player = players.get(seatNumber);
-        if (player != null && !player.isStanding()) {
-            player.setInsurance(true);
-            // TODO
-        }
-    }
-    */
-
     private void dealerPlay() {
         currentTurnPlayerId = "dealer";
         // Reveal the dealer's second card
@@ -547,7 +510,7 @@ public class Room implements Disposable {
 
         // If not all players have busted and the dealer does not have blackjack with an ace showing
         // with all players having blackjack, the dealer must draw cards until the hand value is at least 17
-        if (!allPlayersBusted() || !(allPlayersBlackjack() && !dealer.isBlackjack())) {
+        if (!allPlayersBusted() && !(allPlayersBlackjack() && !dealer.isBlackjack())) {
             // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
             // Includes soft 17 as well.
             while (dealer.calculateHandValue() < 17 ||
@@ -765,15 +728,15 @@ public class Room implements Disposable {
                                 // Wait for the player to take their turn, provide 10 seconds to make a decision
                                 // If the player is standing, skip their turn
                                 // If the player is not standing, they can hit, reset the timer, and wait for them again
-                                AtomicReference<List<Card>> playerInitialHand = new AtomicReference<>(player.getHand());
                                 while (player.shouldStillDraw() && !player.isStanding()) {
                                     Thread playerTurnCountdown = new Thread(() -> {
                                         // Send timer to wait for player to take action
                                         int countdown = 10;
+                                        List<Card> playerInitialHand = new ArrayList<>(player.getHand());
                                         // While the player still can draw cards
                                         while (player.shouldStillDraw()) {
                                             // While the player has not taken any action
-                                            while (playerInitialHand.get().size() == player.getHand().size()) {
+                                            while (playerInitialHand.size() == player.getHand().size()) {
                                                 if (countdown == 0) {
                                                     // Player has not taken any action, force stand
                                                     player.setStanding(true);
@@ -801,7 +764,7 @@ public class Room implements Disposable {
                                                 countdown = 10;
 
                                                 // Deal with the draw broadcast elsewhere
-                                                playerInitialHand.set(player.getHand());
+                                                playerInitialHand = new ArrayList<>(player.getHand());
                                             }
                                         }
                                     });
@@ -825,6 +788,14 @@ public class Room implements Disposable {
                             broadcastSink.tryEmitNext(dealerTurnEvent);
                             break;
                         case DEALING:
+                            // Boot all non-betting players
+                            for (Player player : players.values()) {
+                                if (player.getCurrentBet() == 0) {
+                                    ServerEvent bootEvent = standUp(player);
+                                    broadcastSink.tryEmitNext(bootEvent);
+                                }
+                            }
+
                             // Clear hands and prepare for a new round
                             dealer.getHand().clear();
                             players.values().forEach(player -> {

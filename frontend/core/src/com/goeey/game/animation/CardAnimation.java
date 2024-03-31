@@ -32,7 +32,7 @@ public class CardAnimation extends Actor {
 
     public SequenceAction cardAnimation(float afterDelay, int x, int y, float delay, Texture t){
         MoveToAction moveToAction = Actions.moveTo(x, y, delay);
-        //RotateByAction rotateAction = Actions.rotateBy(rotate,delay);
+        // RotateByAction rotateAction = Actions.rotateBy(rotate,delay);
 
         SequenceAction sequence = Actions.sequence(moveToAction); // Move first, then Rotate
 
@@ -49,6 +49,7 @@ public class CardAnimation extends Actor {
     }
 
     public static Actor dealCards(int cardNum, int endXPos, int endYPos, String imagePath){
+        // Animates the cards when they are dealt.
         CardAnimation newC = new CardAnimation(backImage);
         Texture frontImage = new Texture("cards/" + imagePath + ".png");
         float cWidth = frontImage.getWidth();

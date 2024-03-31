@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
 public class GameScreen extends ScreenAdapter implements ApplicationListener {
     private final GameManager game;
     private final GameState gameState;
@@ -67,7 +66,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         gameState.setSeated(false);
         disableButtons();
         try {
-            //Remove player from seat so that card will not be dealt to him
+            // Remove player from seat so that card will not be dealt to him
             GameManager.socketHandler.resetLatch(1);
             GameManager.socketHandler.leaveseat(game.getPlayerName());
             GameManager.socketHandler.awaitPlayer();
@@ -79,7 +78,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     public void seatPlayer(){
         System.out.println("Seat Player");
         try {
-            //Remove player from seat so that card will not be dealt to him
+            // Remove player from seat so that card will not be dealt to him
             GameManager.socketHandler.resetLatch(1);
             GameManager.socketHandler.sit(game.getPlayerName(), game.gameState.getSeatNumber());
             GameManager.socketHandler.awaitPlayer();
@@ -89,22 +88,22 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
     public Table createButtonsNLabels(Skin skin, int posX, int posY, String entity, boolean isCurrentPlayer) {
-        //Create table
+        // Create table
         Table buttonContainer = new Table(skin);
         buttonContainer.setTransform(true);
 
-        //Player Name
+        // Player Name
         Label lblName = new Label(entity, skin);
         lblName.setFontScale(1);
 
         if(isCurrentPlayer){
             lblName.setColor(Color.YELLOW);
-            //Player Amount
+            // Player Amount
             lblAmt = new Label("Amount: $" + gameState.getPlayerBalance(), skin);
             lblAmt.setFontScale(1);
             lblAmt.setColor(Color.YELLOW);
 
-            //Hit Button
+            // Hit Button
             hitButton = new TextButton("Hit", skin);
             hitButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
@@ -114,7 +113,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 }
             });
 
-            //Stand Button
+            // Stand Button
             standButton = new TextButton("Stand", skin);
             standButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
@@ -125,7 +124,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 }
             });
 
-            //Double Down Button
+            // Double Down Button
             doubleDownButton = new TextButton("Double Down", skin);
             doubleDownButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
@@ -136,7 +135,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 }
             });
 
-            //Bet Button
+            // Bet Button
             betButton = new TextButton("Bet", skin);
             betButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
@@ -196,10 +195,10 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
         createDealersCard();
 
-        // generate clean hashmap of all Entity targets, X and Y coords and card count
+        // Generate clean hashmap of all Entity targets, X and Y coords and card count
         playerMap = PlayerXY.refreshMap();
 
-        // iterate through all players
+        // Iterate through all players
         for (Map.Entry<EntityTarget, PlayerXY> mapElement: playerMap.entrySet()) {
             if(!(mapElement.getKey() == EntityTarget.DEALER)){
                 String name = "" + mapElement.getKey();
@@ -227,10 +226,11 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         // Display Game State
         createGameState();
 
-        // Leave button
+        // Leave Button
         stage.addActor(createLeaveGameButton());
     }
 
+    // Animates the card dealing process
     public static Actor deal(EntityTarget entity, String card){
         PlayerXY xy = playerMap.get(entity);
         int x = xy.getPlayerX();
@@ -241,17 +241,18 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
     public void updateUI(Card c, String eventType, int earnings){
+        // Updates the contents of the game screen based on the cases.
         String cardName;
         int seatNum = eventType.charAt(eventType.length() - 1) - '0';
 
         switch (eventType) {
-            case "DRAW_DEALER_0":
+            case "DRAW_DEALER_0": // Dealer draw
                 cardName =  (c == null) ? "BACK_CARD": c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.DEALER, cardName));
                 disableButtons();
                 playerTurnLabel.setText("");
                 break;
-            case "DEALER_REVEAL_DEALER_0":
+            case "DEALER_REVEAL_DEALER_0": // Dealer reveals the hidden card
                 cardName = c.getRank() + "_" + c.getSuit();
                 Texture cardBack = new Texture("cards/BACK_CARD.png");
                 Texture cardFront = new Texture("cards/" + cardName + ".png");
@@ -264,63 +265,63 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 disableButtons();
                 playerTurnLabel.setText("");
                 break;
-            case "DRAW_PLAYER_1":
+            case "DRAW_PLAYER_1": // Player hit; cannot double down after drawing as it is applicable to only the first two cards
                 doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_1, cardName));
                 break;
-            case "DRAW_PLAYER_2":
+            case "DRAW_PLAYER_2": // Player hit; cannot double down after drawing as it is applicable to only the first two cards
                 doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_2, cardName));
                 break;
-            case "DRAW_PLAYER_3":
+            case "DRAW_PLAYER_3": // Player hit; cannot double down after drawing as it is applicable to only the first two cards
                 doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_3, cardName));
                 break;
-            case "DRAW_PLAYER_4":
+            case "DRAW_PLAYER_4": // Player hit; cannot double down after drawing as it is applicable to only the first two cards
                 doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_4, cardName));
                 break;
-            case "DRAW_PLAYER_5":
+            case "DRAW_PLAYER_5": // Player hit; cannot double down after drawing as it is applicable to only the first two cards
                 doubleDownButton.setDisabled(true);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_5, cardName));
                 break;
-            case "PLAYER_DOUBLE_PLAYER_1":
+            case "PLAYER_DOUBLE_PLAYER_1": // Turn ends once player doubled down
                 disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_1, cardName));
                 this.updateGameState("Turn over");
                 break;
-            case "PLAYER_DOUBLE_PLAYER_2":
+            case "PLAYER_DOUBLE_PLAYER_2": // Turn ends once player doubled down
                 disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_2, cardName));
                 this.updateGameState("Turn over");
                 break;
-            case "PLAYER_DOUBLE_PLAYER_3":
+            case "PLAYER_DOUBLE_PLAYER_3": // Turn ends once player doubled down
                 disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_3, cardName));
                 this.updateGameState("Turn over");
                 break;
-            case "PLAYER_DOUBLE_PLAYER_4":
+            case "PLAYER_DOUBLE_PLAYER_4": // Turn ends once player doubled down
                 disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_4, cardName));
                 this.updateGameState("Turn over");
                 break;
-            case "PLAYER_DOUBLE_PLAYER_5":
+            case "PLAYER_DOUBLE_PLAYER_5": // Turn ends once player doubled down
                 disableButtons();
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_5, cardName));
                 this.updateGameState("Turn over");
                 break;
             case "PLAYER_TURN_PLAYER_1", "PLAYER_TURN_PLAYER_2", "PLAYER_TURN_PLAYER_3",
-                    "PLAYER_TURN_PLAYER_4", "PLAYER_TURN_PLAYER_5":
+                    "PLAYER_TURN_PLAYER_4", "PLAYER_TURN_PLAYER_5": // Signals the start of a player's turn
                 if(seatNum == game.gameState.getSeatNumber()){
                     enableButtons();
                     Gdx.app.postRunnable(() -> this.updatePlayerTurnLbl("Your turn"));
@@ -332,33 +333,33 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             case "PLAYER_STAND_PLAYER_1", "PLAYER_STAND_PLAYER_2", "PLAYER_STAND_PLAYER_3",
                     "PLAYER_STAND_PLAYER_4", "PLAYER_STAND_PLAYER_5", "PLAYER_BUST_PLAYER_1",
                     "PLAYER_BUST_PLAYER_2", "PLAYER_BUST_PLAYER_3", "PLAYER_BUST_PLAYER_4",
-                    "PLAYER_BUST_PLAYER_5":
+                    "PLAYER_BUST_PLAYER_5": // Turn ends once player either stand or bust
                 if(seatNum == game.gameState.getSeatNumber()){
                     disableButtons();
                 }
                 this.updateGameState("Turn over");
                 break;
             case "PLAYER_LOSE_PLAYER_1", "PLAYER_LOSE_PLAYER_2", "PLAYER_LOSE_PLAYER_3",
-                    "PLAYER_LOSE_PLAYER_4", "PLAYER_LOSE_PLAYER_5":
+                    "PLAYER_LOSE_PLAYER_4", "PLAYER_LOSE_PLAYER_5": // Player loss
                 if(seatNum == game.gameState.getSeatNumber()){
                     gameState.deductPlayerBalance(earnings);
                     this.playerMessage = "You lost $" + earnings;
                 }
                 break;
             case "PLAYER_WIN_PLAYER_1", "PLAYER_WIN_PLAYER_2", "PLAYER_WIN_PLAYER_3",
-                    "PLAYER_WIN_PLAYER_4", "PLAYER_WIN_PLAYER_5":
+                    "PLAYER_WIN_PLAYER_4", "PLAYER_WIN_PLAYER_5": // Player win
                 if(seatNum == game.gameState.getSeatNumber()){
                     gameState.addToPlayerBalance(earnings);
                     this.playerMessage = "You won $" + earnings;
                 }
                 break;
             case "PLAYER_PUSH_PLAYER_1", "PLAYER_PUSH_PLAYER_2", "PLAYER_PUSH_PLAYER_3",
-                    "PLAYER_PUSH_PLAYER_4", "PLAYER_PUSH_PLAYER_5":
+                    "PLAYER_PUSH_PLAYER_4", "PLAYER_PUSH_PLAYER_5": // Player push
                 if(seatNum == game.gameState.getSeatNumber()){
                     this.playerMessage = "It is a push";
                 }
                 break;
-            case "UPDATE":
+            case "UPDATE": // Updates things such as balance once a round has ended
                 updateGameState(playerMessage);
                 lblAmt.setText("Amount: $" + gameState.getPlayerBalance());
                 disableButtons();
@@ -425,6 +426,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
     public TextButton createLeaveGameButton() {
+        // Leave Game Button
         leaveButton = new TextButton("Leave Game", game.getSkin());
         leaveButton.setPosition(20, scrHeight - leaveButton.getHeight() - 20); // Position the button
 

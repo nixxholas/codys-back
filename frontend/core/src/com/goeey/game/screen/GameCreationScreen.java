@@ -28,6 +28,7 @@ public class GameCreationScreen extends ScreenAdapter {
     }
 
     public TextButton createRegisterButton() {
+        // Register Button
         TextButton registerButton = new TextButton("Register", skin);
         registerButton.addListener(new ClickListener() {
             @Override
@@ -50,10 +51,12 @@ public class GameCreationScreen extends ScreenAdapter {
     }
 
     public void goToLobbyScreen() {
+        // Brings player back to lobby screen.
         game.setScreen(new LobbyRoomsScreen(game));
     }
 
     public TextButton createStartButton() {
+        // Start Button
         TextButton startButton = new TextButton("Start Game", skin);
         startButton.addListener(new ClickListener() {
             @Override
@@ -62,7 +65,7 @@ public class GameCreationScreen extends ScreenAdapter {
                     showError("Username is empty.");
                     return;
                 }
-                //Setting player username
+                // Setting player username
                 game.setPlayerName(nameTextfield.getText());
 
                 try {
@@ -77,6 +80,7 @@ public class GameCreationScreen extends ScreenAdapter {
     }
 
     public TextButton createBackButton() {
+        // Back Button
         TextButton backButton = new TextButton("Back to Main Menu", skin);
         backButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {

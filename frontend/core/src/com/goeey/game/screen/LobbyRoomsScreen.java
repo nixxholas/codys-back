@@ -37,6 +37,7 @@ public class LobbyRoomsScreen extends ScreenAdapter {
     }
 
     public void refreshRooms() {
+        // Updates the rooms in the server
         roomsList = getAllRooms();
         loadRooms();
         updateUITable();
@@ -73,6 +74,7 @@ public class LobbyRoomsScreen extends ScreenAdapter {
     }
 
     public TextButton createRoomButton() {
+        // Create Room Button
         TextButton refreshButton = new TextButton("Create Room", game.getSkin());
         refreshButton.addListener(new ClickListener() {
             @Override
@@ -92,6 +94,7 @@ public class LobbyRoomsScreen extends ScreenAdapter {
     }
 
     public TextButton createRefreshButton() {
+        // Refresh Button
         TextButton refreshButton = new TextButton("Refresh", game.getSkin());
         refreshButton.addListener(new ClickListener() {
             @Override
@@ -104,6 +107,7 @@ public class LobbyRoomsScreen extends ScreenAdapter {
     }
 
     public TextButton createJoinButton(String roomId) {
+        // Join Button
         TextButton joinButton = new TextButton("Join Room", game.getSkin());
         joinButton.addListener(new ClickListener() {
             @Override
@@ -119,6 +123,7 @@ public class LobbyRoomsScreen extends ScreenAdapter {
     }
 
     public TextButton createLeaveButton(){
+        // Leave Button
         TextButton leaveButton = new TextButton("Return to Main Menu", game.getSkin());
         leaveButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
