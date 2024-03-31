@@ -11,14 +11,12 @@ Server. The 'frontend' directory contains the code for the GUI interface of the 
 #### Backend
 ```
 Open the Backend Bat file Directory
-run the compile.bat file
 run the run.bat file
 ```
 
 #### Frontend
 ```
 Open the Frontend Bat file Directory
-run the compile.bat file
 run the run.bat file
 
 ```
