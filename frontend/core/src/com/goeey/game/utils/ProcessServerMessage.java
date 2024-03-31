@@ -51,8 +51,10 @@ public class ProcessServerMessage {
             case DEALER_REVEAL:
                 processDealerReveal(event);
                 break;
+            case PLAYER_HIT:
+                // HIT already handled by PLAYER_DRAW
+                break;
             case PLAYER_DRAW:
-                //PLAYER_HIT
                 processPlayerDraworHit(event);
                 break;
             case PLAYER_TURN:
