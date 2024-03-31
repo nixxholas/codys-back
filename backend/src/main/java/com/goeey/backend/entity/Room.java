@@ -495,40 +495,6 @@ public class Room {
         return new ServerEvent<>(ServerEvent.Type.ERROR, "Player is standing.");
     }
 
-    /*
-    // Split method
-    public void split(int seatNumber) {
-        if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to split.");
-        }
-        if (!gameStarted) {
-            throw new IllegalStateException("Game not started.");
-        }
-        Player player = players.get(seatNumber);
-        if (player != null && !player.isStanding()) {
-            player.setSplit(true);
-            // TODO
-        }
-    }
-    */
-
-    /*
-    // Insurance method
-    public void insurance(int seatNumber) {
-        if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to take insurance.");
-        }
-        if (!gameStarted) {
-            throw new IllegalStateException("Game not started.");
-        }
-        Player player = players.get(seatNumber);
-        if (player != null && !player.isStanding()) {
-            player.setInsurance(true);
-            // TODO
-        }
-    }
-    */
-
     private void dealerPlay() {
         currentTurnPlayerId = "dealer";
         // Reveal the dealer's second card
