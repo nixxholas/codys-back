@@ -1,11 +1,27 @@
-FROM openjdk:21-jdk-oracle
+#FROM openjdk:21-jdk-oracle
+#
+#RUN mkdir -p /usr/app/
+#
+#ENV PROJECT_HOME /usr/app
+#
+#COPY build/libs/backend-0.0.1-SNAPSHOT-plain.jar $PROJECT_HOME/gooey-backend-0.0.1-SNAPSHOT.jar
+#
+#WORKDIR $PROJECT_HOME
+#
+#CMD ["java", "-cp", "./gooey-backend-0.0.1-SNAPSHOT.jar", "com.gooey.backend.BackendApplication.main"]
 
-RUN mkdir -p /usr/app/
+FROM ubuntu:latest AS build
 
-ENV PROJECT_HOME /usr/app
+RUN apt-get update
+RUN apt-get install openjdk-21-jdk -y
+COPY . .
 
-COPY build/libs/backend-0.0.1-SNAPSHOT-plain.jar $PROJECT_HOME/gooey-backend-0.0.1-SNAPSHOT.jar
+RUN ./gradlew bootJar --no-daemon
 
-WORKDIR $PROJECT_HOME
+FROM openjdk:21-jdk-slim
 
-CMD ["java", "-jar", "./gooey-backend-0.0.1-SNAPSHOT.jar"]
+EXPOSE 8080
+
+COPY --from=build /build/libs/backend-0.0.1-SNAPSHOT-plain.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
