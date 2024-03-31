@@ -125,24 +125,8 @@ public class Player extends BasePlayer {
         return doubleDown;
     }
 
-    public void setSplit(boolean split) {
-        this.split = split;
-    }
-
-    public boolean isSplit() {
-        return split;
-    }
-
-    public void setInsurance(boolean insurance) {
-        this.insurance = insurance;
-    }
-
-    public boolean isInsurance() {
-        return insurance;
-    }
-
     public boolean isBlackjack() {
-        return (this.calculateHandValue() == 21 && this.getNumCards() == 2 && !this.isSplit());
+        return (this.calculateHandValue() == 21 && this.getNumCards() == 2);
     }
 
     public boolean placeBet(int amount) {
@@ -152,7 +136,6 @@ public class Player extends BasePlayer {
             // since it is already checked before doubling down
         } else {
             if (amount > balance) {
-//                throw new IllegalArgumentException("Bet amount exceeds balance.");
                 return false;
             }
             this.currentBet = amount;
