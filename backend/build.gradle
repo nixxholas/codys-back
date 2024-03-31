@@ -14,7 +14,7 @@ java {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.gooey.BackendApplication'
+                'Main-Class': 'com.gooey.backend.BackendApplication'
         )
     }
 }
