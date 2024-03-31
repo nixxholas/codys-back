@@ -89,6 +89,14 @@ public class Player extends BasePlayer {
         return false;
     }
 
+    public boolean hasFirstCardAce() {
+        if (hand.isEmpty()) {
+            return false;
+        }
+
+        return hand.get(0).getRank() == Rank.ACE;
+    }
+
     public synchronized boolean shouldStillDraw() {
         return (calculateHandValue() < 21 && !isStanding() && !isDoubleDown()) && !settled;
     }

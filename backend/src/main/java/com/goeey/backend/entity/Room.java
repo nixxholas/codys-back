@@ -86,6 +86,15 @@ public class Room {
         return true;
     }
 
+    public boolean allPlayersBlackjack() {
+        for (Player player : players.values()) {
+            if (!player.isBlackjack()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public int getPlayerSeatNumber(String playerId) {
         for (Map.Entry<Integer, Player> entry : players.entrySet()) {
             if (entry.getValue().getId().equals(playerId)) {
@@ -527,7 +536,9 @@ public class Room {
                 getEntityTarget("dealer"));
         broadcastSink.tryEmitNext(revealEvent);
 
-        if (!allPlayersBusted()) {
+        // If not all players have busted and the dealer does not have blackjack with an ace showing
+        // with all players having blackjack, the dealer must draw cards until the hand value is at least 17
+        if (!allPlayersBusted() && !(allPlayersBlackjack() && dealer.calculateHandValue() != 21)) {
             // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
             // Includes soft 17 as well.
             while (dealer.calculateHandValue() < 17 ||
