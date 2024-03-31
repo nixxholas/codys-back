@@ -788,6 +788,14 @@ public class Room implements Disposable {
                             broadcastSink.tryEmitNext(dealerTurnEvent);
                             break;
                         case DEALING:
+                            // Boot all non-betting players
+                            for (Player player : players.values()) {
+                                if (player.getCurrentBet() == 0) {
+                                    ServerEvent bootEvent = standUp(player);
+                                    broadcastSink.tryEmitNext(bootEvent);
+                                }
+                            }
+
                             // Clear hands and prepare for a new round
                             dealer.getHand().clear();
                             players.values().forEach(player -> {
