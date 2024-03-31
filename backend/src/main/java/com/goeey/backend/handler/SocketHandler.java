@@ -110,17 +110,13 @@ public class SocketHandler implements WebSocketHandler {
         lobbySessions.remove(player.getId());
         playerBroadcastSubscriptions.get(player.getId()).dispose();
 
-        // Room will handle the player joining
-        room.playerJoin(player, session);
-
         // Announce the player's departure from the lobby
         if (!lobbySessions.isEmpty()) {
             ServerEvent leaveEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LEFT, player.getName());
             broadcastToLobby(leaveEvent);
         }
 
-        return session.send(broadcastSink.asFlux()
-                .map(event -> session.textMessage(SerializationUtil.serializeString(event))));
+        return room.playerJoin(player, session);
     }
 
     // Call this method when moving a player from a room back to the lobby.
@@ -280,7 +276,7 @@ public class SocketHandler implements WebSocketHandler {
                 if (roomToJoin == null)
                     return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid room")))));
                 if (isPlayerInLobby(event.getClientId()) && getPlayerRoomByPlayerId(event.getClientId()) == null) {
-                    movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
+                    return movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
                 }
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_ROOM, roomToJoin.getRoomId())))));
             case LIST_ROOMS:

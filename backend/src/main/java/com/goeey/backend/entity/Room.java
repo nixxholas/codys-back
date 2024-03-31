@@ -21,7 +21,7 @@ import static com.goeey.backend.util.SerializationUtil.gson;
  * The room is responsible for managing the game state and the deck of cards.
  * It also schedules the next round to start after a certain delay.
  */
-public class Room {
+public class Room implements Disposable {
     private boolean noMoreBets;
     private final Sinks.Many<ServerEvent> broadcastSink; // For broadcasting to all players in the room
     private final Map<String, Disposable> playerBroadcastDisposables = new ConcurrentHashMap<>();
@@ -33,6 +33,14 @@ public class Room {
     private String currentTurnPlayerId = null;
     private transient Timer timer;
     private transient Thread thread;
+
+    @Override
+    public void dispose() {
+        broadcastSink.emitComplete(Sinks.EmitFailureHandler.FAIL_FAST);
+        playerBroadcastDisposables.values().forEach(Disposable::dispose);
+        timer.cancel();
+        thread.interrupt();
+    }
 
     private enum GameState {
         WAITING_FOR_PLAYERS,
@@ -239,6 +247,7 @@ public class Room {
         // Remove the player from the room
         Player leavingPlayer = unseatedPlayers.get(playerId);
         if (leavingPlayer != null) {
+            unseatedPlayers.remove(playerId);
             // Broadcast a message to the room indicating that the player has left
             // Assuming you have a method to convert Player object or playerId to a String that identifies the player to other clients
             ServerEvent leaveEvent = new ServerEvent<>(ServerEvent.Type.PLAYER_LEFT, leavingPlayer.getId());
@@ -247,11 +256,6 @@ public class Room {
             // Remove the player from the room's player map
             playerBroadcastDisposables.get(playerId).dispose();
             playerBroadcastDisposables.remove(playerId);
-
-            if (players.isEmpty() && unseatedPlayers.isEmpty()) {
-                thread.interrupt();
-                thread = null;
-            }
 
             return leavingPlayer;
         }
@@ -718,7 +722,7 @@ public class Room {
         }
 
         thread = new Thread(() -> {
-            while (!players.isEmpty()) {
+            while (!isDisposed()) {
                 System.out.println("[Room " + this.id + "] Game state is still running!");
                 try {
                     switch (gameState) {
@@ -883,7 +887,7 @@ public class Room {
                 }
             }
 
-            System.out.println("[Room " + this.id + "] Game state has stopped running as there are no players sitting.");
+            System.out.println("[Room " + this.id + "] Game state has stopped running as it is being disposed.");
         });
         thread.start();
     }
