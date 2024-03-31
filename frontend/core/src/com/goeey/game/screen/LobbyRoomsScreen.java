@@ -24,13 +24,11 @@ public class LobbyRoomsScreen extends ScreenAdapter {
     private final GameManager game;
     private Stage stage;
     private Table roomsTable;
-    private final GameState gameState;
     private List<String> roomsList;
     private final Map<String, TextButton> roomMap;
 
     public LobbyRoomsScreen(GameManager game) {
         this.game = game;
-        this.gameState = GameState.getGameState();
         ProcessServerMessage.setGS(this);
 
         roomMap = new HashMap<>();
@@ -49,7 +47,6 @@ public class LobbyRoomsScreen extends ScreenAdapter {
         roomsTable.add("Room Ids:");
         roomsTable.add("Capacity:");
         roomsTable.add(createRefreshButton());
-        roomsTable.add(createRoomButton());
         roomsTable.row();
 
         for(String roomId : roomMap.keySet()) {
@@ -59,9 +56,9 @@ public class LobbyRoomsScreen extends ScreenAdapter {
             roomsTable.row();
         }
 
-        roomsTable.row();
-        roomsTable.add();
-        roomsTable.add(createLeaveButton()).center();
+        roomsTable.row().padTop(100);
+        roomsTable.add(createLeaveButton());
+        roomsTable.add(createRoomButton());
     }
 
     public void createUITable() {

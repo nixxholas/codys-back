@@ -1,7 +1,6 @@
 package com.goeey.game.screen;
 
 import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Color;
@@ -9,11 +8,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.ScaleToAction;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
-
 import com.goeey.game.GameManager;
 import com.goeey.game.animation.CardAnimation;
 import com.goeey.game.entity.GameState;
@@ -267,6 +267,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 break;
             case "DRAW_PLAYER_1": // Player hit; cannot double down after drawing as it is applicable to only the first two cards
                 doubleDownButton.setDisabled(true);
+                doubleDownButton.setColor(doubleDownButton.getStyle().disabledFontColor);
                 cardName = c.getRank() + "_" + c.getSuit();
                 stage.addActor(deal(EntityTarget.PLAYER_1, cardName));
                 break;

@@ -1,27 +1,17 @@
 package com.goeey.game.utils;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.goeey.backend.util.SerializationUtil;
-import com.goeey.game.GameManager;
 import com.goeey.game.entity.GameState;
 import com.goeey.game.screen.GameCreationScreen;
 import com.goeey.game.screen.GameScreen;
-import com.goeey.game.screen.LobbyRoomsScreen;
-import com.goeey.game.socket.SocketHandler;
 import com.gooey.base.Card;
-import com.gooey.base.Player;
 import com.gooey.base.socket.ServerEvent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-
-import static com.gooey.base.socket.ClientEvent.Type.LEAVE;
 
 
 public class ProcessServerMessage {

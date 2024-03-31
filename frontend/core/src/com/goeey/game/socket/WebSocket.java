@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 public class WebSocket extends WebSocketClient {
-    private CountDownLatch latch = new CountDownLatch(1);
+    private final CountDownLatch latch = new CountDownLatch(1);
     private CompletableFuture<ServerEvent<?>> messageFuture;
 
     public WebSocket(URI serverUri) {

@@ -5,14 +5,10 @@ package com.goeey.game;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.goeey.game.entity.GameState;
-import com.goeey.game.screen.GameCreationScreen;
-import com.goeey.game.screen.GameScreen;
 import com.goeey.game.screen.MainMenuScreen;
 import com.goeey.game.socket.SocketHandler;
-import com.gooey.base.EntityTarget;
 
 import java.net.URISyntaxException;
 
@@ -22,7 +18,12 @@ public class GameManager extends Game {
     private Skin skin;
     public static SocketHandler socketHandler;
     public GameState gameState;
+    private String serverURL;
 
+
+    public GameManager(String endpointURL) {
+        this.serverURL = endpointURL;
+    }
 
     @Override
     public void create() {
@@ -31,19 +32,16 @@ public class GameManager extends Game {
         setScreen(new MainMenuScreen(this));
 
         gameState = GameState.getGameState();
+
         try {
-            GameManager.socketHandler = new SocketHandler("ws://10.0.0.10:8081/ws", this);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+            GameManager.socketHandler = new SocketHandler(serverURL, this);
+        } catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
     public void resize(int width, int height) {
         gameViewPort.update(width, height, true);
-    }
-
-    public void render() {
-        super.render();
     }
 
     public void setPlayerName(String playerName) {this.playerName = playerName;}
@@ -56,5 +54,6 @@ public class GameManager extends Game {
 
     public void dispose() {
         GameManager.socketHandler.leaveRoom(playerName);
+        GameManager.socketHandler.disconnect(playerName);
     }
 }
