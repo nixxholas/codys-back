@@ -49,11 +49,17 @@ public class SocketHandler implements WebSocketHandler {
 
         // Finally, by player
         BasePlayer playerData = players.get(id);
+        if (playerData == null) {
+            return null;
+        }
+
         return new Player(playerData.getId(), playerData.getName());
     }
 
     public Player createPlayer(String id, String name) {
         Player player = new Player(id, name);
+        if (players.containsKey(player.getId()))
+            return null;
         players.put(player.getId(), player);
         return player;
     }
@@ -62,11 +68,10 @@ public class SocketHandler implements WebSocketHandler {
         return lobbySessions.containsKey(playerId);
     }
 
+    // Assumes the player is in the lobby or is not in any room
     public Mono<Void> joinLobby(WebSocketSession session, String playerId) {
         Player player = getPlayerById(playerId);
         if (player == null)
-            return null;
-        if (rooms.values().stream().anyMatch(r -> r.hasPlayerById(playerId)))
             return null;
 
         // Notify all players in the lobby
@@ -190,7 +195,7 @@ public class SocketHandler implements WebSocketHandler {
                 .flatMap(event -> {
                     // Process event to determine if it's for the lobby or a specific room
                     switch (event.getType()) {
-                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM, JOIN, LIST_ROOMS:
+                        case CONNECT, REGISTER, CREATE_AND_JOIN_ROOM, JOIN, LIST_ROOMS, ROOM_PLAYERS:
                             return processLobbyEvent(session, event); // Implement this method for lobby-specific actions
                         case DISCONNECT:
                             return processDisconnectEvent(session, event); // Implement this method for disconnect-specific actions
@@ -252,12 +257,20 @@ public class SocketHandler implements WebSocketHandler {
                     return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid player")))));
 
                 // Join the player to the lobby
-                joinLobby(session, event.getClientId());
-                // Send a welcome message to the player
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
+                if (!isPlayerInLobby(event.getClientId())) {
+                    joinLobby(session, event.getClientId());
+                    // Send a welcome message to the player
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_LOBBY, "Welcome to the lobby " + connectingPlayer.getName() + "!")))));
+                } else {
+                    // Send a warning message to the player
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_LOBBY, "You are already in the lobby!")))));
+                }
             case REGISTER:
                 // Create a new player
                 Player newPlayer = createPlayer(event.getClientId(), event.getMessage());
+                if (newPlayer == null)
+                    return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Player already exists")))));
+
                 // Join the player to the lobby
                 joinLobby(session, event.getClientId());
                 // Register the player
@@ -269,7 +282,7 @@ public class SocketHandler implements WebSocketHandler {
                 if (isPlayerInLobby(event.getClientId()) && getPlayerRoomByPlayerId(event.getClientId()) == null) {
                     movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
                 }
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, roomToJoin.getRoomId())))));
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_ROOM, roomToJoin.getRoomId())))));
             case LIST_ROOMS:
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ROOM_LIST, rooms.keySet())))));
             case ROOM_PLAYERS: {
@@ -288,7 +301,7 @@ public class SocketHandler implements WebSocketHandler {
                 // Join the player to the room
                 movePlayerToRoom(joiningAndCreatingPlayer, room, session);
                 // Send a welcome message to the player
-                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED, "Welcome to room " + room.getRoomId())))));
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_ROOM, "Welcome to room " + room.getRoomId())))));
             default:
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid event")))));
         }
@@ -308,11 +321,16 @@ public class SocketHandler implements WebSocketHandler {
         ServerEvent responseEvent;
         switch (event.getType()) {
             case LEAVE:
-                // Leave the room
+                // Leave the room, and unseat them if they are seated
                 Player leftPlayer = room.playerLeave(event.getClientId());
+                // Send a message to the player
+                session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(
+                        new ServerEvent<>(ServerEvent.Type.LEFT, "You have left the room")
+                ))));
+                // Add the player back to the main game unified state
+                players.put(leftPlayer.getId(), leftPlayer);
                 // Bring the player back to the lobby
-                lobbySessions.put(leftPlayer.getId(), leftPlayer);
-                responseEvent = new ServerEvent(ServerEvent.Type.LEAVE, "You have left room " + room.getRoomId());
+                return joinLobby(session, leftPlayer.getId());
             case SIT:
                 // Sit the player in a seat;
                 return session.send(Mono.just(session.textMessage(
@@ -323,14 +341,19 @@ public class SocketHandler implements WebSocketHandler {
             case LEAVE_SEAT:
                 // Leave the seat
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.standUp(player)))));
-//            case BET:
-//                // Place a bet
-//                return processBetEvent(session, event, room, roomSink);
+            case BET:
+                // Place a bet
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(
+                        room.placeBet(player, Integer.parseInt(event.getMessage()))))));
+            case HIT:
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.hit(room.getPlayerSeatNumber(player.getId()))))));
+            case STAND:
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.stand(room.getPlayerSeatNumber(player.getId()))))));
+            case DOUBLE:
+                return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(room.doubleDown(room.getPlayerSeatNumber(player.getId()))))));
             default:
                 responseEvent = new ServerEvent(ServerEvent.Type.ERROR, "Invalid event");
         }
-
-//         = new ServerEvent(ServerEvent.Type.BET, "Processed event for room: " + room.getRoomId());
         roomSink.tryEmitNext(responseEvent);
         return session.send(roomSink.asFlux().map(evt -> session.textMessage(SerializationUtil.serializeString(evt))));
     }

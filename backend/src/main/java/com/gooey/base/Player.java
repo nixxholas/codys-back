@@ -10,15 +10,28 @@ import java.util.List;
 
 public class Player extends BasePlayer {
     private List<Card> hand = new ArrayList<>();
-    private boolean standing = false;
-    private boolean doubleDown = false;
+    private volatile boolean standing = false;
+    private volatile boolean settled = false;
+    private volatile boolean doubleDown = false;
+    private boolean split = false;
+    private boolean insurance = false;
     private int balance;
     private int currentBet;
-    private int numCards;
     private Sinks.Many<ServerEvent> sink;
 
     public Player(String id, String name) {
         super(id, name);
+        this.balance = 1000; // Default balance
+    }
+
+    public void reset() {
+        hand.clear();
+        standing = false;
+        settled = false;
+        doubleDown = false;
+        split = false;
+        insurance = false;
+        currentBet = 0;
     }
 
     public int getBalance() {
@@ -30,7 +43,7 @@ public class Player extends BasePlayer {
     }
 
     public int getNumCards() {
-        return this.numCards;
+        return this.hand.size();
     }
 
     public Sinks.Many<ServerEvent> getSink() {
@@ -40,15 +53,9 @@ public class Player extends BasePlayer {
     public void setSink(Sinks.Many<ServerEvent> sink) {
         this.sink = sink;
     }
-    
-    public void setNumCards(int num_cards) {
-        this.numCards = numCards;
-    }
 
     public void addCard(Card card) {
-        int num = getNumCards();
         hand.add(card);
-        setNumCards(num + 1); // Increases number of cards by 1
     }
 
     public List<Card> getHand() {
@@ -73,52 +80,106 @@ public class Player extends BasePlayer {
         return value;
     }
 
-    public void setStanding(boolean standing) {
+    public boolean hasAce() {
+        for (Card card : hand) {
+            if (card.getRank() == Rank.ACE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasFirstCardAce() {
+        if (hand.isEmpty()) {
+            return false;
+        }
+
+        return hand.get(0).getRank() == Rank.ACE;
+    }
+
+    public synchronized boolean shouldStillDraw() {
+        return (calculateHandValue() < 21 && !isStanding() && !isDoubleDown()) && !settled;
+    }
+
+    public synchronized boolean isSettled() {
+        return settled;
+    }
+
+    public synchronized void setSettled(boolean settled) {
+        this.settled = settled;
+    }
+
+    public synchronized void setStanding(boolean standing) {
         this.standing = standing;
     }
 
-    public boolean isStanding() {
+    public synchronized boolean isStanding() {
         return standing;
     }
 
-    public void setDoubleDown(boolean doubleDown) {
+    public synchronized void setDoubleDown(boolean doubleDown) {
         this.doubleDown = doubleDown;
     }
 
-    public boolean isDoubleDown() {
+    public synchronized boolean isDoubleDown() {
         return doubleDown;
     }
 
-    public void placeBet(int amount) {
-        if (amount > balance) {
-            throw new IllegalArgumentException("Bet amount exceeds balance.");
-        }
+    public void setSplit(boolean split) {
+        this.split = split;
+    }
+
+    public boolean isSplit() {
+        return split;
+    }
+
+    public void setInsurance(boolean insurance) {
+        this.insurance = insurance;
+    }
+
+    public boolean isInsurance() {
+        return insurance;
+    }
+
+    public boolean isBlackjack() {
+        return (this.calculateHandValue() == 21 && this.getNumCards() == 2 && !this.isSplit());
+    }
+
+    public boolean placeBet(int amount) {
         if (isDoubleDown()) {
-            this.currentBet += amount;
+            this.currentBet = 2 * amount;
+            // No need to check if bet amount exceeds balance in here
+            // since it is already checked before doubling down
         } else {
-        this.currentBet = amount;
+            if (amount > balance) {
+//                throw new IllegalArgumentException("Bet amount exceeds balance.");
+                return false;
+            }
+            this.currentBet = amount;
         }
-        this.balance -= amount;
+        return true;
     }
 
-    public void winBet() {
-
-        // Blackjack scenarios
-        if (this.calculateHandValue() == 21 && this.getNumCards() == 2) {
-            this.balance += (currentBet * 2.5); // Blackjack pays 3 to 2
-            this.currentBet = 0;
+    public int winBet() {
+        int winnings = currentBet;
+        if (isBlackjack()) {
+            winnings = (int) (currentBet * 1.5); // Blackjack pays 3 to 2
         } else {
-            this.balance += (currentBet * 2); // Winner gets double their bet
-            this.currentBet = 0;
+            winnings = currentBet; // Others pay even money
         }
+        this.balance += winnings;
+        this.currentBet = 0; // Reset current bet to 0 once bet is settled
+        return winnings;
     }
 
-    public void loseBet() {
-        this.currentBet = 0; // Loss already accounted for when bet was placed
+    public int loseBet() {
+        int loss = currentBet;
+        this.balance -= loss;
+        this.currentBet = 0; // Reset current bet to 0 once bet is settled
+        return loss;
     }
 
     public void push() { // In case of a tie
-        this.balance += currentBet; // Return the bet to the player
-        this.currentBet = 0;
+        this.currentBet = 0; // Reset current bet to 0 once bet is settled
     }
 }
