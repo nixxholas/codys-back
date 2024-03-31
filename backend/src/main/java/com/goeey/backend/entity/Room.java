@@ -728,15 +728,15 @@ public class Room implements Disposable {
                                 // Wait for the player to take their turn, provide 10 seconds to make a decision
                                 // If the player is standing, skip their turn
                                 // If the player is not standing, they can hit, reset the timer, and wait for them again
-                                AtomicReference<List<Card>> playerInitialHand = new AtomicReference<>(player.getHand());
                                 while (player.shouldStillDraw() && !player.isStanding()) {
                                     Thread playerTurnCountdown = new Thread(() -> {
                                         // Send timer to wait for player to take action
                                         int countdown = 10;
+                                        List<Card> playerInitialHand = new ArrayList<>(player.getHand());
                                         // While the player still can draw cards
                                         while (player.shouldStillDraw()) {
                                             // While the player has not taken any action
-                                            while (playerInitialHand.get().size() == player.getHand().size()) {
+                                            while (playerInitialHand.size() == player.getHand().size()) {
                                                 if (countdown == 0) {
                                                     // Player has not taken any action, force stand
                                                     player.setStanding(true);
@@ -764,7 +764,7 @@ public class Room implements Disposable {
                                                 countdown = 10;
 
                                                 // Deal with the draw broadcast elsewhere
-                                                playerInitialHand.set(player.getHand());
+                                                playerInitialHand = new ArrayList<>(player.getHand());
                                             }
                                         }
                                     });
