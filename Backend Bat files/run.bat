@@ -1,0 +1,2 @@
+gradle build
+start.sh
