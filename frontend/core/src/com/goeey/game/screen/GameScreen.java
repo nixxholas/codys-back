@@ -44,6 +44,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     private TextButton standButton;
     private TextButton betButton;
     private TextButton doubleDownButton;
+    private TextButton leaveButton;
     private Label lblAmt;
     private String playerMessage = null;
     private final Timer timer = new Timer();
@@ -138,6 +139,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
             betButton.addListener(new ClickListener() {
                 public void clicked(InputEvent event, float x, float y){
                     if(!betButton.isDisabled()){
+                        leaveButton.setDisabled(true);
                         gameState.setHasBet(true);
                         betButton.setDisabled(true);
                         if(!gameState.isSeated()){
@@ -420,17 +422,19 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
     public TextButton createLeaveGameButton() {
-        TextButton leaveButton = new TextButton("Leave Game", game.getSkin());
+        leaveButton = new TextButton("Leave Game", game.getSkin());
         leaveButton.setPosition(20, scrHeight - leaveButton.getHeight() - 20); // Position the button
 
         leaveButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                gameState.setPlayerLeft(true);
-                timer.cancel();
-                gameState.setSeated(false);
-                gameState.setInRoom(false);
-                GameManager.socketHandler.leaveRoom(game.getPlayerName());
-                game.setScreen(new MainMenuScreen(game));
+                if(!leaveButton.isDisabled()){
+                    gameState.setPlayerLeft(true);
+                    timer.cancel();
+                    gameState.setSeated(false);
+                    gameState.setInRoom(false);
+                    GameManager.socketHandler.leaveRoom(game.getPlayerName());
+                    game.setScreen(new MainMenuScreen(game));
+                }
             }
         });
 
@@ -438,6 +442,7 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
     }
 
     private void resetGame(){
+        leaveButton.setDisabled(false);
         // Schedule a task to update countdown seconds and execute code after 8 seconds
         timer.schedule(new TimerTask() {
             @Override
