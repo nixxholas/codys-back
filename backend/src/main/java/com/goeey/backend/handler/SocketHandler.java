@@ -279,7 +279,7 @@ public class SocketHandler implements WebSocketHandler {
                 if (roomToJoin == null)
                     return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.ERROR, "Invalid room")))));
                 if (isPlayerInLobby(event.getClientId()) && getPlayerRoomByPlayerId(event.getClientId()) == null) {
-                    return movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
+                    movePlayerToRoom(getPlayerById(event.getClientId()), roomToJoin, session);
                 }
                 return session.send(Mono.just(session.textMessage(SerializationUtil.serializeString(new ServerEvent(ServerEvent.Type.JOINED_ROOM, roomToJoin.getRoomId())))));
             case LIST_ROOMS:
