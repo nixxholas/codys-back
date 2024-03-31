@@ -431,10 +431,9 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
                 if(!leaveButton.isDisabled()){
                     gameState.setPlayerLeft(true);
                     timer.cancel();
+                    GameManager.socketHandler.leaveRoom(game.getPlayerName());
                     gameState.setSeated(false);
                     gameState.setInRoom(false);
-                    GameManager.socketHandler.leaveseat(game.getPlayerName());
-                    GameManager.socketHandler.leaveRoom(game.getPlayerName());
                     game.setScreen(new LobbyRoomsScreen(game));
                 }
             }
