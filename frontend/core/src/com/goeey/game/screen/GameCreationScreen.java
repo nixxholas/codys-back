@@ -34,6 +34,11 @@ public class GameCreationScreen extends ScreenAdapter {
         registerButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if(nameTextfield.getText().isEmpty()) {
+                    showError("Username is empty.");
+                    return;
+                }
+
                 game.setPlayerName(nameTextfield.getText());
                 try {
                     GameManager.socketHandler.register(game.getPlayerName());
@@ -55,6 +60,10 @@ public class GameCreationScreen extends ScreenAdapter {
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if(nameTextfield.getText().isEmpty()) {
+                    showError("Username is empty.");
+                    return;
+                }
                 //Setting player username
                 game.setPlayerName(nameTextfield.getText());
 
