@@ -19,6 +19,14 @@ tasks.register('run', JavaExec) {
         // Required to run on macOS
         jvmArgs += "-XstartOnFirstThread"
     }
+
+//    main = 'com.goeey.game.desktop.DesktopLauncher'
+
+    // Pass the command line arguments to the Java application
+    if (project.hasProperty('args')) {
+        // Set the arguments provided via the command line
+        args project.args.split(' ')
+    }
 }
 
 tasks.register('debug', JavaExec) {
