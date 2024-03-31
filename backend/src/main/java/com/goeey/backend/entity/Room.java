@@ -248,6 +248,11 @@ public class Room {
             playerBroadcastDisposables.get(playerId).dispose();
             playerBroadcastDisposables.remove(playerId);
 
+            if (players.isEmpty() && unseatedPlayers.isEmpty()) {
+                thread.interrupt();
+                thread = null;
+            }
+
             return leavingPlayer;
         }
 
