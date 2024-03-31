@@ -85,6 +85,10 @@ public class Room implements Disposable {
         return false;
     }
 
+    public boolean isEmpty() {
+        return players.isEmpty() && unseatedPlayers.isEmpty();
+    }
+
     public boolean allPlayersBusted() {
         for (Player player : players.values()) {
             if (!player.isSettled()) {
@@ -354,13 +358,6 @@ public class Room implements Disposable {
         }
     }
 
-    public void removePlayer(int seatNumber) throws NullPointerException {
-        Player player = players.get(seatNumber);
-        if (player == null)
-            throw new NullPointerException("Player not found.");
-        players.remove(seatNumber);
-    }
-
     private void initializeDeck() {
         deck.clear();
         for (Suit suit : Suit.values()) {
@@ -504,40 +501,6 @@ public class Room implements Disposable {
         return new ServerEvent<>(ServerEvent.Type.ERROR, "Player is standing.");
     }
 
-    /*
-    // Split method
-    public void split(int seatNumber) {
-        if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to split.");
-        }
-        if (!gameStarted) {
-            throw new IllegalStateException("Game not started.");
-        }
-        Player player = players.get(seatNumber);
-        if (player != null && !player.isStanding()) {
-            player.setSplit(true);
-            // TODO
-        }
-    }
-    */
-
-    /*
-    // Insurance method
-    public void insurance(int seatNumber) {
-        if (gameState != GameState.PLAYER_TURN) {
-            throw new IllegalStateException("Not the right time to take insurance.");
-        }
-        if (!gameStarted) {
-            throw new IllegalStateException("Game not started.");
-        }
-        Player player = players.get(seatNumber);
-        if (player != null && !player.isStanding()) {
-            player.setInsurance(true);
-            // TODO
-        }
-    }
-    */
-
     private void dealerPlay() {
         currentTurnPlayerId = "dealer";
         // Reveal the dealer's second card
@@ -547,7 +510,7 @@ public class Room implements Disposable {
 
         // If not all players have busted and the dealer does not have blackjack with an ace showing
         // with all players having blackjack, the dealer must draw cards until the hand value is at least 17
-        if (!allPlayersBusted() || !(allPlayersBlackjack() && !dealer.isBlackjack())) {
+        if (!allPlayersBusted() && !(allPlayersBlackjack() && !dealer.isBlackjack())) {
             // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
             // Includes soft 17 as well.
             while (dealer.calculateHandValue() < 17 ||

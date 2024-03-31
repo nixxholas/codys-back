@@ -328,6 +328,14 @@ public class SocketHandler implements WebSocketHandler {
                 ))));
                 // Add the player back to the main game unified state
                 players.put(leftPlayer.getId(), leftPlayer);
+
+                if (room.isEmpty()) {
+                    // Remove the room if it's empty
+                    room.dispose();
+                    rooms.remove(room.getRoomId());
+                    roomSinkMap.remove(room.getRoomId());
+                }
+
                 // Bring the player back to the lobby
                 return joinLobby(session, leftPlayer.getId());
             case SIT:
