@@ -224,7 +224,6 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
 
         // Leave button
         stage.addActor(createLeaveGameButton());
-        stage.setDebugAll(true);
     }
 
     public static Actor deal(EntityTarget entity, String card){

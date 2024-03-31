@@ -98,7 +98,7 @@ public class MainMenuScreen extends ScreenAdapter {
     public void showConnectionFailedDialog() {
         Dialog failedConnectionDialog = new Dialog("Error", game.getSkin());
 
-        failedConnectionDialog.text("Failed to joinLobby to server").center();
+        failedConnectionDialog.text("Failed to connect to server").center();
         failedConnectionDialog.setName("failedDialog");
         failedConnectionDialog.button(createOkAndCloseButton(failedConnectionDialog.getName()));
 
