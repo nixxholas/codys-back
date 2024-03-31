@@ -538,7 +538,7 @@ public class Room {
 
         // If not all players have busted and the dealer does not have blackjack with an ace showing
         // with all players having blackjack, the dealer must draw cards until the hand value is at least 17
-        if (!allPlayersBusted() && !(allPlayersBlackjack() && dealer.calculateHandValue() != 21)) {
+        if (!allPlayersBusted() || !(allPlayersBlackjack() && !dealer.isBlackjack())) {
             // If the dealer's hand value is less than 17, the dealer must draw cards until the hand value is at least 17
             // Includes soft 17 as well.
             while (dealer.calculateHandValue() < 17 ||
