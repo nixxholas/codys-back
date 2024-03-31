@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.goeey.backend.BackendApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-02-18T10:50:41" hostname="IckBook-Pro" time="0.4">
+  <properties/>
+  <testcase name="testJoinRoom()" classname="com.goeey.backend.BackendApplicationTests" time="0.4"/>
+  <system-out><![CDATA[18:50:40.339 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.goeey.backend.BackendApplicationTests]: BackendApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:50:40.376 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.goeey.backend.BackendApplication for test class com.goeey.backend.BackendApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.2)
+
+2024-02-18T18:50:40.504+08:00  INFO 92894 --- [    Test worker] c.goeey.backend.BackendApplicationTests  : Starting BackendApplicationTests using Java 21.0.1 with PID 92894 (started by nicholaschen in /Users/nicholaschen/projects/cs102proj/backend)
+2024-02-18T18:50:40.505+08:00  INFO 92894 --- [    Test worker] c.goeey.backend.BackendApplicationTests  : No active profile set, falling back to 1 default profile: "default"
+2024-02-18T18:50:40.978+08:00  INFO 92894 --- [    Test worker] ctiveUserDetailsServiceAutoConfiguration : 
+
+Using generated security password: c8cf29b3-16e1-4b90-b1bc-211fdace05b3
+
+2024-02-18T18:50:40.998+08:00  INFO 92894 --- [    Test worker] c.goeey.backend.BackendApplicationTests  : Started BackendApplicationTests in 0.574 seconds (process running for 1.004)
+]]></system-out>
+  <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (/Users/nicholaschen/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.14.11/f9cb566608fbac6bc7bf54901a7aa11543a989ee/byte-buddy-agent-1.14.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>
