@@ -57,6 +57,10 @@ public class LobbyRoomsScreen extends ScreenAdapter {
             roomsTable.add(roomMap.get(roomId)).pad(10);
             roomsTable.row();
         }
+
+        roomsTable.row();
+        roomsTable.add();
+        roomsTable.add(createLeaveButton()).center();
     }
 
     public void createUITable() {
@@ -114,6 +118,16 @@ public class LobbyRoomsScreen extends ScreenAdapter {
         return joinButton;
     }
 
+    public TextButton createLeaveButton(){
+        TextButton leaveButton = new TextButton("Return to Main Menu", game.getSkin());
+        leaveButton.addListener(new ClickListener() {
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MainMenuScreen(game));
+            }
+        });
+
+        return leaveButton;
+    }
     public ArrayList<String> getAllRooms() {
         try {
             return GameManager.socketHandler.listRooms(game.getPlayerName());
