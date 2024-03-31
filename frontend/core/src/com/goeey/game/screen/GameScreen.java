@@ -380,18 +380,13 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         doubleDownButton.setDisabled(true);
     }
 
-    public void createGameState(){
+    public void createGameState() {
         Table table = new Table(skin);
         table.setFillParent(true);
 
-        //Creating table to contain labels
+        // Creating tables to contain labels
         Table gsTable = new Table();
-        table.setWidth(100);
-        table.setHeight(40);
-
         Table ptTable = new Table();
-        table.setWidth(100);
-        table.setHeight(40);
 
         // Create label for the message
         gameStateLabel = new Label("Place bet to start game", skin);
@@ -401,21 +396,17 @@ public class GameScreen extends ScreenAdapter implements ApplicationListener {
         gameStateLabel.setFontScale(1.5f);
         playerTurnLabel.setFontScale(1.5f);
 
-        //Adding labels to tables
-        gsTable.add(gameStateLabel);
+        // Adding labels to tables
+        gsTable.add(gameStateLabel).padRight(150);
         ptTable.add(playerTurnLabel);
 
-        //Applying necessary padding and alignments
-        table.add(gsTable).padRight(150);
+        // Adding inner tables to the main table
+        table.add(gsTable).row();
         table.add(ptTable);
 
-        //Setting height and width of table
-        table.setHeight(50);
-        table.setWidth(500);
-
-        // Position the table at the bottom of the screen
+        // Position the table in the top right corner of the screen with padding
         table.top().right().padTop(20).padRight(20);
-        table.setPosition(scrWidth - table.getPrefWidth() - 200, scrHeight - table.getPrefHeight());
+        //table.setPosition(scrWidth - 300, scrHeight - 200);
 
         // Add the table to the stage for rendering
         stage.addActor(table);
