@@ -36,31 +36,20 @@ public class GameState {
     public int getSeatNumber() {
         return seatNumber;
     }
+    public static EntityTarget getEntityTargetGivenSeatNumber (int seatNumber) {
+        return switch (seatNumber) {
+            case 1 -> EntityTarget.PLAYER_1;
+            case 2 -> EntityTarget.PLAYER_2;
+            case 3 -> EntityTarget.PLAYER_3;
+            case 4 -> EntityTarget.PLAYER_4;
+            case 5 -> EntityTarget.PLAYER_5;
+            default -> null;
+        };
+    }
 
     public void setSeatNumber(int seatNumber) {
         this.seatNumber = seatNumber;
-        
-        switch (seatNumber) {
-            case 1:
-                playerEntityTarget = EntityTarget.PLAYER_1;
-                break;
-            case 2:
-                playerEntityTarget = EntityTarget.PLAYER_2;
-                break;
-            case 3:
-                playerEntityTarget = EntityTarget.PLAYER_3;
-                break;
-            case 4:
-                playerEntityTarget = EntityTarget.PLAYER_4;
-                break;
-            case 5:
-                playerEntityTarget = EntityTarget.PLAYER_5;
-                break;
-            default:
-                playerEntityTarget = null;
-                break;
-        }
-        
+        this.playerEntityTarget = getEntityTargetGivenSeatNumber(seatNumber);
     }
 
     public boolean isFirstCountDown() {
