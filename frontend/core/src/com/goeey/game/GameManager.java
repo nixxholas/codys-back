@@ -1,3 +1,5 @@
+// This java file handles the game.
+
 package com.goeey.game;
 
 import com.badlogic.gdx.Game;

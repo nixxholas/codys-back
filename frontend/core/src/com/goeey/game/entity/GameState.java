@@ -70,7 +70,7 @@ public class GameState {
 
     public void deductPlayerBalance(int betAmount) throws ArithmeticException {
         if(playerBalance < betAmount) {
-            throw new ArithmeticException("Insufficient balance");
+            throw new ArithmeticException("Insufficient balance"); // Not enough money to make a bet
         }
 
         this.playerBalance -= betAmount;
